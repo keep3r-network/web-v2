@@ -41,6 +41,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	mim3CrvContract = new Contract('0xFd5AbF66b003881b88567EB9Ed9c651F14Dc4771', CONVEX_REWARDS_ABI);
 		const	yvEthContract = new Contract('0xa258C4606Ca8206D8aA700cE2143D7db854D168c', YEARN_VAULT_ABI);
 		const	cvxContract = new Contract('0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B', CVX_ABI);
+		const	crvSusdContract = new Contract('0x22eE18aca7F3Ee920D01F25dA85840D12d98E8Ca', CONVEX_REWARDS_ABI);
 
 		const	jobsCalls = [
 			cvxContract.totalSupply(),
@@ -80,13 +81,15 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			mim3CrvContract.balanceOf(process.env.THE_KEEP3R as string),
 			mim3CrvContract.earned(process.env.THE_KEEP3R as string),
 			lensPriceContract.getPriceUsdcRecommended('0x5a6A4D54456819380173272A5E8E9B9904BdF41B'),
+
+			crvSusdContract.balanceOf(process.env.THE_KEEP3R as string),
+			crvSusdContract.earned(process.env.THE_KEEP3R as string),
+			lensPriceContract.getPriceUsdcRecommended('0xC25a3A3b969415c80451098fa907EC722572917F'),
 			
 			yvEthContract.balanceOf(process.env.THE_KEEP3R as string),
 			lensPriceContract.getPriceUsdcRecommended('0xa258C4606Ca8206D8aA700cE2143D7db854D168c'),
-			
 			yvEthContract.pricePerShare(),
 			lensPriceContract.getPriceUsdcRecommended('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-
 		];
 		const	resultsJobsCall = await ethcallProvider.tryAll(jobsCalls);
 
@@ -241,6 +244,24 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 				Number(format.units(mim3CrvEarned, 18)) * Number(crvPrice)
 				+
 				Number(format.units(mim3CrvEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+			)
+		});
+
+		// crvSUSD //
+		const	crvSUSDStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	crvSUSDEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const	crvSUSDPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		_treasury.push({
+			name: 'crvSUSD',
+			protocol: 'Convex',
+			rewards: 'CVX',
+			tokenStaked: Number(crvSUSDStacked),
+			tokenStakedUSD: Number(crvSUSDStacked) * Number(crvSUSDPrice),
+			unclaimedRewards: Number(crvSUSDEarned),
+			unclaimedRewardsUSD: (
+				Number(format.units(crvSUSDEarned, 18)) * Number(crvPrice)
+				+
+				Number(format.units(crvSUSDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
