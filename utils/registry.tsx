@@ -27,6 +27,10 @@ const	REGISTRY: TRegistry = {
   '0x133A4273589c2eE5F9Fe28898B68aC1B4B1BA9B0': {
     'name':'PhutureRebalancing',
     'repository':'https://github.com/Phuture-Finance/keep3r-cli-job-phuture'
+  },
+  '0x54A8265ADC50fD66FD0F961cfCc8B62DE0f2B57f': {
+    'name':'Kasparov',
+    'repository':'https://github.com/wei3erHase/keep3r-cli-job-kasparov'
   }
 };
 
