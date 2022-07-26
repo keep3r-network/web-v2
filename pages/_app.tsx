@@ -1,85 +1,21 @@
 import	React, {ReactElement}				from	'react';
-import	Head								from	'next/head';
 import	{Toaster}							from	'react-hot-toast';
 import	Link								from	'next/link';
 import	{AppProps}							from	'next/app';
-import	{DefaultSeo}						from	'next-seo';
 import	NProgress							from	'nprogress';
-import	{WithYearn, usePrices, useWeb3}		from	'@yearn/web-lib/contexts';
+import	{WithYearn, useWeb3}				from	'@yearn/web-lib/contexts';
 import	{format, truncateHex}				from	'@yearn/web-lib/utils';
 import	{Keep3rContextApp}					from	'contexts/useKeep3r';
+import	usePrices, {PricesContextApp}		from	'contexts/usePrices';
 import	{TreasuryContextApp}				from	'contexts/useTreasury';
 import	{PairsContextApp}					from	'contexts/usePairs';
 import	{JobContextApp}						from	'contexts/useJob';
 import	{ModalLogin}						from	'components/modals/ModalLogin';
+import	Meta								from	'components/Meta';
 import	Footer								from	'components/Footer';
 import	LogoKeep3r							from	'components/icons/Keep3r';
 
 import	'../style.css';
-
-/* 📰 - Keep3r *****************************************************************
-** Setup the Head part of for the website, aka the meta elements, the favicons
-** and all other related stuff.
-******************************************************************************/
-function	AppHead(): ReactElement {
-	return (
-		<>
-			<Head>
-				<title>{process.env.WEBSITE_NAME}</title>
-				<meta httpEquiv={'X-UA-Compatible'} content={'IE=edge'} />
-				<meta name={'viewport'} content={'width=device-width, initial-scale=1'} />
-				<meta name={'description'} content={process.env.WEBSITE_NAME} />
-
-				<link rel={'apple-touch-icon'} sizes={'57x57'} href={'/favicons/apple-icon-57x57.png'} />
-				<link rel={'apple-touch-icon'} sizes={'60x60'} href={'/favicons/apple-icon-60x60.png'} />
-				<link rel={'apple-touch-icon'} sizes={'72x72'} href={'/favicons/apple-icon-72x72.png'} />
-				<link rel={'apple-touch-icon'} sizes={'76x76'} href={'/favicons/apple-icon-76x76.png'} />
-				<link rel={'apple-touch-icon'} sizes={'114x114'} href={'/favicons/apple-icon-114x114.png'} />
-				<link rel={'apple-touch-icon'} sizes={'120x120'} href={'/favicons/apple-icon-120x120.png'} />
-				<link rel={'apple-touch-icon'} sizes={'144x144'} href={'/favicons/apple-icon-144x144.png'} />
-				<link rel={'apple-touch-icon'} sizes={'152x152'} href={'/favicons/apple-icon-152x152.png'} />
-				<link rel={'apple-touch-icon'} sizes={'180x180'} href={'/favicons/apple-icon-180x180.png'} />
-				<link rel={'icon'} type={'image/png'} sizes={'192x192'}  href={'/favicons/android-icon-192x192.png'} />
-				<link rel={'icon'} type={'image/png'} sizes={'32x32'} href={'/favicons/favicon-32x32.png'} />
-				<link rel={'icon'} type={'image/png'} sizes={'96x96'} href={'/favicons/favicon-96x96.png'} />
-				<link rel={'icon'} type={'image/png'} sizes={'16x16'} href={'/favicons/favicon-16x16.png'} />
-				<link rel={'manifest'} href={'/favicons/manifest.json'} />
-				<meta name={'msapplication-TileColor'} content={'#ffffff'} />
-				<meta name={'msapplication-TileImage'} content={'/favicons/ms-icon-144x144.png'} />
-				<meta name={'theme-color'} content={'#ffffff'} />
-
-				<meta name={'robots'} content={'index,nofollow'} />
-				<meta name={'googlebot'} content={'index,nofollow'} />
-				<meta charSet={'utf-8'} />
-			</Head>
-			<DefaultSeo
-				title={process.env.WEBSITE_NAME}
-				defaultTitle={process.env.WEBSITE_NAME}
-				description={process.env.WEBSITE_DESCRIPTION}
-				openGraph={{
-					type: 'website',
-					locale: 'en_US',
-					url: process.env.WEBSITE_URI,
-					site_name: process.env.WEBSITE_NAME,
-					title: process.env.WEBSITE_NAME,
-					description: process.env.WEBSITE_DESCRIPTION,
-					images: [
-						{
-							url: `${process.env.WEBSITE_URI}og.png`,
-							width: 1500,
-							height: 500,
-							alt: '@thekeep3r'
-						}
-					]
-				}}
-				twitter={{
-					handle: '@thekeep3r',
-					site: '@thekeep3r',
-					cardType: 'summary_large_image'
-				}} />
-		</>
-	);
-}
 
 /* 📰 - Keep3r *****************************************************************
 ** Little hack in order to get the correct context based on the page. In short,
@@ -159,7 +95,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 
 	return (
 		<>
-			<AppHead />
+			<Meta />
 			<div className={'px-4 bg-black'}>
 				<Link href={'/'}>
 					<div className={'flex justify-center items-center h-32'}>
@@ -276,16 +212,18 @@ function	MyApp(props: AppProps): ReactElement {
 					containerClassName={'!z-[1000000]'}
 					containerStyle={{zIndex: 1000000}}
 					toastOptions={toasterOptions} />
-				<Keep3rContextApp>
-					<PairsContextApp>
-						<TreasuryContextApp>
-							<AppWithLayout
-								Component={Component}
-								pageProps={pageProps}
-								router={props.router} />
-						</TreasuryContextApp>
-					</PairsContextApp>
-				</Keep3rContextApp>
+				<PricesContextApp>
+					<Keep3rContextApp>
+						<PairsContextApp>
+							<TreasuryContextApp>
+								<AppWithLayout
+									Component={Component}
+									pageProps={pageProps}
+									router={props.router} />
+							</TreasuryContextApp>
+						</PairsContextApp>
+					</Keep3rContextApp>
+				</PricesContextApp>
 			</>
 		</WithYearn>
 	);

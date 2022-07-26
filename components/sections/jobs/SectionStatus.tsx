@@ -2,7 +2,7 @@ import	React, {ReactElement}					from	'react';
 import	{Copy, LinkOut}							from	'@yearn/web-lib/icons';
 import	{format, truncateHex, copyToClipboard}	from	'@yearn/web-lib/utils';
 import	useJob									from	'contexts/useJob';
-import	{usePrices}								from	'@yearn/web-lib';
+import	usePrices								from	'contexts/usePrices';
 
 function	SectionStatus(): ReactElement {
 	const	{jobStatus} = useJob();
