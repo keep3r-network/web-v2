@@ -7,6 +7,9 @@ module.exports = withPWA({
 			'raw.githubusercontent.com'
 		]
 	},
+	pwa: {
+		dest: 'public'
+	},
 	env: {
 		CG_IDS: ['ethereum', 'keep3rv1'],
 
