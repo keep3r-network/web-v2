@@ -90,3 +90,11 @@ input {
 .yearn--modalLogin-card {
 	& * {@apply !font-mono;}
 }
+
+.yearn--modalMobileMenu-walletCard {
+	@apply bg-grey-5;
+}
+
+.yearn--select-no-arrow {
+	@apply !pr-6 text-sm;
+}

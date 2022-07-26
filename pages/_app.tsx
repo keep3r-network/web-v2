@@ -5,6 +5,7 @@ import	{AppProps}							from	'next/app';
 import	NProgress							from	'nprogress';
 import	{WithYearn, useWeb3}				from	'@yearn-finance/web-lib/contexts';
 import	{format, truncateHex}				from	'@yearn-finance/web-lib/utils';
+import	{ModalMobileMenu}					from	'@yearn-finance/web-lib/components';
 import	{Keep3rContextApp}					from	'contexts/useKeep3r';
 import	usePrices, {PricesContextApp}		from	'contexts/usePrices';
 import	{TreasuryContextApp}				from	'contexts/useTreasury';
@@ -60,6 +61,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	const	{pathname} = router;
 	const	{prices} = usePrices();
 	const	{isActive, hasProvider, openLoginModal, onSwitchChain, address, ens, onDesactivate} = useWeb3();
+	const	[hasMobileMenu, set_hasMobileMenu] = React.useState(false);
 	const	[tokenPrice, set_tokenPrice] = React.useState('0');
 	const	[walletIdentity, set_walletIdentity] = React.useState('Connect wallet');
 
@@ -79,7 +81,6 @@ function	AppWithLayout(props: AppProps): ReactElement {
 		}
 	}, [ens, address, isActive]);
 
-
 	function	onLoginClick(): void {
 		if (!isActive && !hasProvider) {
 			openLoginModal();
@@ -93,56 +94,61 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	return (
 		<>
 			<Meta />
-			<div className={'px-4 bg-black'}>
+			<div className={'bg-black px-4 pt-8'}>
 				<Link href={'/'}>
-					<div className={'flex justify-center items-center h-32'}>
+					<div className={'flex h-auto items-center justify-center md:h-32'}>
 						<LogoKeep3r />
 					</div>
 				</Link>
+				<button
+					onClick={(): void => set_hasMobileMenu(!hasMobileMenu)}
+					className={'mx-auto block w-full py-4 text-center text-white md:hidden'}>
+					{'Menu'}
+				</button>
 			</div>
 			<div className={'sticky top-0 z-50 bg-black'}>
-				<div className={'hidden flex-row justify-between mx-auto w-full max-w-6xl h-14 md:flex'}>
+				<div className={'mx-auto hidden h-14 w-full max-w-6xl flex-row justify-between md:flex'}>
 					<nav className={'flex flex-row items-end'}>
 						<Link href={'/'}>
-							<div aria-selected={pathname === '/'} className={'pr-5 menu_item'}>
+							<div aria-selected={pathname === '/'} className={'menu_item pr-5'}>
 								<b>{'Jobs'}</b>
 								<div />
 							</div>
 						</Link>
 						<Link href={'/stats'}>
-							<div aria-selected={pathname.startsWith('/stats')} className={'px-5 menu_item'}>
+							<div aria-selected={pathname.startsWith('/stats')} className={'menu_item px-5'}>
 								<b>{'Stats'}</b>
 								<div />
 							</div>
 						</Link>
 						<Link href={'/treasury'}>
-							<div aria-selected={pathname === '/treasury'} className={'px-5 menu_item'}>
+							<div aria-selected={pathname === '/treasury'} className={'menu_item px-5'}>
 								<b>{'Treasury'}</b>
 								<div />
 							</div>
 						</Link>
 						<Link href={'/disputes'}>
-							<div aria-selected={pathname === '/disputes'} className={'px-5 menu_item'}>
+							<div aria-selected={pathname === '/disputes'} className={'menu_item px-5'}>
 								<b>{'Disputes'}</b>
 								<div />
 							</div>
 						</Link>
 						<Link href={'/press'}>
-							<div aria-selected={pathname === '/press'} className={'pl-5 menu_item'}>
+							<div aria-selected={pathname === '/press'} className={'menu_item pl-5'}>
 								<b>{'Press kit'}</b>
 								<div />
 							</div>
 						</Link>
 					</nav>
 					<div className={'flex flex-row items-end'}>
-						<div className={'flex flex-col mr-5 space-y-3'}>
+						<div className={'mr-5 flex flex-col space-y-3'}>
 							<a
-								className={'font-bold underline text-grey-2'}
+								className={'font-bold text-grey-2 underline'}
 								target={'_blank'}
 								href={'https://cowswap.exchange/#/swap?outputCurrency=0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44&referral=0x0D5Dc686d0a2ABBfDaFDFb4D0533E886517d4E83'} rel={'noreferrer'}>
 								{`KP3R: $${tokenPrice}`}
 							</a>
-							<div className={'w-full h-1 bg-transparent'} />
+							<div className={'h-1 w-full bg-transparent'} />
 						</div>
 						<div className={'flex flex-col space-y-3'}>
 							<button
@@ -150,13 +156,52 @@ function	AppWithLayout(props: AppProps): ReactElement {
 								className={`h-auto min-w-[147px] truncate p-0 text-intermediate font-bold hover:bg-black ${walletIdentity !== 'Connect wallet' ? 'text-white' : 'text-grey-2'}`}>
 								{walletIdentity}
 							</button>
-							<div className={'w-full h-1 bg-transparent'} />
+							<div className={'h-1 w-full bg-transparent'} />
 						</div>
 					</div>
 				</div>
 			</div>
 			<AppWithContexts Component={Component} pageProps={pageProps} router={router} />
 			<Footer />
+			<ModalMobileMenu
+				shouldUseWallets={true}
+				isOpen={hasMobileMenu}
+				onClose={(): void => set_hasMobileMenu(false)}
+				menuClassName={''}
+				menu={[
+					<Link href={'/'} key={'/'}>
+						<div
+							onClick={(): void => set_hasMobileMenu(false)}
+							aria-selected={pathname === '/'}
+							className={'text-base font-bold'}>
+							<b>{'Jobs'}</b>
+						</div>
+					</Link>,
+					<Link href={'/stats'} key={'/stats'}>
+						<div
+							onClick={(): void => set_hasMobileMenu(false)}
+							aria-selected={pathname.startsWith('/stats')}
+							className={'text-base font-bold'}>
+							<b>{'Stats'}</b>
+						</div>
+					</Link>,
+					<Link href={'/treasury'} key={'/treasury'}>
+						<div
+							onClick={(): void => set_hasMobileMenu(false)}
+							aria-selected={pathname === '/treasury'}
+							className={'text-base font-bold'}>
+							<b>{'Treasury'}</b>
+						</div>
+					</Link>,
+					<Link href={'/disputes'} key={'/disputes'}>
+						<div
+							onClick={(): void => set_hasMobileMenu(false)}
+							aria-selected={pathname === '/disputes'}
+							className={'text-base font-bold'}>
+							<b>{'Disputes'}</b>
+						</div>
+					</Link>
+				]}/>
 		</>
 	);
 }
