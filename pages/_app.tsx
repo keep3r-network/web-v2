@@ -94,12 +94,17 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	return (
 		<>
 			<Meta />
-			<div className={'px-4 bg-black'}>
+			<div className={'bg-black px-4 pt-8'}>
 				<Link href={'/'}>
 					<div className={'flex h-32 items-center justify-center'}>
 						<LogoKeep3r />
 					</div>
 				</Link>
+				<button
+					onClick={(): void => set_hasMobileMenu(!hasMobileMenu)}
+					className={'mx-auto block w-full py-4 text-center text-white md:hidden'}>
+					{'Menu'}
+				</button>
 			</div>
 			<div className={'sticky top-0 z-50 bg-black'}>
 				<div className={'mx-auto hidden h-14 w-full max-w-6xl flex-row justify-between md:flex'}>
@@ -138,7 +143,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 					<div className={'flex flex-row items-end'}>
 						<div className={'mr-5 flex flex-col space-y-3'}>
 							<a
-								className={'font-bold underline text-grey-2'}
+								className={'font-bold text-grey-2 underline'}
 								target={'_blank'}
 								href={'https://cowswap.exchange/#/swap?outputCurrency=0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44&referral=0x0D5Dc686d0a2ABBfDaFDFb4D0533E886517d4E83'} rel={'noreferrer'}>
 								{`KP3R: $${tokenPrice}`}
