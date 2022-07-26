@@ -12,12 +12,10 @@
 		"lintfix": "eslint . --ext .js,.jsx,.ts,.tsx --fix"
 	},
 	"dependencies": {
-		"@linear/sdk": "^1.22.0",
-		"@prisma/client": "^4.1.0",
 		"@tailwindcss/forms": "^0.5.2",
 		"@tailwindcss/line-clamp": "^0.4.0",
 		"@tailwindcss/typography": "^0.5.4",
-		"@yearn/web-lib": "^0.6.17",
+		"@yearn-finance/web-lib": "^0.11.12",
 		"autoprefixer": "^10.4.7",
 		"axios": "^0.27.2",
 		"babel-loader": "^8.2.5",
@@ -26,7 +24,6 @@
 		"framer-motion": "^6.5.1",
 		"graphql": "^16.5.0",
 		"graphql-request": "^4.3.0",
-		"mysql2": "^2.3.3",
 		"next": "^12.2.3",
 		"next-pwa": "^5.5.4",
 		"next-seo": "^5.5.0",

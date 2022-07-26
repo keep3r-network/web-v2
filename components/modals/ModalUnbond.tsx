@@ -1,10 +1,9 @@
 import	React, {ReactElement}					from	'react';
-import	{Button}								from	'@yearn/web-lib/components';
-import	{Cross}									from	'@yearn/web-lib/icons';
-import	{format, Transaction, defaultTxStatus}	from	'@yearn/web-lib/utils';
-import	{useWeb3}								from	'@yearn/web-lib/contexts';
+import	{Button, Modal}							from	'@yearn-finance/web-lib/components';
+import	{Cross}									from	'@yearn-finance/web-lib/icons';
+import	{format, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
+import	{useWeb3}								from	'@yearn-finance/web-lib/contexts';
 import	useKeep3r								from	'contexts/useKeep3r';
-import	{Modal}									from	'components/modals/Modal';
 import	Input									from	'components/Input';
 import	TokenDropdown							from	'components/TokenDropdown';
 import	{unbond}								from	'utils/actions/unbond';

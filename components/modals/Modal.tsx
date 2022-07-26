@@ -22,7 +22,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 						as={React.Fragment}
 						enter={'ease-out duration-300'} enterFrom={'opacity-0'} enterTo={'opacity-100'}
 						leave={'ease-in duration-200'} leaveFrom={'opacity-100'} leaveTo={'opacity-0'}>
-						<Dialog.Overlay className={'fixed inset-0 z-10 transition-opacity bg-dark/50'} />
+						<Dialog.Overlay className={'fixed inset-0 z-10 bg-black/50 transition-opacity'} />
 					</Transition.Child>
 
 					<span className={'hidden sm:inline-block sm:h-screen sm:align-middle'} aria-hidden={'true'}>
@@ -36,7 +36,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 						leave={'ease-in duration-200'}
 						leaveFrom={'opacity-100 translate-y-0 sm:scale-100'}
 						leaveTo={'opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'}>
-						<div ref={ref} className={'inline-block overflow-hidden relative z-50 text-left align-bottom bg-grey-5 shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle md:mb-96'}>
+						<div ref={ref} className={'inline-block overflow-hidden relative z-50 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle md:mb-96 bg-grey-5'}>
 							{children}
 						</div>
 					</Transition.Child>

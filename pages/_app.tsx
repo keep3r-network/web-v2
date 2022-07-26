@@ -3,14 +3,13 @@ import	{Toaster}							from	'react-hot-toast';
 import	Link								from	'next/link';
 import	{AppProps}							from	'next/app';
 import	NProgress							from	'nprogress';
-import	{WithYearn, useWeb3}				from	'@yearn/web-lib/contexts';
-import	{format, truncateHex}				from	'@yearn/web-lib/utils';
+import	{WithYearn, useWeb3}				from	'@yearn-finance/web-lib/contexts';
+import	{format, truncateHex}				from	'@yearn-finance/web-lib/utils';
 import	{Keep3rContextApp}					from	'contexts/useKeep3r';
 import	usePrices, {PricesContextApp}		from	'contexts/usePrices';
 import	{TreasuryContextApp}				from	'contexts/useTreasury';
 import	{PairsContextApp}					from	'contexts/usePairs';
 import	{JobContextApp}						from	'contexts/useJob';
-import	{ModalLogin}						from	'components/modals/ModalLogin';
 import	Meta								from	'components/Meta';
 import	Footer								from	'components/Footer';
 import	LogoKeep3r							from	'components/icons/Keep3r';
@@ -60,32 +59,30 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	const	{Component, pageProps, router} = props;
 	const	{pathname} = router;
 	const	{prices} = usePrices();
-	const	{isActive, hasProvider, onSwitchChain, address, ens, onDesactivate} = useWeb3();
+	const	{isActive, hasProvider, openLoginModal, onSwitchChain, address, ens, onDesactivate} = useWeb3();
 	const	[tokenPrice, set_tokenPrice] = React.useState('0');
 	const	[walletIdentity, set_walletIdentity] = React.useState('Connect wallet');
-	const	[isOpenModalLogin, set_isOpenModalLogin] = React.useState(false);
 
 	React.useEffect((): void => {
 		set_tokenPrice(format.amount(Number(prices?.keep3rv1?.usd || 0), 2));
 	}, [prices]);
 
 	React.useEffect((): void => {
-		if (!isActive && !hasProvider) {
-			set_walletIdentity('Connect wallet');
-		} else if (!isActive && hasProvider) {
+		if (!isActive && address) {
 			set_walletIdentity('Switch chain');
 		} else if (ens) {
 			set_walletIdentity(ens);
 		} else if (address) {
-			set_walletIdentity(truncateHex(address, 5));
+			set_walletIdentity(truncateHex(address, 4));
 		} else {
 			set_walletIdentity('Connect wallet');
 		}
-	}, [ens, address, isActive, hasProvider]);
+	}, [ens, address, isActive]);
+
 
 	function	onLoginClick(): void {
 		if (!isActive && !hasProvider) {
-			set_isOpenModalLogin(true);
+			openLoginModal();
 		} else if (!isActive && hasProvider) {
 			onSwitchChain(1, true);
 		} else {
@@ -140,7 +137,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 					<div className={'flex flex-row items-end'}>
 						<div className={'flex flex-col mr-5 space-y-3'}>
 							<a
-								className={'font-bold text-grey-2 underline'}
+								className={'font-bold underline text-grey-2'}
 								target={'_blank'}
 								href={'https://cowswap.exchange/#/swap?outputCurrency=0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44&referral=0x0D5Dc686d0a2ABBfDaFDFb4D0533E886517d4E83'} rel={'noreferrer'}>
 								{`KP3R: $${tokenPrice}`}
@@ -150,7 +147,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div className={'flex flex-col space-y-3'}>
 							<button
 								onClick={onLoginClick}
-								className={`text-intermediate p-0 h-auto font-bold truncate min-w-[147px] hover:bg-black ${walletIdentity !== 'Connect wallet' ? 'text-white' : 'text-grey-2'}`}>
+								className={`h-auto min-w-[147px] truncate p-0 text-intermediate font-bold hover:bg-black ${walletIdentity !== 'Connect wallet' ? 'text-white' : 'text-grey-2'}`}>
 								{walletIdentity}
 							</button>
 							<div className={'w-full h-1 bg-transparent'} />
@@ -160,9 +157,6 @@ function	AppWithLayout(props: AppProps): ReactElement {
 			</div>
 			<AppWithContexts Component={Component} pageProps={pageProps} router={router} />
 			<Footer />
-			<ModalLogin
-				isOpen={isOpenModalLogin}
-				onClose={(): void => set_isOpenModalLogin(false)} />
 		</>
 	);
 }
@@ -189,7 +183,7 @@ function	MyApp(props: AppProps): ReactElement {
 				secondary: 'white'
 			}
 		},
-		className: 'text-sm text-typo-primary',
+		className: 'text-sm text-neutral-0',
 		style: {borderRadius: '0', maxWidth: 500}
 	};
 	
@@ -201,6 +195,7 @@ function	MyApp(props: AppProps): ReactElement {
 					shouldUseTheme: false
 				},
 				web3: {
+					shouldUseWallets: true,
 					shouldUseStrictChainMode: false,
 					defaultChainID: 1,
 					supportedChainID: [1, 1337]
