@@ -94,7 +94,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	return (
 		<>
 			<Meta />
-			<div className={'bg-black px-4'}>
+			<div className={'px-4 bg-black'}>
 				<Link href={'/'}>
 					<div className={'flex h-32 items-center justify-center'}>
 						<LogoKeep3r />
