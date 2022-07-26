@@ -9,10 +9,6 @@ module.exports = withPWA({
 	},
 	env: {
 		CG_IDS: ['ethereum', 'keep3rv1'],
-		TOKENS: [
-			['0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44', 18, 1],
-			['0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44', 18, 1337]
-		],
 
 		/* 📰 - Keep3r *********************************************************
 		** Config over the RPC
