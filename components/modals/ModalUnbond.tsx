@@ -128,7 +128,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded}: TModalUnbond): ReactElement
 						<Button
 							onClick={onWithdraw}
 							isBusy={txStatusWithdraw.pending}
-							isDisabled={!keeperStatus.canActivate || keeperStatus.pendingUnbonds.eq(0)}>
+							isDisabled={!keeperStatus.canWithdraw || keeperStatus.pendingUnbonds.eq(0)}>
 							{txStatusWithdraw.error ? 'Transaction failed' : txStatusWithdraw.success ? 'Transaction successful' : keeperStatus.canWithdraw ? 'Withdraw' : `Withdraw (${keeperStatus.canWithdrawIn})`}
 						</Button>
 					</div>
