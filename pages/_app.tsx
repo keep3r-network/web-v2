@@ -94,17 +94,12 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	return (
 		<>
 			<Meta />
-			<div className={'bg-black px-4 pt-8'}>
+			<div className={'bg-black px-4'}>
 				<Link href={'/'}>
 					<div className={'flex h-32 items-center justify-center'}>
 						<LogoKeep3r />
 					</div>
 				</Link>
-				<button
-					onClick={(): void => set_hasMobileMenu(!hasMobileMenu)}
-					className={'mx-auto block w-full py-4 text-center text-white md:hidden'}>
-					{'Menu'}
-				</button>
 			</div>
 			<div className={'sticky top-0 z-50 bg-black'}>
 				<div className={'mx-auto hidden h-14 w-full max-w-6xl flex-row justify-between md:flex'}>
