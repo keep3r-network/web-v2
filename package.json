@@ -1,7 +1,11 @@
 {
-	"name": "web-template",
-	"version": "0.1.0",
+	"name": "keep3r",
+	"version": "1.0.0",
 	"private": false,
+	"author": "Majorfi",
+	"contributors": [
+		"Yuonek",
+	],
 	"scripts": {
 		"dev": "next",
 		"dev:ts": "tsc --watch",
