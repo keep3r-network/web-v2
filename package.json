@@ -4,7 +4,7 @@
 	"private": false,
 	"author": "Majorfi",
 	"contributors": [
-		"Yuonek",
+		"Yuonek"
 	],
 	"scripts": {
 		"dev": "next",
