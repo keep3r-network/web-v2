@@ -2,9 +2,10 @@
 import	React, {ReactElement, ReactNode}				from	'react';
 import	axios											from	'axios';
 import	{useTable, usePagination, useSortBy}			from	'react-table';
-import	{Chevron}										from	'@yearn/web-lib/icons';
-import	{format, performBatchedUpdates, truncateHex}	from	'@yearn/web-lib/utils';
+import	{Chevron}										from	'@yearn-finance/web-lib/icons';
+import	{format, performBatchedUpdates, truncateHex}	from	'@yearn-finance/web-lib/utils';
 import	IconLoader										from	'components/icons/IconLoader';
+import	IconChevronFilled								from	'components/icons/IconChevronFilled';
 
 type		TDisputeLogs = {
 	time: number,
@@ -31,20 +32,27 @@ function	LogsDispute(): ReactElement {
 	const data = React.useMemo((): unknown[] => (
 		logs.map((log): unknown => ({
 			date: format.date(Number(log.time) * 1000, true),
-			keeperOrJob: truncateHex(log.keeperOrJob, 5),
+			keeperOrJob: log.keeperOrJob,
 			action: log.action,
-			disputer: truncateHex(log.disputer, 5),
+			disputer: log.disputer,
 			txHash: log.txHash
 		}))
 	), [logs]);
 		
 	const columns = React.useMemo((): unknown[] => [
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
-		{Header: 'Keeper/Job', accessor: 'keeperOrJob', className: 'cell-start pr-8'},
-		{Header: 'Action', accessor: 'action', className: 'cell-start pr-8'},
-		{Header: 'Disputer', accessor: 'disputer', className: 'cell-start pr-8'},
 		{
-			Header: 'Tx Hash', accessor: 'txHash', className: 'cell-start pr-6', Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)
+			Header: 'Keeper/Job', accessor: 'keeperOrJob', className: 'cell-start pr-8',
+			Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)
+		},
+		{Header: 'Action', accessor: 'action', className: 'cell-start pr-8'},
+		{
+			Header: 'Disputer', accessor: 'disputer', className: 'cell-start pr-8',
+			Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)
+		},
+		{
+			Header: 'Tx Hash', accessor: 'txHash', className: 'cell-start pr-6',
+			Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)
 		}
 	], []);
 
@@ -64,37 +72,37 @@ function	LogsDispute(): ReactElement {
 	
 	function	renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 cursor-pointer'}
+				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
 	}
 
 	function	renderNextChevron(): ReactElement {
 		if (!canNextPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 rotate-180 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 rotate-180 cursor-pointer'}
+				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);
 	}
 
 	if (!isInit && logs.length === 0) {
 		return (
-			<div className={'flex justify-center items-center h-full min-h-[112px]'}>
-				<IconLoader className={'w-6 h-6 animate-spin'} />
+			<div className={'flex h-full min-h-[112px] items-center justify-center'}>
+				<IconLoader className={'h-6 w-6 animate-spin'} />
 			</div>
 		);
 	}
 
 	return (
-		<div className={'flex overflow-x-scroll flex-col w-full'}>
+		<div className={'flex w-full flex-col overflow-x-scroll'}>
 			<table
 				{...getTableProps()}
-				className={'overflow-x-scroll min-w-full'}>
+				className={'min-w-full overflow-x-scroll'}>
 				<thead>
 					{headerGroups.map((headerGroup: any): ReactElement => (
 						<tr key={headerGroup.getHeaderGroupProps().key} {...headerGroup.getHeaderGroupProps()}>
@@ -102,9 +110,18 @@ function	LogsDispute(): ReactElement {
 								<th
 									key={column.getHeaderProps().key}
 									{...column.getHeaderProps(column.getSortByToggleProps([{
-										className: `pt-2 pb-8 text-left text-base font-bold whitespace-pre ${column.className}`
+										className: 'pt-2 pb-8 text-left text-base font-bold whitespace-pre'
 									}]))}>
-									{column.render('Header')}
+									<div className={`flex flex-row items-center ${column.className}`}>
+										{column.render('Header')}
+										{column.canSort ? <div className={'ml-1'}>
+											{column.isSorted
+												? column.isSortedDesc
+													? <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-500'} />
+													: <IconChevronFilled className={'h-4 w-4 rotate-180 cursor-pointer text-neutral-500'} />
+												: <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-300 transition-colors hover:text-neutral-500'} />}
+										</div> : null}
+									</div>
 								</th>
 							))}
 						</tr>
@@ -117,7 +134,7 @@ function	LogsDispute(): ReactElement {
 							<tr
 								key={row.getRowProps().key}
 								{...row.getRowProps()}
-								className={'hover:bg-white transition-colors cursor-pointer'}
+								className={'cursor-pointer transition-colors hover:bg-white'}
 								onClick={(): void => (window as any).open(`https://etherscan.io/tx/${row.values.txHash}`, '_blank')}>
 								{row.cells.map((cell: any): ReactElement => {
 									return (
@@ -138,9 +155,9 @@ function	LogsDispute(): ReactElement {
 					})}
 				</tbody>
 			</table>
-			{canPreviousPage || canNextPage ? <div className={'flex flex-row justify-end items-center p-4 space-x-2'}>
+			{canPreviousPage || canNextPage ? <div className={'flex flex-row items-center justify-end space-x-2 p-4'}>
 				{renderPreviousChevron()}
-				<p className={'text-sm tabular-nums select-none'}>
+				<p className={'select-none text-sm tabular-nums'}>
 					{`${pageIndex + 1}/${pageOptions.length}`}
 				</p>
 				{renderNextChevron()}

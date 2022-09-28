@@ -3,12 +3,14 @@ import	React, {ReactElement, ReactNode}				from	'react';
 import	{useTable, usePagination, useSortBy}			from	'react-table';
 import	axios											from	'axios';
 import	Link											from	'next/link';
-import	{Chevron}										from	'@yearn/web-lib/icons';
-import	{format, truncateHex, performBatchedUpdates}	from	'@yearn/web-lib/utils';
+import	{Chevron}										from	'@yearn-finance/web-lib/icons';
+import	{format, truncateHex, performBatchedUpdates}	from	'@yearn-finance/web-lib/utils';
 import	IconLoader										from	'components/icons/IconLoader';
+import	IconChevronFilled								from	'components/icons/IconChevronFilled';
 
 type		TWorkLogs = {
 	keeper: string,
+	earnedUnit: string,
 	earned: string,
 	fees: string,
 	gwei: string,
@@ -21,7 +23,7 @@ type		TLogs = {
 		keep3rv1: number
 	}
 }
-function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
+function	LogsStatsPerKeeper({searchTerm}: TLogs): ReactElement {
 	const	[isInit, set_isInit] = React.useState(false);
 	const	[logs, set_logs] = React.useState<TWorkLogs[]>([]);
 
@@ -41,25 +43,46 @@ function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
 			.filter((log): boolean => log.keeper?.includes(searchTerm))
 			.map((log): unknown => ({
 				address: log.keeper,
-				earnedKp3r: format.amount(Number(log.earned), 2, 2),
-				earnedUsd: format.amount(Number(log.earned) * (prices.keep3rv1), 2, 2),
-				fees: format.amount(Number(log.fees) * (prices.ethereum), 2, 2),
-				netEarned: format.amount(Number(log.earned) * (prices.keep3rv1) - Number(log.fees) * (prices.ethereum), 2, 2),
+				earnedKp3r: Number(log.earnedUnit),
+				earnedUsd: Number(log.earned),
+				fees: Number(log.fees),
+				netEarned: Number(log.earned) - Number(log.fees),
 				calls: log.workDone,
-				kp3rPerCall: format.amount(Number(log.earned) / log.workDone, 2, 2),
-				gweiPerCall: format.amount(Number(log.gwei) / log.workDone, 2, 2)
+				kp3rPerCall: Number(log.earned) / log.workDone,
+				gweiPerCall: Number(log.gwei) / log.workDone
 			}))
-	), [logs, prices.ethereum, prices.keep3rv1, searchTerm]);
+	), [logs, searchTerm]);
 		
 	const columns = React.useMemo((): unknown[] => [
 		{Header: 'Keeper', accessor: 'address', className: 'pr-8', Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)},
-		{Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'Earned, $', accessor: 'earnedUsd', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'TX fees, $', accessor: 'fees', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'Net earned, $', accessor: 'netEarned', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'Calls', accessor: 'calls', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'KP3R per call ', accessor: 'kp3rPerCall', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'GWEI per call', accessor: 'gweiPerCall', className: 'cell-end', sortType: 'basic'}
+		{
+			Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'Earned, $', accessor: 'earnedUsd', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'TX fees, $', accessor: 'fees', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'Net earned, $', accessor: 'netEarned', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'Calls', accessor: 'calls', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 0, 0)
+		},
+		{
+			Header: 'KP3R per call ', accessor: 'kp3rPerCall', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'GWEI per call', accessor: 'gweiPerCall', className: 'cell-end', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		}
 	], []);
 
 	const {
@@ -78,37 +101,37 @@ function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
 	
 	function	renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 cursor-pointer'}
+				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
 	}
 
 	function	renderNextChevron(): ReactElement {
 		if (!canNextPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 rotate-180 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 rotate-180 cursor-pointer'}
+				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);
 	}
 
 	if (!isInit && logs.length === 0) {
 		return (
-			<div className={'flex justify-center items-center h-full min-h-[112px]'}>
-				<IconLoader className={'w-6 h-6 animate-spin'} />
+			<div className={'flex h-full min-h-[112px] items-center justify-center'}>
+				<IconLoader className={'h-6 w-6 animate-spin'} />
 			</div>
 		);
 	}
 
 	return (
-		<div className={'flex overflow-x-scroll flex-col w-full'}>
+		<div className={'flex w-full flex-col overflow-x-scroll'}>
 			<table
 				{...getTableProps()}
-				className={'overflow-x-scroll min-w-full'}>
+				className={'min-w-full overflow-x-scroll'}>
 				<thead>
 					{headerGroups.map((headerGroup: any): ReactElement => (
 						<tr key={headerGroup.getHeaderGroupProps().key} {...headerGroup.getHeaderGroupProps()}>
@@ -116,9 +139,18 @@ function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
 								<th
 									key={column.getHeaderProps().key}
 									{...column.getHeaderProps(column.getSortByToggleProps([{
-										className: `pt-2 pb-8 text-left text-base font-bold whitespace-pre ${column.className}`
+										className: 'pt-2 pb-8 text-left text-base font-bold whitespace-pre'
 									}]))}>
-									{column.render('Header')}
+									<div className={`flex flex-row items-center ${column.className}`}>
+										{column.render('Header')}
+										{column.canSort ? <div className={'ml-1'}>
+											{column.isSorted
+												? column.isSortedDesc
+													? <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-500'} />
+													: <IconChevronFilled className={'h-4 w-4 rotate-180 cursor-pointer text-neutral-500'} />
+												: <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-300 transition-colors hover:text-neutral-500'} />}
+										</div> : null}
+									</div>
 								</th>
 							))}
 						</tr>
@@ -129,7 +161,7 @@ function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
 						prepareRow(row);
 						return (
 							<Link key={row.getRowProps().key} href={`/stats/${row.values.address}`}>
-								<tr {...row.getRowProps()} className={'hover:bg-white transition-colors cursor-pointer'}>
+								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (
 											<td
@@ -150,9 +182,9 @@ function	LogsStatsPerKeeper({searchTerm, prices}: TLogs): ReactElement {
 					})}
 				</tbody>
 			</table>
-			{canPreviousPage || canNextPage ? <div className={'flex flex-row justify-end items-center p-4 space-x-2'}>
+			{canPreviousPage || canNextPage ? <div className={'flex flex-row items-center justify-end space-x-2 p-4'}>
 				{renderPreviousChevron()}
-				<p className={'text-sm tabular-nums select-none'}>
+				<p className={'select-none text-sm tabular-nums'}>
 					{`${pageIndex + 1}/${pageOptions.length}`}
 				</p>
 				{renderNextChevron()}

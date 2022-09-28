@@ -3,9 +3,10 @@ import	React, {ReactElement, ReactNode}			from	'react';
 import	{useTable, usePagination, useSortBy}		from	'react-table';
 import	Link										from	'next/link';
 import	axios										from	'axios';
-import	{Chevron, LinkOut}							from	'@yearn/web-lib/icons';
-import	{format, performBatchedUpdates, toAddress}	from	'@yearn/web-lib/utils';
+import	{Chevron, LinkOut}							from	'@yearn-finance/web-lib/icons';
+import	{format, performBatchedUpdates, toAddress}	from	'@yearn-finance/web-lib/utils';
 import	IconLoader									from	'components/icons/IconLoader';
+import	IconChevronFilled							from	'components/icons/IconChevronFilled';
 import	REGISTRY									from	'utils/registry';
 
 type		TWorkLogs = {
@@ -23,9 +24,10 @@ type		TLogs = {
 	keeper: string,
 	earned: string,
 	fees: string,
-	gwei: string
+	gwei: string,
+	normalizedKp3rPrice: number
 }
-function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): ReactElement {
+function	LogsStatsForKeeper({keeperAddress, searchTerm}: TWorkLogs): ReactElement {
 	const	[isInit, set_isInit] = React.useState(false);
 	const	[logs, set_logs] = React.useState<TLogs[]>([]);
 
@@ -45,36 +47,52 @@ function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): Rea
 			.filter((log): boolean => (
 				(log.job).toLowerCase()?.includes(searchTerm.toLowerCase())
 				|| (REGISTRY[toAddress(log.job)]?.name || '').toLowerCase()?.includes(searchTerm.toLowerCase())
-			)).map((log): unknown => ({
+			))
+			.map((log): unknown => ({
 				date: format.date(Number(log.time) * 1000, true),
 				jobName: REGISTRY[toAddress(log.job)]?.name || 'Unverified Job',
-				earnedKp3r: format.toNormalizedAmount(log.earned, 18),
-				earnedUsd: format.amount(format.toNormalizedValue(log.earned, 18) * (prices.keep3rv1), 2, 2),
-				fees: format.toNormalizedAmount(log.fees, 18),
-				gweiPerCall: format.toNormalizedAmount(log.gwei, 9),
+				earnedKp3r: format.toNormalizedValue(log.earned, 18),
+				earnedUsd: format.toNormalizedValue(log.earned, 18),
+				fees: format.toNormalizedValue(log.fees, 18),
+				gweiPerCall: format.toNormalizedValue(log.gwei, 9),
 				linkOut: log.job
 			}))
-	), [logs, prices.keep3rv1, searchTerm]);
-		
+	), [logs, searchTerm]);
+
 	const columns = React.useMemo((): unknown[] => [
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
 		{Header: 'Job name', accessor: 'jobName', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'Earned, $', accessor: 'earnedUsd', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'TX fees, ETH', accessor: 'fees', className: 'cell-end pr-8', sortType: 'basic'},
-		{Header: 'GWEI per call', accessor: 'gweiPerCall', className: 'cell-end pr-6', sortType: 'basic'},
-		{Header: '', accessor: 'linkOut', className: 'cell-end', Cell: ({value}: {value: string}): ReactNode => (
-			<div
-				role={'button'}
-				onClick={(event: any): void => {
-					event.stopPropagation();
-					window.open(`https://etherscan.io/address/${value}`, '_blank');
-				}}>
-				<a href={`https://etherscan.io/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
-					<LinkOut className={'w-6 h-6 text-black cursor-pointer'} />
-				</a>
-			</div>
-		)}
+		{
+			Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+		},
+		{
+			Header: 'Earned, $', accessor: 'earnedUsd', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+		},
+		{
+			Header: 'TX fees, ETH', accessor: 'fees', className: 'cell-end pr-8', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+		},
+		{
+			Header: 'GWEI per call', accessor: 'gweiPerCall', className: 'cell-end pr-6', sortType: 'basic',
+			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+		},
+		{
+			Header: '', accessor: 'linkOut', className: 'cell-end', disableSortBy: true,
+			Cell: ({value}: {value: string}): ReactNode => (
+				<div
+					role={'button'}
+					onClick={(event: any): void => {
+						event.stopPropagation();
+						window.open(`https://etherscan.io/address/${value}`, '_blank');
+					}}>
+					<a href={`https://etherscan.io/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
+						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
+					</a>
+				</div>
+			)
+		}
 	], []);
 
 	const {
@@ -93,37 +111,38 @@ function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): Rea
 	
 	function	renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 cursor-pointer'}
+				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
 	}
 
 	function	renderNextChevron(): ReactElement {
 		if (!canNextPage) 
-			return (<Chevron className={'w-4 h-4 opacity-50 rotate-180 cursor-not-allowed'} />);
+			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		return (
 			<Chevron
-				className={'w-4 h-4 rotate-180 cursor-pointer'}
+				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);
 	}
 
-	if (!isInit && logs.length === 0) {
+	
+	if (!isInit || logs.length === 0) {
 		return (
-			<div className={'flex justify-center items-center h-full min-h-[112px]'}>
-				<IconLoader className={'w-6 h-6 animate-spin'} />
+			<div className={'flex h-full min-h-[112px] items-center justify-center'}>
+				<IconLoader className={'h-6 w-6 animate-spin'} />
 			</div>
 		);
 	}
 
 	return (
-		<div className={'flex overflow-x-scroll flex-col w-full'}>
+		<div className={'flex w-full flex-col overflow-x-scroll'}>
 			<table
 				{...getTableProps()}
-				className={'overflow-x-scroll min-w-full'}>
+				className={'min-w-full overflow-x-scroll'}>
 				<thead>
 					{headerGroups.map((headerGroup: any): ReactElement => (
 						<tr key={headerGroup.getHeaderGroupProps().key} {...headerGroup.getHeaderGroupProps()}>
@@ -131,9 +150,18 @@ function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): Rea
 								<th
 									key={column.getHeaderProps().key}
 									{...column.getHeaderProps(column.getSortByToggleProps([{
-										className: `pt-2 pb-8 text-left text-base font-bold whitespace-pre ${column.className}`
+										className: 'pt-2 pb-8 text-left text-base font-bold whitespace-pre'
 									}]))}>
-									{column.render('Header')}
+									<div className={`flex flex-row items-center ${column.className}`}>
+										{column.render('Header')}
+										{column.canSort ? <div className={'ml-1'}>
+											{column.isSorted
+												? column.isSortedDesc
+													? <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-500'} />
+													: <IconChevronFilled className={'h-4 w-4 rotate-180 cursor-pointer text-neutral-500'} />
+												: <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-300 transition-colors hover:text-neutral-500'} />}
+										</div> : null}
+									</div>
 								</th>
 							))}
 						</tr>
@@ -144,7 +172,7 @@ function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): Rea
 						prepareRow(row);
 						return (
 							<Link key={row.getRowProps().key} href={`/jobs/${row.values.linkOut}`}>
-								<tr {...row.getRowProps()} className={'hover:bg-white transition-colors cursor-pointer'}>
+								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (
 											<td
@@ -165,9 +193,9 @@ function	LogsStatsForKeeper({keeperAddress, prices, searchTerm}: TWorkLogs): Rea
 					})}
 				</tbody>
 			</table>
-			{canPreviousPage || canNextPage ? <div className={'flex flex-row justify-end items-center p-4 space-x-2'}>
+			{canPreviousPage || canNextPage ? <div className={'flex flex-row items-center justify-end space-x-2 p-4'}>
 				{renderPreviousChevron()}
-				<p className={'text-sm tabular-nums select-none'}>
+				<p className={'select-none text-sm tabular-nums'}>
 					{`${pageIndex + 1}/${pageOptions.length}`}
 				</p>
 				{renderNextChevron()}
