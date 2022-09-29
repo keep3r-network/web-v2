@@ -18,6 +18,7 @@ module.exports = {
 	],
 	theme: {
 		fontFamily: {
+			aeonik: ['Roboto Slab', ...defaultTheme.fontFamily.sans],
 			roboto: ['Roboto Slab', ...defaultTheme.fontFamily.sans],
 			'roboto-base': ['Roboto', ...defaultTheme.fontFamily.sans],
 			mono: ['Roboto Mono', ...defaultTheme.fontFamily.mono]

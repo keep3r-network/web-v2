@@ -1,8 +1,7 @@
 .DS_Store
-.hypothesis
 node_modules
 /dist
-tsconfig.tsbuildinfo
+
 
 # local env files
 .env.local
@@ -26,6 +25,12 @@ pnpm-debug.log*
 .env
 .next
 .vercel
+.tsconfig.tsbuildinfo
 
-public/sw*
-public/workbox-*
+# Auto Generated PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map

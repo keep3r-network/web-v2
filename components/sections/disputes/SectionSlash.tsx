@@ -1,29 +1,28 @@
-import	React, {ReactElement}				from	'react';
-import	{ethers}							from	'ethers';
-import	{Contract}							from	'ethcall';
-import	{Button}							from	'@yearn-finance/web-lib/components';
-import	{format, isZeroAddress, providers,
-	performBatchedUpdates, toAddress,
-	Transaction, defaultTxStatus}			from	'@yearn-finance/web-lib/utils';
-import	{useWeb3}							from	'@yearn-finance/web-lib/contexts';
-import	useKeep3r							from	'contexts/useKeep3r';
-import	Input								from	'components/Input';
-import	TokenDropdown						from	'components/TokenDropdown';
-import	{slash}								from	'utils/actions/slash';
-import	{slashLiquidityFromJob}				from	'utils/actions/slashLiquidityFromJob';
-import	{slashTokenFromJob}					from	'utils/actions/slashTokenFromJob';
-import	KEEP3RV2_ABI						from	'utils/abi/keep3rv2.abi';
+import React, {ReactElement, useEffect, useState} from 'react';
+import {ethers} from 'ethers';
+import {Contract} from 'ethcall';
+import {Button} from '@yearn-finance/web-lib/components';
+import {Transaction, defaultTxStatus, format, isZeroAddress, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {useKeep3r} from 'contexts/useKeep3r';
+import Input from 'components/Input';
+import TokenDropdown from 'components/TokenDropdown';
+import {slash} from 'utils/actions/slash';
+import {slashLiquidityFromJob} from 'utils/actions/slashLiquidityFromJob';
+import {slashTokenFromJob} from 'utils/actions/slashTokenFromJob';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import {getEnv} from 'utils/env';
 
-function	SectionSlash(): ReactElement {
+function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{jobs, keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[slashTokenAddress, set_slashTokenAddress] = React.useState('');
-	const	[slashAddress, set_slashAddress] = React.useState('');
-	const	[amountOfTokenBonded, set_amountOfTokenBonded] = React.useState('');
-	const	[amountOfTokenUnbonded, set_amountOfTokenUnbonded] = React.useState('');
-	const	[isKeeper, set_isKeeper] = React.useState(false);
-	const	[txStatusSlash, set_txStatusSlash] = React.useState(defaultTxStatus);
-	const	[slashed, set_slashed] = React.useState({
+	const	[slashTokenAddress, set_slashTokenAddress] = useState('');
+	const	[slashAddress, set_slashAddress] = useState('');
+	const	[amountOfTokenBonded, set_amountOfTokenBonded] = useState('');
+	const	[amountOfTokenUnbonded, set_amountOfTokenUnbonded] = useState('');
+	const	[isKeeper, set_isKeeper] = useState(false);
+	const	[txStatusSlash, set_txStatusSlash] = useState(defaultTxStatus);
+	const	[slashed, set_slashed] = useState({
 		bonds: ethers.constants.Zero,
 		pendingUnbonds: ethers.constants.Zero,
 		hasDispute: false
@@ -32,19 +31,22 @@ function	SectionSlash(): ReactElement {
 	async function	getSlashed(_slashAddress: string, _slashTokenAddress: string, _isKeeper: boolean): Promise<void> {
 		const	_provider = provider || providers.getProvider(1);
 		const	ethcallProvider = await providers.newEthCallProvider(_provider);
-		const	keep3rV2 = new Contract(process.env.KEEP3R_V2_ADDR as string, KEEP3RV2_ABI);
-		const	isKLPKP3RWETH = toAddress(slashTokenAddress) === toAddress(process.env.KLP_KP3R_WETH_ADDR as string);
-		let		isKP3R = toAddress(slashTokenAddress) === toAddress(process.env.KP3R_TOKEN_ADDR as string);
+		const	keep3rV2 = new Contract(
+			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
+			KEEP3RV2_ABI
+		);
+		const	isKLPKP3RWETH = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR);
+		let		isKP3R = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
 		if (_isKeeper) {
-			_slashTokenAddress = toAddress(process.env.KP3R_TOKEN_ADDR as string);
+			_slashTokenAddress = toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
 			isKP3R = true;
 		}
 
 		const	calls = [
-			keep3rV2.bonds(_slashAddress, _slashTokenAddress as string),
-			keep3rV2.pendingUnbonds(_slashAddress, _slashTokenAddress as string),
-			keep3rV2.jobTokenCredits(_slashAddress, _slashTokenAddress as string),
-			keep3rV2.liquidityAmount(_slashAddress, process.env.KLP_KP3R_WETH_ADDR as string),
+			keep3rV2.bonds(_slashAddress, _slashTokenAddress),
+			keep3rV2.pendingUnbonds(_slashAddress, _slashTokenAddress),
+			keep3rV2.jobTokenCredits(_slashAddress, _slashTokenAddress),
+			keep3rV2.liquidityAmount(_slashAddress, toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)),
 			keep3rV2.disputes(_slashAddress)
 		];
 		const	results = await ethcallProvider.tryAll(calls) as unknown[];
@@ -100,8 +102,9 @@ function	SectionSlash(): ReactElement {
 		if (isKeeper) {
 			new Transaction(provider, slash, set_txStatusSlash)
 				.populate(
+					chainID,
 					slashAddress,
-					process.env.KP3R_TOKEN_ADDR as string, //always KP3R
+					getEnv(chainID).KP3R_TOKEN_ADDR, //always KP3R
 					format.toSafeAmount(amountOfTokenBonded, slashed.bonds),
 					format.toSafeAmount(amountOfTokenUnbonded, slashed.pendingUnbonds)
 				)
@@ -111,11 +114,12 @@ function	SectionSlash(): ReactElement {
 				})
 				.perform();
 		} else { //is a job
-			if (toAddress(slashTokenAddress) === toAddress(process.env.KLP_KP3R_WETH_ADDR as string)) {
+			if (toAddress(slashTokenAddress) === toAddress(process.env.KLP_KP3R_WETH_ADDR)) {
 				new Transaction(provider, slashLiquidityFromJob, set_txStatusSlash)
 					.populate(
+						chainID,
 						slashAddress,
-						process.env.KLP_KP3R_WETH_ADDR as string, //The LP
+						getEnv(chainID).KLP_KP3R_WETH_ADDR, //The LP
 						format.toSafeAmount(amountOfTokenBonded, slashed.bonds)
 					)
 					.onSuccess(async (): Promise<void> => {
@@ -126,6 +130,7 @@ function	SectionSlash(): ReactElement {
 			} else {
 				new Transaction(provider, slashTokenFromJob, set_txStatusSlash)
 					.populate(
+						chainID,
 						slashAddress,
 						slashTokenAddress,
 						format.toSafeAmount(amountOfTokenBonded, slashed.bonds)
@@ -139,7 +144,7 @@ function	SectionSlash(): ReactElement {
 		}
 	}
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		const	isAddrKeeper = jobs.findIndex((job): boolean => toAddress(job.address) === toAddress(slashAddress)) === -1;
 		set_isKeeper(isAddrKeeper);
 		if (!isZeroAddress(slashAddress) && !isZeroAddress(slashTokenAddress)) {
@@ -175,6 +180,7 @@ function	SectionSlash(): ReactElement {
 								<TokenDropdown.Fake name={'KP3R'} />
 								:
 								<TokenDropdown
+									chainID={chainID}
 									withKeeper
 									onSelect={(s: string): void => set_slashTokenAddress(s)} />
 							}

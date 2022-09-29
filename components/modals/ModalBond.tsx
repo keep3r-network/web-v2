@@ -1,34 +1,36 @@
-import	React, {ReactElement}					from	'react';
-import	{ethers}								from	'ethers';
-import	{Cross}									from	'@yearn-finance/web-lib/icons';
-import	{Button, Modal}							from	'@yearn-finance/web-lib/components';
-import	{useWeb3}								from	'@yearn-finance/web-lib/contexts';
-import	{format, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
-import	useKeep3r								from	'contexts/useKeep3r';
-import	Input									from	'components/Input';
-import	TokenDropdown							from	'components/TokenDropdown';
-import	{bond}									from	'utils/actions/bond';
-import	{approveERC20}							from	'utils/actions/approveToken';
-import	{activate}								from	'utils/actions/activate';
+import React, {ReactElement, useState} from 'react';
+import {ethers} from 'ethers';
+import {Cross} from '@yearn-finance/web-lib/icons';
+import {Button, Modal} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Transaction, defaultTxStatus, format} from '@yearn-finance/web-lib/utils';
+import {useKeep3r} from 'contexts/useKeep3r';
+import Input from 'components/Input';
+import TokenDropdown from 'components/TokenDropdown';
+import {bond} from 'utils/actions/bond';
+import {approveERC20} from 'utils/actions/approveToken';
+import {activate} from 'utils/actions/activate';
 
 type		TModalBond = {
-	isOpen: boolean,
-	onClose: () => void,
+	chainID: number,
 	tokenBonded: string,
+	isOpen: boolean,
+	onClose: () => void
 }
-function	ModalBond({isOpen, onClose, tokenBonded}: TModalBond): ReactElement {
+function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[amount, set_amount] = React.useState('');
-	const	[txStatusBond, set_txStatusBond] = React.useState(defaultTxStatus);
-	const	[txStatusApprove, set_txStatusApprove] = React.useState(defaultTxStatus);
-	const	[txStatusActivate, set_txStatusActivate] = React.useState(defaultTxStatus);
+	const	[amount, set_amount] = useState('');
+	const	[txStatusBond, set_txStatusBond] = useState(defaultTxStatus);
+	const	[txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
+	const	[txStatusActivate, set_txStatusActivate] = useState(defaultTxStatus);
 
 	async function	onBond(): Promise<void> {
 		if (!isActive || txStatusBond.pending || keeperStatus.hasDispute)
 			return;
 		const	transaction = (
 			new Transaction(provider, bond, set_txStatusBond).populate(
+				chainID,
 				tokenBonded,
 				format.toSafeAmount(amount, keeperStatus.balanceOf)
 			).onSuccess(async (): Promise<void> => {
@@ -48,7 +50,7 @@ function	ModalBond({isOpen, onClose, tokenBonded}: TModalBond): ReactElement {
 		const	transaction = (
 			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
 				tokenBonded,
-				process.env.KEEP3R_V2_ADDR as string,
+				process.env.KEEP3R_V2_ADDR,
 				format.toSafeAmount(amount, keeperStatus.balanceOf)
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
@@ -63,6 +65,7 @@ function	ModalBond({isOpen, onClose, tokenBonded}: TModalBond): ReactElement {
 			return;
 		const	transaction = (
 			new Transaction(provider, activate, set_txStatusActivate).populate(
+				chainID,
 				tokenBonded
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();

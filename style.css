@@ -1,16 +1,11 @@
 /* This will load Tailwindcss + all the overwrite from Yearn lib */
-@import '@yearn-finance/web-lib/dist/style.css';
+@import '@yearn-finance/web-lib/dist/style.next.css';
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;800&display=swap');
-
-:root {
-	--default-rounded: 0rem;
-}
 
 /* 📰 - Keep3r *****************************************************************
 ** Styling overwrites for the Keep3r theme
 ******************************************************************************/
-:root body[data-theme="dark"],
-:root body[data-theme="light"] {
+:root {
 	--color-dark: 0 0 0;
 	--color-neutral-0: 0 0% 100%;	/* white */
 	--color-neutral-100: 0 0% 100%;	/* white */
@@ -28,6 +23,7 @@
 	--color-primary-600: 0 0% 0%;   /* black */
 	--color-accent-500: 0 0% 0%;    /* black */
 	--color-accent-600: 0 0% 0%;    /* black */
+	--default-rounded: 0rem;
 	@apply bg-neutral-200;
 }
 input::placeholder {@apply text-grey-2 not-italic}
@@ -57,16 +53,16 @@ textarea::placeholder {@apply text-grey-2 not-italic}
 
 	&[data-variant="filled"] {
 		@apply text-white bg-black font-bold;
-		&:disabled {@apply bg-grey-3 text-grey-2;}
+		&:disabled {@apply bg-grey-3 text-grey-2 opacity-100;}
 		&:not(:disabled):not(&[aria-busy="true"]):hover {@apply bg-grey-1;}
 	}
 	&[data-variant="reverted"] {
 		@apply text-black bg-white font-bold border-black border;
-		&:disabled {@apply bg-grey-3 text-grey-2 border-grey-3;}
+		&:disabled {@apply bg-grey-3 text-grey-2 border-grey-3 opacity-100;}
 		&:not(:disabled):not(&[aria-busy="true"]):hover {@apply bg-grey-4;}
 	}
 	&[aria-busy="true"] {@apply !text-white/0 cursor-wait;}
-	&:disabled {@apply cursor-not-allowed;}
+	&:disabled {@apply cursor-not-allowed opacity-100;}
 }
 
 .image-align-middle {}

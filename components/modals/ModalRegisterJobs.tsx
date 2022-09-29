@@ -1,28 +1,29 @@
-import	React, {ReactElement}							from	'react';
-import	{Button, Modal}									from	'@yearn-finance/web-lib/components';
-import	{Cross}											from	'@yearn-finance/web-lib/icons';
-import	{useWeb3}										from	'@yearn-finance/web-lib/contexts';
-import	{isZeroAddress, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
-import	useKeep3r										from	'contexts/useKeep3r';
-import	Input											from	'components/Input';
-import	{registerJob}									from	'utils/actions/registerJob';
+import React, {ReactElement, useState} from 'react';
+import {Button, Modal} from '@yearn-finance/web-lib/components';
+import {Cross} from '@yearn-finance/web-lib/icons';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
+import {useKeep3r} from 'contexts/useKeep3r';
+import Input from 'components/Input';
+import {registerJob} from 'utils/actions/registerJob';
 
 type		TModalRegisterJobs = {
+	chainID: number,
 	isOpen: boolean,
 	onClose: () => void,
 }
-function	ModalRegisterJobs({isOpen, onClose}: TModalRegisterJobs): ReactElement {
+function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{getJobs} = useKeep3r();
-	const	[address, set_address] = React.useState('');
-	const	[txStatus, set_txStatus] = React.useState(defaultTxStatus);
+	const	[address, set_address] = useState('');
+	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRegisterJob(): Promise<void> {
 		if (!isActive || txStatus.pending || isZeroAddress(address))
 			return;
 		const	transaction = (
 			new Transaction(provider, registerJob, set_txStatus)
-				.populate(address)
+				.populate(chainID, address)
 				.onSuccess(async (): Promise<void> => {
 					await getJobs();
 				})

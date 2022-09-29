@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import	React, {ReactElement, ReactNode}				from	'react';
-import	{useTable, usePagination, useSortBy}			from	'react-table';
-import	axios											from	'axios';
-import	Link											from	'next/link';
-import	{Chevron}										from	'@yearn-finance/web-lib/icons';
-import	{format, truncateHex, performBatchedUpdates}	from	'@yearn-finance/web-lib/utils';
-import	IconLoader										from	'components/icons/IconLoader';
-import	IconChevronFilled								from	'components/icons/IconChevronFilled';
+import React, {ReactElement, ReactNode, useEffect, useMemo, useState} from 'react';
+import {usePagination, useSortBy, useTable} from 'react-table';
+import axios from 'axios';
+import Link from 'next/link';
+import {Chevron} from '@yearn-finance/web-lib/icons';
+import {format, performBatchedUpdates, truncateHex} from '@yearn-finance/web-lib/utils';
+import IconLoader from 'components/icons/IconLoader';
+import IconChevronFilled from 'components/icons/IconChevronFilled';
+import {getEnv} from 'utils/env';
 
 type		TWorkLogs = {
 	keeper: string,
@@ -16,19 +17,14 @@ type		TWorkLogs = {
 	gwei: string,
 	workDone: number
 }
-type		TLogs = {
-	searchTerm: string,
-	prices: {
-		ethereum: number,
-		keep3rv1: number
-	}
-}
-function	LogsStatsPerKeeper({searchTerm}: TLogs): ReactElement {
-	const	[isInit, set_isInit] = React.useState(false);
-	const	[logs, set_logs] = React.useState<TWorkLogs[]>([]);
+type		TLogs = {searchTerm: string, chainID: number}
 
-	React.useEffect((): void => {
-		axios.get(`${process.env.BACKEND_URI as string}/works/keepers`)
+function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
+	const	[isInit, set_isInit] = useState(false);
+	const	[logs, set_logs] = useState<TWorkLogs[]>([]);
+
+	useEffect((): void => {
+		axios.get(`${getEnv(chainID, false).BACKEND_URI}/works/keepers`)
 			.then((_logs): void => {
 				performBatchedUpdates((): void => {
 					set_logs(_logs.data || []);
@@ -36,9 +32,9 @@ function	LogsStatsPerKeeper({searchTerm}: TLogs): ReactElement {
 				});
 			})
 			.catch((): void => set_isInit(true));
-	}, []);
+	}, [chainID]);
 
-	const data = React.useMemo((): unknown[] => (
+	const data = useMemo((): unknown[] => (
 		logs
 			.filter((log): boolean => log.keeper?.includes(searchTerm))
 			.map((log): unknown => ({
@@ -53,7 +49,7 @@ function	LogsStatsPerKeeper({searchTerm}: TLogs): ReactElement {
 			}))
 	), [logs, searchTerm]);
 		
-	const columns = React.useMemo((): unknown[] => [
+	const columns = useMemo((): unknown[] => [
 		{Header: 'Keeper', accessor: 'address', className: 'pr-8', Cell: ({value}: {value: string}): ReactNode => truncateHex(value, 5)},
 		{
 			Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic',
@@ -160,7 +156,7 @@ function	LogsStatsPerKeeper({searchTerm}: TLogs): ReactElement {
 					{page.map((row: any): ReactElement => {
 						prepareRow(row);
 						return (
-							<Link key={row.getRowProps().key} href={`/stats/${row.values.address}`}>
+							<Link key={row.getRowProps().key} href={`/stats/${chainID}/${row.values.address}`}>
 								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (

@@ -1,12 +1,13 @@
-import	React, {ReactElement, useContext, createContext}		from	'react';
-import	{BigNumber, ethers}												from	'ethers';
-import	{Contract}												from	'ethcall';
-import	{useWeb3}												from	'@yearn-finance/web-lib/contexts';
-import	{providers, performBatchedUpdates, format}				from	'@yearn-finance/web-lib/utils';
-import	CONVEX_REWARDS_ABI										from	'utils/abi/convexRewards.abi';
-import	YEARN_VAULT_ABI											from	'utils/abi/yearnVault.abi';
-import	LENS_PRICE_ABI											from	'utils/abi/lens.abi';
-import	CVX_ABI													from	'utils/abi/cvx.abi';
+import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {BigNumber, ethers} from 'ethers';
+import {Contract} from 'ethcall';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import CONVEX_REWARDS_ABI from 'utils/abi/convexRewards.abi';
+import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
+import LENS_PRICE_ABI from 'utils/abi/lens.abi';
+import CVX_ABI from 'utils/abi/cvx.abi';
+import {getEnv} from 'utils/env';
 
 export type	TTreasury = {
 	name: string;
@@ -24,12 +25,12 @@ type	TTreasuryContext = {
 
 const	TreasuryContext = createContext<TTreasuryContext>({treasury: []});
 export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{provider, isActive} = useWeb3();
-	const	[treasury, set_treasury] = React.useState<TTreasury[]>([]);
-	const	[, set_nonce] = React.useState(0);
+	const	{chainID} = useWeb3();
+	const	[treasury, set_treasury] = useState<TTreasury[]>([]);
+	const	[, set_nonce] = useState(0);
 
-	const getTreasury = React.useCallback(async (): Promise<void> => {
-		const	currentProvider = provider && isActive ? provider : providers.getProvider(1);
+	const getTreasury = useCallback(async (): Promise<void> => {
+		const	currentProvider = providers.getProvider(1);
 		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
 		const	lensPriceContract = new Contract('0x83d95e0D5f402511dB06817Aff3f9eA88224B030', LENS_PRICE_ABI);
 		const	ibaudUsdcContract = new Contract('0xbAFC4FAeB733C18411886A04679F11877D8629b1', CONVEX_REWARDS_ABI);
@@ -81,9 +82,10 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	veCRVContractRegular = new ethers.Contract(
 			'0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc',
 			['function claim(address) public returns (uint256)'],
-			currentProvider
+			currentProvider as ethers.providers.Web3Provider
 		);
 
+		const	THE_KEEP3R = getEnv(chainID).THE_KEEP3R;
 		const	jobsCalls = [
 			cvxContract.totalSupply(),
 			cvxContract.reductionPerCliff(),
@@ -93,101 +95,101 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			lensPriceContract.getPriceUsdcRecommended('0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'), //KP3R
 			lensPriceContract.getPriceUsdcRecommended('0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490'), //3CRV
 
-			ibaudUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibaudUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibaudUsdcContract.balanceOf(THE_KEEP3R),
+			ibaudUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x5b692073F141C31384faE55856CfB6CBfFE91E60'),
 
-			ibchfUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibchfUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibchfUsdcContract.balanceOf(THE_KEEP3R),
+			ibchfUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x6Df0D77F0496CE44e72D695943950D8641fcA5Cf'),
 			
-			ibeurUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibeurUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibeurUsdcContract.balanceOf(THE_KEEP3R),
+			ibeurUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x1570af3dF649Fc74872c5B8F280A162a3bdD4EB6'),
 			
-			ibgbpUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibgbpUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibgbpUsdcContract.balanceOf(THE_KEEP3R),
+			ibgbpUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xAcCe4Fe9Ce2A6FE9af83e7CF321a3fF7675e0AB6'),
 			
-			ibjpyUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibjpyUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibjpyUsdcContract.balanceOf(THE_KEEP3R),
+			ibjpyUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x5555f75e3d5278082200fb451d1b6ba946d8e13b'),
 			
-			ibkrwUsdcContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibkrwUsdcContract.earned(process.env.THE_KEEP3R as string),
+			ibkrwUsdcContract.balanceOf(THE_KEEP3R),
+			ibkrwUsdcContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xef04f337fCB2ea220B6e8dB5eDbE2D774837581c'),
 			
-			kp3rEthContract.balanceOf(process.env.THE_KEEP3R as string),
-			kp3rEthContract.earned(process.env.THE_KEEP3R as string),
+			kp3rEthContract.balanceOf(THE_KEEP3R),
+			kp3rEthContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x21410232B484136404911780bC32756D5d1a9Fa9'),
 			
-			mim3CrvContract.balanceOf(process.env.THE_KEEP3R as string),
-			mim3CrvContract.earned(process.env.THE_KEEP3R as string),
+			mim3CrvContract.balanceOf(THE_KEEP3R),
+			mim3CrvContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x5a6A4D54456819380173272A5E8E9B9904BdF41B'),
 
-			crvSusdContract.balanceOf(process.env.THE_KEEP3R as string),
-			crvSusdContract.earned(process.env.THE_KEEP3R as string),
-			crvSusdExtraRewardsContract.earned(process.env.THE_KEEP3R as string),
+			crvSusdContract.balanceOf(THE_KEEP3R),
+			crvSusdContract.earned(THE_KEEP3R),
+			crvSusdExtraRewardsContract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xC25a3A3b969415c80451098fa907EC722572917F'),
 			lensPriceContract.getPriceUsdcRecommended('0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f'), //SNX
 
-			ibeurAgeurContract.balanceOf(process.env.THE_KEEP3R as string),
-			ibeurAgeurContract.earned(process.env.THE_KEEP3R as string),
-			ibeurAgeurExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibeurAgeurExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibeurAgeurContract.balanceOf(THE_KEEP3R),
+			ibeurAgeurContract.earned(THE_KEEP3R),
+			ibeurAgeurExtraRewards1Contract.earned(THE_KEEP3R),
+			ibeurAgeurExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xB37D6c07482Bc11cd28a1f11f1a6ad7b66Dec933'),
 			lensPriceContract.getPriceUsdcRecommended('0x31429d1856aD1377A8A0079410B297e1a9e214c2'), //ANGLE
 			
-			ibaudSaudContract.balanceOf(process.env.THE_KEEP3R as string), // ibAUD+sAUD
-			ibaudSaudContract.earned(process.env.THE_KEEP3R as string),
-			ibaudSaudExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibaudSaudExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibaudSaudContract.balanceOf(THE_KEEP3R), // ibAUD+sAUD
+			ibaudSaudContract.earned(THE_KEEP3R),
+			ibaudSaudExtraRewards1Contract.earned(THE_KEEP3R),
+			ibaudSaudExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x3F1B0278A9ee595635B61817630cC19DE792f506'),
 			
-			ibchfSchfContract.balanceOf(process.env.THE_KEEP3R as string), // ibCHF+sCHF
-			ibchfSchfContract.earned(process.env.THE_KEEP3R as string),
-			ibchfSchfExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibchfSchfExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibchfSchfContract.balanceOf(THE_KEEP3R), // ibCHF+sCHF
+			ibchfSchfContract.earned(THE_KEEP3R),
+			ibchfSchfExtraRewards1Contract.earned(THE_KEEP3R),
+			ibchfSchfExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x9c2C8910F113181783c249d8F6Aa41b51Cde0f0c'),
 			
-			ibeurSeurContract.balanceOf(process.env.THE_KEEP3R as string), // ibEUR+sEUR
-			ibeurSeurContract.earned(process.env.THE_KEEP3R as string),
-			ibeurSeurExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibeurSeurExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibeurSeurContract.balanceOf(THE_KEEP3R), // ibEUR+sEUR
+			ibeurSeurContract.earned(THE_KEEP3R),
+			ibeurSeurExtraRewards1Contract.earned(THE_KEEP3R),
+			ibeurSeurExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x19b080FE1ffA0553469D20Ca36219F17Fcf03859'),
 			
-			ibgbpSgbpContract.balanceOf(process.env.THE_KEEP3R as string), // ibGBP+sGBP
-			ibgbpSgbpContract.earned(process.env.THE_KEEP3R as string),
-			ibgbpSgbpExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibgbpSgbpExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibgbpSgbpContract.balanceOf(THE_KEEP3R), // ibGBP+sGBP
+			ibgbpSgbpContract.earned(THE_KEEP3R),
+			ibgbpSgbpExtraRewards1Contract.earned(THE_KEEP3R),
+			ibgbpSgbpExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xD6Ac1CB9019137a896343Da59dDE6d097F710538'),
 			
-			ibjpySjpyContract.balanceOf(process.env.THE_KEEP3R as string), // ibJPY+sJPY
-			ibjpySjpyContract.earned(process.env.THE_KEEP3R as string),
-			ibjpySjpyExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibjpySjpyExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibjpySjpyContract.balanceOf(THE_KEEP3R), // ibJPY+sJPY
+			ibjpySjpyContract.earned(THE_KEEP3R),
+			ibjpySjpyExtraRewards1Contract.earned(THE_KEEP3R),
+			ibjpySjpyExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x8818a9bb44Fbf33502bE7c15c500d0C783B73067'),
 			
-			ibkrwSkrwContract.balanceOf(process.env.THE_KEEP3R as string), // ibKRW+sKRW
-			ibkrwSkrwContract.earned(process.env.THE_KEEP3R as string),
-			ibkrwSkrwExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
-			ibkrwSkrwExtraRewards2Contract.earned(process.env.THE_KEEP3R as string),
+			ibkrwSkrwContract.balanceOf(THE_KEEP3R), // ibKRW+sKRW
+			ibkrwSkrwContract.earned(THE_KEEP3R),
+			ibkrwSkrwExtraRewards1Contract.earned(THE_KEEP3R),
+			ibkrwSkrwExtraRewards2Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x8461A004b50d321CB22B7d034969cE6803911899'),
 
-			cvxcrvCrvContract.balanceOf(process.env.THE_KEEP3R as string), // cvxCRV+CRV
-			cvxcrvCrvContract.earned(process.env.THE_KEEP3R as string),
-			cvxcrvCrvExtraRewards1Contract.earned(process.env.THE_KEEP3R as string),
+			cvxcrvCrvContract.balanceOf(THE_KEEP3R), // cvxCRV+CRV
+			cvxcrvCrvContract.earned(THE_KEEP3R),
+			cvxcrvCrvExtraRewards1Contract.earned(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0x9D0464996170c6B9e75eED71c68B99dDEDf279e8'),
 
-			yvEthContract.balanceOf(process.env.THE_KEEP3R as string),
+			yvEthContract.balanceOf(THE_KEEP3R),
 			lensPriceContract.getPriceUsdcRecommended('0xa258C4606Ca8206D8aA700cE2143D7db854D168c'),
 			yvEthContract.pricePerShare(),
 			lensPriceContract.getPriceUsdcRecommended('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
-			veCRVContract.balanceOf(process.env.THE_KEEP3R as string)
+			veCRVContract.balanceOf(THE_KEEP3R)
 		];
 		const	promise = await Promise.allSettled([
 			ethcallProvider.tryAll(jobsCalls),
-			veCRVContractRegular.callStatic.claim(process.env.THE_KEEP3R as string)
+			veCRVContractRegular.callStatic.claim(THE_KEEP3R)
 		]);
 
 		let		resultsJobsCall: unknown[] = [];
@@ -585,7 +587,6 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 
 		//Locked CRV
 		const	crvLocked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
-		console.log(crvLocked.toString());
 		const	crvLockedExtraEarned = claimable;
 		// const	pricePerShare = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
 		// const	ethPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
@@ -607,9 +608,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			set_treasury(_treasury);
 			set_nonce((n: number): number => n + 1);
 		});
-	}, [provider, isActive]);
+	}, [chainID]);
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		getTreasury();
 	}, [getTreasury]);
 

@@ -1,17 +1,18 @@
-import	React, {ReactElement}	from	'react';
-import	{Button}				from	'@yearn-finance/web-lib/components';
-import	{format}				from	'@yearn-finance/web-lib/utils';
-import	Line					from	'components/Line';
-import	TokenDropdown			from	'components/TokenDropdown';
-import	{ModalBond}				from	'components/modals/ModalBond';
-import	{ModalUnbond}			from	'components/modals/ModalUnbond';
-import	useKeep3r				from	'contexts/useKeep3r';
+import React, {ReactElement, useMemo, useState} from 'react';
+import {Button} from '@yearn-finance/web-lib/components';
+import {format, toAddress} from '@yearn-finance/web-lib/utils';
+import Line from 'components/Line';
+import TokenDropdown from 'components/TokenDropdown';
+import {ModalBond} from 'components/modals/ModalBond';
+import {ModalUnbond} from 'components/modals/ModalUnbond';
+import {useKeep3r} from 'contexts/useKeep3r';
+import {getEnv} from 'utils/env';
 
-function	SectionKeepersWanted(): ReactElement {
+function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 	const	{keeperStatus} = useKeep3r();
-	const	[selectedToken] = React.useState(process.env.KP3R_TOKEN_ADDR as string);
-	const	[isModalBondOpen, set_isModalBondOpen] = React.useState(false);
-	const	[isModalUnBondOpen, set_isModalUnBondOpen] = React.useState(false);
+	const	selectedToken = useMemo((): string => toAddress(getEnv(chainID).KP3R_TOKEN_ADDR), [chainID]);
+	const	[isModalBondOpen, set_isModalBondOpen] = useState(false);
+	const	[isModalUnBondOpen, set_isModalUnBondOpen] = useState(false);
 
 	return (
 		<section aria-label={'KEEPERS WANTED'}>
@@ -32,7 +33,7 @@ function	SectionKeepersWanted(): ReactElement {
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${format.toNormalizedAmount(keeperStatus?.balanceOf, 18)} KP3R`}
+									{`${format.BN(keeperStatus?.balanceOf).isZero() ? '0.000000' : format.toNormalizedAmount(keeperStatus?.balanceOf, 18)} KP3R`}
 								</p>
 							</div>
 						</dd>
@@ -46,7 +47,7 @@ function	SectionKeepersWanted(): ReactElement {
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${format.toNormalizedAmount(keeperStatus.bonds, 18)} KP3R`}
+									{`${format.BN(keeperStatus?.bonds).isZero() ? '0.000000' : format.toNormalizedAmount(keeperStatus.bonds, 18)} KP3R`}
 								</p>
 							</div>
 						</dd>
@@ -73,10 +74,12 @@ function	SectionKeepersWanted(): ReactElement {
 				</div>
 			</div>
 			<ModalBond
+				chainID={chainID}
 				isOpen={isModalBondOpen}
 				onClose={(): void => set_isModalBondOpen(false)}
 				tokenBonded={selectedToken} />
 			<ModalUnbond
+				chainID={chainID}
 				isOpen={isModalUnBondOpen}
 				onClose={(): void => set_isModalUnBondOpen(false)}
 				tokenBonded={selectedToken} />

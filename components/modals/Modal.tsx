@@ -1,5 +1,5 @@
-import	React, {ReactElement, useRef}	from	'react';
-import	{Dialog, Transition}			from	'@headlessui/react';
+import React, {Fragment, ReactElement, useRef} from 'react';
+import {Dialog, Transition} from '@headlessui/react';
 
 type		TModal = {
 	isOpen: boolean,
@@ -10,7 +10,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 	const	ref = useRef() as React.MutableRefObject<HTMLDivElement>;
 
 	return (
-		<Transition.Root show={isOpen} as={React.Fragment}>
+		<Transition.Root show={isOpen} as={Fragment}>
 			<Dialog
 				as={'div'}
 				className={'fixed inset-0 overflow-y-auto'}
@@ -19,7 +19,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 				onClose={onClose}>
 				<div className={'flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0'}>
 					<Transition.Child
-						as={React.Fragment}
+						as={Fragment}
 						enter={'ease-out duration-300'} enterFrom={'opacity-0'} enterTo={'opacity-100'}
 						leave={'ease-in duration-200'} leaveFrom={'opacity-100'} leaveTo={'opacity-0'}>
 						<Dialog.Overlay className={'fixed inset-0 z-10 bg-black/50 transition-opacity'} />
@@ -29,7 +29,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 						&#8203;
 					</span>
 					<Transition.Child
-						as={React.Fragment}
+						as={Fragment}
 						enter={'ease-out duration-300'}
 						enterFrom={'opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'}
 						enterTo={'opacity-100 translate-y-0 sm:scale-100'}

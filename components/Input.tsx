@@ -36,8 +36,12 @@ function	InputBase({
 					value={value}
 					onChange={(e): void => onChange(e.target.value)}
 					type={'text'}
-					className={'w-full border-none bg-white/0 p-0 outline-none focus:border-none focus:outline-none focus:ring-0'}
-					{...props} />
+					aria-label={props['aria-label']}
+					data-np-invisible={false}
+					data-np-checked={false}
+					placeholder={props.placeholder}
+					min={props.min}
+					className={'w-full border-none bg-white/0 p-0 outline-none focus:border-none focus:outline-none focus:ring-0'} />
 				{withMax ? <div
 					className={'ml-2 cursor-pointer'}
 					onClick={(): void => onMaxClick ? onMaxClick() : undefined}>
@@ -112,7 +116,7 @@ function	InputBigNumber({
 						onChange(valueAsString);
 					}
 				}}>
-				{`Balance: ${format.toNormalizedAmount(maxValue, decimals)}`}
+				{`Balance: ${maxValue.isZero() ? '0.000000' : format.toNormalizedAmount(maxValue, decimals)}`}
 			</p>}
 		</label>
 	);

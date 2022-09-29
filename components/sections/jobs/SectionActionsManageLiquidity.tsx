@@ -1,30 +1,29 @@
-import	React, {ReactElement}					from	'react';
-import	{ethers}								from	'ethers';
-import	{Contract}								from	'ethcall';
-import	{Button}								from	'@yearn-finance/web-lib/components';
-import	{useWeb3}								from	'@yearn-finance/web-lib/contexts';
-import	{isZeroAddress, providers, format,
-	performBatchedUpdates, Transaction,
-	defaultTxStatus}							from	'@yearn-finance/web-lib/utils';
-import	Input									from	'components/Input';
-import	TokenDropdown							from	'components/TokenDropdown';
-import	useKeep3r								from	'contexts/useKeep3r';
-import	useJob									from	'contexts/useJob';
-import	{approveERC20}							from	'utils/actions/approveToken';
-import	{addTokenCreditsToJob}					from	'utils/actions/addTokenCreditsToJob';
-import	{withdrawTokenCreditsFromJob}			from	'utils/actions/withdrawTokenCreditsFromJob';
-import	ERC20_ABI								from	'utils/abi/keep3rv1.abi';
-import	KEEP3RV2_ABI							from	'utils/abi/keep3rv2.abi';
+import React, {ReactElement, useEffect, useState} from 'react';
+import {ethers} from 'ethers';
+import {Contract} from 'ethcall';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Transaction, defaultTxStatus, format, isZeroAddress, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import Input from 'components/Input';
+import TokenDropdown from 'components/TokenDropdown';
+import {useKeep3r} from 'contexts/useKeep3r';
+import {useJob} from 'contexts/useJob';
+import {approveERC20} from 'utils/actions/approveToken';
+import {addTokenCreditsToJob} from 'utils/actions/addTokenCreditsToJob';
+import {withdrawTokenCreditsFromJob} from 'utils/actions/withdrawTokenCreditsFromJob';
+import ERC20_ABI from 'utils/abi/keep3rv1.abi';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import {getEnv} from 'utils/env';
 
-function	SectionAddToken(): ReactElement {
+function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive, address} = useWeb3();
 	const	{getJobs, getKeeperStatus} = useKeep3r();
 	const	{jobStatus, getJobStatus} = useJob();
-	const	[txStatusApprove, set_txStatusApprove] = React.useState(defaultTxStatus);
-	const	[txStatusAddCredits, set_txStatusAddCredits] = React.useState(defaultTxStatus);
-	const	[tokenToAdd, set_tokenToAdd] = React.useState('');
-	const	[amountTokenToAdd, set_amountTokenToAdd] = React.useState('');
-	const	[tokenToAddData, set_tokenToAddData] = React.useState({
+	const	[txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
+	const	[txStatusAddCredits, set_txStatusAddCredits] = useState(defaultTxStatus);
+	const	[tokenToAdd, set_tokenToAdd] = useState('');
+	const	[amountTokenToAdd, set_amountTokenToAdd] = useState('');
+	const	[tokenToAddData, set_tokenToAddData] = useState({
 		balanceOf: ethers.constants.Zero,
 		allowance: ethers.constants.Zero,
 		decimals: 18,
@@ -37,7 +36,7 @@ function	SectionAddToken(): ReactElement {
 		const	tokenToAddContract = new Contract(_tokenToAdd as string, ERC20_ABI);
 		const	results = await ethcallProvider.tryAll([
 			tokenToAddContract.balanceOf(address),
-			tokenToAddContract.allowance(address, process.env.KEEP3R_V2_ADDR as string),
+			tokenToAddContract.allowance(address, getEnv(chainID).KEEP3R_V2_ADDR),
 			tokenToAddContract.decimals(),
 			tokenToAddContract.symbol()
 		]) as unknown[];
@@ -53,7 +52,7 @@ function	SectionAddToken(): ReactElement {
 		});
 	}
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		if (provider) {
 			if (!isZeroAddress(tokenToAdd)) {
 				getTokenToAdd(tokenToAdd);
@@ -69,7 +68,7 @@ function	SectionAddToken(): ReactElement {
 				});
 			}
 		}
-	}, [tokenToAdd, provider]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [tokenToAdd, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	async function	onApprove(): Promise<void> {
 		if (!isActive || txStatusApprove.pending)
@@ -77,7 +76,7 @@ function	SectionAddToken(): ReactElement {
 		new Transaction(provider, approveERC20, set_txStatusApprove)
 			.populate(
 				tokenToAdd,
-				process.env.KEEP3R_V2_ADDR as string,
+				getEnv(chainID).KEEP3R_V2_ADDR,
 				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || 0, tokenToAddData?.decimals || 18)
 			).onSuccess(async (): Promise<void> => {
 				await getTokenToAdd(tokenToAdd);
@@ -89,6 +88,7 @@ function	SectionAddToken(): ReactElement {
 			return;
 		new Transaction(provider, addTokenCreditsToJob, set_txStatusAddCredits)
 			.populate(
+				chainID,
 				jobStatus.address,
 				tokenToAdd,
 				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || 0, tokenToAddData?.decimals || 18)
@@ -140,6 +140,7 @@ function	SectionAddToken(): ReactElement {
 					<div className={'relative my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
 						<div className={'relative space-y-2'}>
 							<TokenDropdown
+								chainID={chainID}
 								onSelect={(s: string): void => {
 									performBatchedUpdates((): void => {
 										set_tokenToAdd(s);
@@ -164,28 +165,28 @@ function	SectionAddToken(): ReactElement {
 	);
 }
 
-function	SectionActionsManageLiquidity(): ReactElement {
+function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive, address} = useWeb3();
 	const	{getJobs, getKeeperStatus} = useKeep3r();
 	const	{jobStatus, getJobStatus} = useJob();
-	const	[txStatusWithdrawCredits, set_txStatusWithdrawCredits] = React.useState(defaultTxStatus);
-	const	[tokenToWithdraw, set_tokenToWithdraw] = React.useState('');
-	const	[amountTokenToWithdraw, set_amountTokenToWithdraw] = React.useState('');
-	const	[receiver, set_receiver] = React.useState('');
-	const	[tokenToWithdrawData, set_tokenToWithdrawData] = React.useState({
+	const	[txStatusWithdrawCredits, set_txStatusWithdrawCredits] = useState(defaultTxStatus);
+	const	[tokenToWithdraw, set_tokenToWithdraw] = useState('');
+	const	[amountTokenToWithdraw, set_amountTokenToWithdraw] = useState('');
+	const	[receiver, set_receiver] = useState('');
+	const	[tokenToWithdrawData, set_tokenToWithdrawData] = useState({
 		balanceOf: ethers.constants.Zero,
 		decimals: 18,
 		symbol: ''
 	});
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		set_receiver(address || '');
 	}, [address]);
 
 	async function	getTokenToWithdraw(_tokenToWithdraw: string): Promise<void> {
 		const	_provider = provider || providers.getProvider(1);
 		const	ethcallProvider = await providers.newEthCallProvider(_provider);
-		const	contract = new Contract(process.env.KEEP3R_V2_ADDR as string, KEEP3RV2_ABI);
+		const	contract = new Contract(getEnv(chainID).KEEP3R_V2_ADDR, KEEP3RV2_ABI);
 		const	tokenToWithdrawContract = new Contract(_tokenToWithdraw, ERC20_ABI);
 		const	results = await ethcallProvider.tryAll([
 			contract.jobTokenCredits(jobStatus.address, _tokenToWithdraw),
@@ -202,7 +203,7 @@ function	SectionActionsManageLiquidity(): ReactElement {
 		});
 	}
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		if (provider) {
 			if (!isZeroAddress(tokenToWithdraw)) {
 				getTokenToWithdraw(tokenToWithdraw);
@@ -217,13 +218,14 @@ function	SectionActionsManageLiquidity(): ReactElement {
 				});
 			}
 		}
-	}, [tokenToWithdraw, provider]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [tokenToWithdraw, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	async function	onWithdrawTokenCreditsFromJob(): Promise<void> {
 		if (!isActive || txStatusWithdrawCredits.pending)
 			return;
 		new Transaction(provider, withdrawTokenCreditsFromJob, set_txStatusWithdrawCredits)
 			.populate(
+				chainID,
 				jobStatus.address,
 				tokenToWithdraw,
 				format.toSafeAmount(amountTokenToWithdraw, tokenToWithdrawData?.balanceOf || 0, tokenToWithdrawData?.decimals || 18),
@@ -258,7 +260,9 @@ function	SectionActionsManageLiquidity(): ReactElement {
 				<div>
 					<div className={'my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
 						<div className={'space-y-2'}>
-							<TokenDropdown onSelect={(s: string): void => set_tokenToWithdraw(s)} />
+							<TokenDropdown
+								chainID={chainID}
+								onSelect={(s: string): void => set_tokenToWithdraw(s)} />
 							<p className={'hidden text-xs text-black-1/0 md:block'}>{'-'}</p>
 						</div>
 						<Input.BigNumber
@@ -291,11 +295,11 @@ function	SectionActionsManageLiquidity(): ReactElement {
 	);
 }
 
-function	PanelManageLiquidity(): ReactElement {
+function	PanelManageLiquidity({chainID}: {chainID: number}): ReactElement {
 	return (
 		<div className={'flex flex-col p-6'}>
-			<SectionAddToken />
-			<SectionActionsManageLiquidity />
+			<SectionAddToken chainID={chainID} />
+			<SectionActionsManageLiquidity chainID={chainID} />
 		</div>
 	);
 }

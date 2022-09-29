@@ -1,12 +1,13 @@
-import	React, {ReactElement, useContext, createContext}		from	'react';
-import	{Contract}												from	'ethcall';
-import	{useWeb3}												from	'@yearn-finance/web-lib/contexts';
-import	{toAddress, providers, performBatchedUpdates, format}	from	'@yearn-finance/web-lib/utils';
-import	KEEP3RV1_ABI											from	'utils/abi/keep3rv1.abi';
-import	KEEP3RV2_ABI											from	'utils/abi/keep3rv2.abi';
-import	REGISTRY												from	'utils/registry';
-import 	{BigNumber, ethers}										from	'ethers';
-import type * as TKeep3rTypes									from	'contexts/useKeep3r.d';
+import React, {ReactElement, createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {Contract} from 'ethcall';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import REGISTRY, {TRegistry} from 'utils/registry';
+import  {ethers} from 'ethers';
+import type * as TKeep3rTypes from 'contexts/useKeep3r.d';
+import {getEnv} from 'utils/env';
 
 const	defaultProps = {
 	jobs: [],
@@ -33,56 +34,86 @@ const	defaultProps = {
 		canWithdraw: false,
 		canWithdrawIn: 'Now'
 	},
+	hasLoadedJobs: false,
 	getJobs: async (): Promise<void> => undefined,
 	getKeeperStatus: async (): Promise<void> => undefined
 };
 const	Keep3rContext = createContext<TKeep3rTypes.TKeep3rContext>(defaultProps);
 export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{provider, isActive, isDisconnected, address} = useWeb3();
-	const	[jobs, set_jobs] = React.useState<TKeep3rTypes.TJobData[]>(defaultProps.jobs);
-	const	[keeperStatus, set_keeperStatus] = React.useState<TKeep3rTypes.TKeeperStatus>(defaultProps.keeperStatus);
-	const	[, set_nonce] = React.useState(0);
+	const	{provider, isActive, isDisconnected, address, chainID} = useWeb3();
+	const	[jobs, set_jobs] = useState<TKeep3rTypes.TJobData[]>(defaultProps.jobs);
+	const	[hasLoadedJobs, set_hasLoadedJobs] = useState(false);
+	const	[keeperStatus, set_keeperStatus] = useState<TKeep3rTypes.TKeeperStatus>(defaultProps.keeperStatus);
+	const	[, set_nonce] = useState(0);
+
+	const	chainRegistry = useMemo((): TRegistry => {
+		const	_registry: TRegistry = {};
+		for (const r of Object.values(REGISTRY)) {
+			if (r.chainID === chainID) {
+				_registry[r.address] = r;
+			}
+		}
+		return _registry;
+	}, [chainID]);
 
 	/* 📰 - Keep3r *************************************************************
 	**	On disconnect, status
 	***************************************************************************/
-	React.useEffect((): void => {
+	useEffect((): void => {
 		if (isDisconnected) {
 			set_keeperStatus(defaultProps.keeperStatus);
+			set_hasLoadedJobs(false);
 		}
 	}, [isDisconnected]);
+
 
 	/* 📰 - Keep3r *************************************************************
 	**	Find all the jobs currently set on the Keep3r SmartContract. First, we
 	**	need to fetch the list of jobs, then we need to find, for each one,
 	**	the associated credits.
 	***************************************************************************/
-	const getJobs = React.useCallback(async (): Promise<void> => {
+	const saveJobs = useCallback(async (jobData: TKeep3rTypes.TJobData[], forChainID: number): Promise<void> => {
+		if (forChainID !== chainID) {
+			return;
+		}
+		performBatchedUpdates((): void => {
+			set_jobs(jobData);
+			set_hasLoadedJobs(true);
+			set_nonce((n: number): number => n + 1);
+		});
+	}, [chainID]);
+
+	const getJobs = useCallback(async (): Promise<void> => {
+		set_hasLoadedJobs(false);
 		const	jobData = [] as TKeep3rTypes.TJobData[];
-		const	ethcallProvider = await providers.newEthCallProvider(provider && isActive ? provider : providers.getProvider(1));
-		const	keep3rV2 = new Contract(process.env.KEEP3R_V2_ADDR as string, KEEP3RV2_ABI);
+		const	currentProvider = provider || providers.getProvider(chainID);
+		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
+		const	keep3rV2 = new Contract(
+			getEnv(chainID).KEEP3R_V2_ADDR,
+			KEEP3RV2_ABI
+		);
 		const	resultsJobsCall = await ethcallProvider.tryAll([keep3rV2.jobs()]) as never[];
 		const	calls = [];
-		for (const job of resultsJobsCall[0] as string[]) {
-			calls.push(keep3rV2.totalJobCredits(job));
+		if (resultsJobsCall[0]) {
+			for (const job of resultsJobsCall[0] as string[]) {
+				calls.push(keep3rV2.totalJobCredits(job));
+			}
 		}
 
 		const	results = await ethcallProvider.tryAll(calls) as never[];
 		for (let i = 0; i < results.length; i++) {
 			jobData[i] = {
-				name: REGISTRY[toAddress(resultsJobsCall[0][i])]?.name || '',
+				name: chainRegistry[toAddress(resultsJobsCall[0][i])]?.name || '',
 				address: toAddress(resultsJobsCall[0][i]),
 				totalCredits: format.BN(results[i]),
 				totalCreditsNormalized: Number(format.units(results[i], 18))
 			};
 		}
 
-		performBatchedUpdates((): void => {
-			set_jobs(jobData);
-			set_nonce((n: number): number => n + 1);
-		});
-	}, [provider, isActive]);
-	React.useEffect((): void => {
+		saveJobs(jobData, currentProvider.network.chainId);
+	}, [provider, chainID, chainRegistry, saveJobs]);
+
+	useEffect((): void => {
 		getJobs();
 	}, [getJobs]);
 
@@ -91,22 +122,26 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	**	the informations for a specific keeper. We are getting a lot of info
 	**	there that can be used accross the app.
 	***************************************************************************/
-	const getKeeperStatus = React.useCallback(async (): Promise<void> => {
+	const getKeeperStatus = useCallback(async (): Promise<void> => {
 		if (!provider || !isActive)
 			return;
+		const	KEEP3R_V1_ADDR = toAddress(getEnv(chainID).KEEP3R_V1_ADDR);
+		const	KEEP3R_V2_ADDR = toAddress(getEnv(chainID).KEEP3R_V2_ADDR);
+		const	KP3R_TOKEN_ADDR = toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
+
 		const	{timestamp} = await provider.getBlock('latest');
 		const	ethcallProvider = await providers.newEthCallProvider(provider);
-		const	keep3rV1 = new Contract(process.env.KEEP3R_V1_ADDR as string, KEEP3RV1_ABI);
-		const	keep3rV2 = new Contract(process.env.KEEP3R_V2_ADDR as string, KEEP3RV2_ABI);
+		const	keep3rV1 = new Contract(KEEP3R_V1_ADDR, KEEP3RV1_ABI);
+		const	keep3rV2 = new Contract(KEEP3R_V2_ADDR, KEEP3RV2_ABI);
 
 		const	calls = [
 			keep3rV1.balanceOf(address),
-			keep3rV1.allowance(address, process.env.KEEP3R_V2_ADDR as string),
-			keep3rV2.bonds(address, process.env.KP3R_TOKEN_ADDR as string),
-			keep3rV2.pendingBonds(address, process.env.KP3R_TOKEN_ADDR as string),
-			keep3rV2.pendingUnbonds(address, process.env.KP3R_TOKEN_ADDR as string),
-			keep3rV2.canActivateAfter(address, process.env.KP3R_TOKEN_ADDR as string),
-			keep3rV2.canWithdrawAfter(address, process.env.KP3R_TOKEN_ADDR as string),
+			keep3rV1.allowance(address, KEEP3R_V2_ADDR),
+			keep3rV2.bonds(address, KP3R_TOKEN_ADDR),
+			keep3rV2.pendingBonds(address, KP3R_TOKEN_ADDR),
+			keep3rV2.pendingUnbonds(address, KP3R_TOKEN_ADDR),
+			keep3rV2.canActivateAfter(address, KP3R_TOKEN_ADDR),
+			keep3rV2.canWithdrawAfter(address, KP3R_TOKEN_ADDR),
 			keep3rV2.disputes(address),
 			keep3rV2.disputers(address),
 			keep3rV2.slashers(address),
@@ -125,11 +160,11 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			] = results;
 
 			set_keeperStatus({
-				balanceOf: kp3rBalance,
-				allowance: kp3rAllowance,
-				bonds: bonds,
-				pendingBonds: pendingBonds,
-				pendingUnbonds: pendingUnbonds,
+				balanceOf: format.BN(kp3rBalance),
+				allowance: format.BN(kp3rAllowance),
+				bonds: format.BN(bonds),
+				pendingBonds: format.BN(pendingBonds),
+				pendingUnbonds: format.BN(pendingUnbonds),
 				canActivateAfter: canActivateAfter,
 				canWithdrawAfter: canWithdrawAfter,
 				isDisputer: disputers,
@@ -139,16 +174,16 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 				hasBonded: hasBonded,
 				bondTime: bondTime,
 				unbondTime: unbondTime,
-				hasPendingActivation: !(canActivateAfter as BigNumber).isZero(),
-				canActivate: !(canActivateAfter as BigNumber).isZero() && ((timestamp * 1000) - (Number(bondTime) + Number(canActivateAfter) * 1000)) > 0,
+				hasPendingActivation: !format.BN(canActivateAfter).isZero(),
+				canActivate: !format.BN(canActivateAfter).isZero() && ((timestamp * 1000) - (Number(bondTime) + Number(canActivateAfter) * 1000)) > 0,
 				canActivateIn: format.duration((Number(bondTime) + Number(canActivateAfter) * 1000) - (timestamp * 1000), true),
 				canWithdraw: ((timestamp * 1000) - (Number(unbondTime) + Number(canWithdrawAfter) * 1000)) > 0,
 				canWithdrawIn: format.duration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true)
 			});
 			set_nonce((n: number): number => n + 1);
 		});
-	}, [address, provider, isActive]);
-	React.useEffect((): void => {
+	}, [address, provider, isActive, chainID]);
+	useEffect((): void => {
 		getKeeperStatus();
 	}, [getKeeperStatus]);
 
@@ -161,7 +196,8 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 				jobs,
 				keeperStatus,
 				getJobs,
-				getKeeperStatus
+				getKeeperStatus,
+				hasLoadedJobs
 			}}>
 			{children}
 		</Keep3rContext.Provider>

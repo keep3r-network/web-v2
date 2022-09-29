@@ -1,22 +1,22 @@
-import	React, {ReactElement}							from	'react';
-import	{Button}										from	'@yearn-finance/web-lib/components';
-import	{isZeroAddress, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
-import	{useWeb3}										from	'@yearn-finance/web-lib/contexts';
-import	useKeep3r										from	'contexts/useKeep3r';
-import	Input											from	'components/Input';
-import	{revoke}										from	'utils/actions/revoke';
+import React, {ReactElement, useState} from 'react';
+import {Button} from '@yearn-finance/web-lib/components';
+import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {useKeep3r} from 'contexts/useKeep3r';
+import Input from 'components/Input';
+import {revoke} from 'utils/actions/revoke';
 
-function	SectionBlacklist(): ReactElement {
+function	SectionBlacklist({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[blackListAddress, set_blackListAddress] = React.useState('');
-	const	[txStatus, set_txStatus] = React.useState(defaultTxStatus);
+	const	[blackListAddress, set_blackListAddress] = useState('');
+	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRevoke(): Promise<void> {
 		if (!isActive || txStatus.pending)
 			return;
 		new Transaction(provider, revoke, set_txStatus)
-			.populate(blackListAddress)
+			.populate(chainID, blackListAddress)
 			.onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 				set_blackListAddress('');

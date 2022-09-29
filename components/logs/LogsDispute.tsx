@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import	React, {ReactElement, ReactNode}				from	'react';
-import	axios											from	'axios';
-import	{useTable, usePagination, useSortBy}			from	'react-table';
-import	{Chevron}										from	'@yearn-finance/web-lib/icons';
-import	{format, performBatchedUpdates, truncateHex}	from	'@yearn-finance/web-lib/utils';
-import	IconLoader										from	'components/icons/IconLoader';
-import	IconChevronFilled								from	'components/icons/IconChevronFilled';
+import React, {ReactElement, ReactNode, useEffect, useMemo, useState} from 'react';
+import axios from 'axios';
+import {usePagination, useSortBy, useTable} from 'react-table';
+import {Chevron} from '@yearn-finance/web-lib/icons';
+import {format, performBatchedUpdates, truncateHex} from '@yearn-finance/web-lib/utils';
+import IconLoader from 'components/icons/IconLoader';
+import IconChevronFilled from 'components/icons/IconChevronFilled';
+import {getEnv} from 'utils/env';
 
 type		TDisputeLogs = {
 	time: number,
@@ -14,12 +15,12 @@ type		TDisputeLogs = {
 	disputer: string,
 	txHash: string,
 }
-function	LogsDispute(): ReactElement {
-	const	[isInit, set_isInit] = React.useState(false);
-	const	[logs, set_logs] = React.useState<TDisputeLogs[]>([]);
+function	LogsDispute({chainID}: {chainID: number}): ReactElement {
+	const	[isInit, set_isInit] = useState(false);
+	const	[logs, set_logs] = useState<TDisputeLogs[]>([]);
 
-	React.useEffect((): void => {
-		axios.get(`${process.env.BACKEND_URI as string}/disputes`)
+	useEffect((): void => {
+		axios.get(`${getEnv(chainID).BACKEND_URI}/disputes`)
 			.then((_logs): void => {
 				performBatchedUpdates((): void => {
 					set_logs(_logs.data || []);
@@ -27,9 +28,9 @@ function	LogsDispute(): ReactElement {
 				});
 			})
 			.catch((): void => set_isInit(true));
-	}, []);
+	}, [chainID]);
 
-	const data = React.useMemo((): unknown[] => (
+	const data = useMemo((): unknown[] => (
 		logs.map((log): unknown => ({
 			date: format.date(Number(log.time) * 1000, true),
 			keeperOrJob: log.keeperOrJob,
@@ -39,7 +40,7 @@ function	LogsDispute(): ReactElement {
 		}))
 	), [logs]);
 		
-	const columns = React.useMemo((): unknown[] => [
+	const columns = useMemo((): unknown[] => [
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
 		{
 			Header: 'Keeper/Job', accessor: 'keeperOrJob', className: 'cell-start pr-8',
@@ -135,7 +136,7 @@ function	LogsDispute(): ReactElement {
 								key={row.getRowProps().key}
 								{...row.getRowProps()}
 								className={'cursor-pointer transition-colors hover:bg-white'}
-								onClick={(): void => (window as any).open(`https://etherscan.io/tx/${row.values.txHash}`, '_blank')}>
+								onClick={(): void => (window as any).open(`https://${getEnv(chainID).EXPLORER}/tx/${row.values.txHash}`, '_blank')}>
 								{row.cells.map((cell: any): ReactElement => {
 									return (
 										<td

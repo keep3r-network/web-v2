@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import	React, {ReactElement, ReactNode}				from	'react';
-import	axios											from	'axios';
-import	{useTable, usePagination, useSortBy}			from	'react-table';
-import	{LinkOut, Chevron}								from	'@yearn-finance/web-lib/icons';
-import	{format, performBatchedUpdates, truncateHex}	from	'@yearn-finance/web-lib/utils';
-import	IconLoader										from	'components/icons/IconLoader';
-import	IconChevronFilled								from	'components/icons/IconChevronFilled';
+import React, {ReactElement, ReactNode, useEffect, useMemo, useState} from 'react';
+import axios from 'axios';
+import {usePagination, useSortBy, useTable} from 'react-table';
+import {Chevron, LinkOut} from '@yearn-finance/web-lib/icons';
+import {format, performBatchedUpdates, toAddress, truncateHex} from '@yearn-finance/web-lib/utils';
+import IconLoader from 'components/icons/IconLoader';
+import IconChevronFilled from 'components/icons/IconChevronFilled';
+import {getEnv} from 'utils/env';
 
 type		TWorkLogs = {
 	keeper: string,
@@ -15,12 +16,17 @@ type		TWorkLogs = {
 	gwei: string,
 	txHash: string
 }
-function	LogsForJobCalls({jobAddress, searchTerm}: {jobAddress: string, searchTerm: string}): ReactElement {
-	const	[isInit, set_isInit] = React.useState(false);
-	const	[logs, set_logs] = React.useState<TWorkLogs[]>([]);
+function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
+	jobAddress: string,
+	searchTerm: string,
+	chainID: number
+}): ReactElement {
+	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const	[isInit, set_isInit] = useState(false);
+	const	[logs, set_logs] = useState<TWorkLogs[]>([]);
 
-	React.useEffect((): void => {
-		axios.get(`${process.env.BACKEND_URI as string}/job/${jobAddress}`)
+	useEffect((): void => {
+		axios.get(`${getEnv(chainID).BACKEND_URI}/job/${toAddress(jobAddress)}`)
 			.then((_logs): void => {
 				performBatchedUpdates((): void => {
 					set_logs(_logs.data || []);
@@ -28,9 +34,13 @@ function	LogsForJobCalls({jobAddress, searchTerm}: {jobAddress: string, searchTe
 				});
 			})
 			.catch((): void => set_isInit(true));
-	}, [jobAddress]);
+	}, [jobAddress, chainID]);
 
-	const data = React.useMemo((): unknown[] => (
+	useEffect((): void => {
+		set_selectedExplorer(getEnv(chainID).EXPLORER);
+	}, [chainID]);
+
+	const data = useMemo((): unknown[] => (
 		logs
 			.filter((log): boolean => (
 				(log?.keeper || '').toLowerCase()?.includes(searchTerm.toLowerCase()))
@@ -44,7 +54,7 @@ function	LogsForJobCalls({jobAddress, searchTerm}: {jobAddress: string, searchTe
 			}))
 	), [logs, searchTerm]);
 		
-	const columns = React.useMemo((): unknown[] => [
+	const columns = useMemo((): unknown[] => [
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
 		{Header: 'Keeper', accessor: 'keeper', className: 'cell-end pr-8', sortType: 'basic'},
 		{
@@ -63,13 +73,13 @@ function	LogsForJobCalls({jobAddress, searchTerm}: {jobAddress: string, searchTe
 			Header: '', accessor: 'linkOut', className: 'cell-end', disableSortBy: true,
 			Cell: ({value}: {value: string}): ReactNode => (
 				<div>
-					<a href={`https://etherscan.io/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
+					<a href={`https://${selectedExplorer}/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
 						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
 			)
 		}
-	], []);
+	], [selectedExplorer]);
 
 	const {
 		getTableProps,
@@ -150,7 +160,7 @@ function	LogsForJobCalls({jobAddress, searchTerm}: {jobAddress: string, searchTe
 								key={row.getRowProps().key}
 								{...row.getRowProps()}
 								className={'cursor-pointer transition-colors hover:bg-white'}
-								onClick={(): void => (window as any).open(`https://etherscan.io/tx/${row.values.linkOut}`, '_blank')}>
+								onClick={(): void => (window as any).open(`https://${selectedExplorer}/tx/${row.values.linkOut}`, '_blank')}>
 								{row.cells.map((cell: any): ReactElement => {
 									return (
 										<td

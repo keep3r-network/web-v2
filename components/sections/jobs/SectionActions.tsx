@@ -4,7 +4,7 @@ import	SectionActionsAddLiquidity				from	'components/sections/jobs/SectionActio
 import	SectionActionsWithdrawLiquidity			from	'components/sections/jobs/SectionActionsWithdrawLiquidity';
 import	SectionActionsManageLiquidity			from	'components/sections/jobs/SectionActionsManageLiquidity';
 
-function	SectionActions(): ReactElement {
+function	SectionActions({chainID}: {chainID: number}): ReactElement {
 	return (
 		<div>
 			<Tab.Group>
@@ -24,13 +24,13 @@ function	SectionActions(): ReactElement {
 				</Tab.List>
 				<Tab.Panels className={'w-full rounded-t-none'}>
 					<Tab.Panel>
-						<SectionActionsAddLiquidity />
+						<SectionActionsAddLiquidity chainID={chainID} />
 					</Tab.Panel>
 					<Tab.Panel>
-						<SectionActionsWithdrawLiquidity />
+						<SectionActionsWithdrawLiquidity chainID={chainID} />
 					</Tab.Panel>
 					<Tab.Panel>
-						<SectionActionsManageLiquidity />
+						<SectionActionsManageLiquidity chainID={chainID} />
 					</Tab.Panel>
 				</Tab.Panels>
 			</Tab.Group>

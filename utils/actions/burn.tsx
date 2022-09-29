@@ -4,6 +4,7 @@ import	UNI_V3_PAIR_ABI				from	'utils/abi/univ3Pair.abi';
 
 export async function	simulateBurn(
 	provider: ethers.providers.Web3Provider,
+	chainID: number,
 	pair: string,
 	liquidity: ethers.BigNumber
 ): Promise<[ethers.BigNumber, ethers.BigNumber]> {
@@ -14,7 +15,7 @@ export async function	simulateBurn(
 		const	contract = new ethers.Contract(
 			pair,
 			UNI_V3_PAIR_ABI as ContractInterface,
-			providers.getProvider(1)
+			providers.getProvider(chainID) as ethers.providers.Web3Provider
 		);
 		try {
 			const	simulation = await contract.callStatic.burn(
