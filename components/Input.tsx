@@ -85,7 +85,9 @@ function	InputBigNumber({
 	return (
 		<label
 			aria-invalid={(
-				!canBeZero && value !== '' && (!Number(value) || Number(value) > format.toNormalizedValue(maxValue, decimals))
+				value !== '' &&
+				((!Number(value) && !canBeZero) ||
+				(Number(value) > format.toNormalizedValue(maxValue, decimals)))
 			)}
 			className={'space-y-2'}>
 			{label ? <p>{label}</p> : null}

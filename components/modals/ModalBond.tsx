@@ -85,7 +85,11 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 				<Button
 					onClick={onApprove}
 					isBusy={txStatusApprove.pending}
-					isDisabled={!isActive || keeperStatus.hasDispute}>
+					isDisabled={
+						!isActive ||
+						keeperStatus.hasDispute ||
+						Number(amount) > format.toNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
 			);
@@ -95,7 +99,11 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			<Button
 				onClick={onBond}
 				isBusy={txStatusBond.pending}
-				isDisabled={!isActive || keeperStatus.hasDispute}>
+				isDisabled={
+					!isActive ||
+					keeperStatus.hasDispute ||
+					Number(amount) > format.toNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+				}>
 				{txStatusBond.error ? 'Transaction failed' : txStatusBond.success ? 'Transaction successful' : 'Bond'}
 			</Button>
 		);
@@ -151,7 +159,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 							<Input.BigNumber
 								value={amount}
 								onSetValue={(s: string): void => set_amount(s)}
-								maxValue={keeperStatus?.balanceOf || 0}
+								maxValue={keeperStatus?.balanceOf || ethers.constants.Zero}
 								decimals={18}
 								canBeZero
 								shouldHideBalance/>
