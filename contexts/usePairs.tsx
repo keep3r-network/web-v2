@@ -57,6 +57,7 @@ const	defaultProps = {
 			allowanceOfToken2: ethers.constants.Zero,
 			priceOfToken1: 0,
 			priceOfToken2: 0,
+			hasPrice: true,
 			position: {
 				liquidity: ethers.constants.Zero,
 				tokensOwed0: ethers.constants.Zero,
