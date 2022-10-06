@@ -274,7 +274,7 @@ function	MyApp(props: AppProps): ReactElement {
 				},
 				web3: {
 					defaultChainID: 1,
-					supportedChainID: [1, 10, 250, 1337]
+					supportedChainID: [1, 5, 10, 250, 1337]
 				}
 			}}>
 			<>
