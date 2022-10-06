@@ -130,14 +130,14 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 							label={'KP3R'}
 							value={amountToken1}
 							onSetValue={(s: string): void => set_amountToken1(s)}
-							onValueChange={(s: string): void => set_amountToken2(s === '' ? '' : (Number(s) * pair.priceOfToken2).toString())}
+							onValueChange={(s: string): void => pair.hasNoPrice ? undefined : set_amountToken2(s === '' ? '' : (Number(s) * pair.priceOfToken2).toString())}
 							maxValue={format.BN(pair?.balanceOfToken1 || 0)}
 							decimals={18} />
 						<Input.BigNumber
 							label={'WETH'}
 							value={amountToken2}
 							onSetValue={(s: string): void => set_amountToken2(s)}
-							onValueChange={(s: string): void => set_amountToken1(s === '' ? '' : (Number(s) * pair.priceOfToken1).toString())}
+							onValueChange={(s: string): void => pair.hasNoPrice ? undefined : set_amountToken1(s === '' ? '' : (Number(s) * pair.priceOfToken1).toString())}
 							maxValue={format.BN(pair?.balanceOfToken2 || 0)}
 							decimals={18} />
 					</div>

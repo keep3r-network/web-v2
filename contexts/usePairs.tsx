@@ -132,6 +132,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 					allowanceOfToken2: format.BN(allowanceOfToken2 as BigNumber),
 					priceOfToken1: pool?.token0Price || 0,
 					priceOfToken2: pool?.token1Price || 0,
+					hasNoPrice: !pool?.token0Price && !pool?.token1Price,
 					position: {
 						liquidity: format.BN(liquidity as BigNumber),
 						tokensOwed0: format.BN(tokensOwed0 as BigNumber),
