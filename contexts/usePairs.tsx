@@ -1,4 +1,4 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Contract} from 'ethcall';
 import {request} from 'graphql-request';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
@@ -6,9 +6,36 @@ import {format, performBatchedUpdates, providers, toAddress} from '@yearn-financ
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
 import  {BigNumber, ethers} from 'ethers';
-import type * as TPairsTypes from 'contexts/usePairs.d';
+import * as TPairsTypes from 'contexts/usePairs.d';
 import {TEnv} from 'utils/types.d';
 import {getEnv} from 'utils/env';
+
+function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
+	return ({
+		[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]: {
+			addressOfUni: toAddress(getEnv(chainID).UNI_KP3R_WETH_ADDR),
+			addressOfPair: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
+			nameOfPair: 'kLP-KP3R/WETH',
+			balanceOfPair: ethers.constants.Zero,
+			allowanceOfPair: ethers.constants.Zero,
+			addressOfToken1: toAddress(getEnv(chainID).KP3R_TOKEN_ADDR),
+			nameOfToken1: 'KP3R',
+			balanceOfToken1: ethers.constants.Zero,
+			allowanceOfToken1: ethers.constants.Zero,
+			addressOfToken2: toAddress(getEnv(chainID).WETH_TOKEN_ADDR),
+			nameOfToken2: 'WETH',
+			balanceOfToken2: ethers.constants.Zero,
+			allowanceOfToken2: ethers.constants.Zero,
+			priceOfToken1: 0,
+			priceOfToken2: 0,
+			position: {
+				liquidity: ethers.constants.Zero,
+				tokensOwed0: ethers.constants.Zero,
+				tokensOwed1: ethers.constants.Zero
+			}
+		}
+	});	
+}
 
 const	defaultChain = (process.env as TEnv).CHAINS[1];
 const	defaultProps = {
@@ -40,35 +67,8 @@ const	defaultProps = {
 };
 const	Pairs = createContext<TPairsTypes.TPairsContext>(defaultProps);
 export const PairsContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{provider, address, chainID} = useWeb3();
-	const	chainPairs = useMemo((): TPairsTypes.TKeeperPairs => {
-		return ({
-			[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]: {
-				addressOfUni: toAddress(getEnv(chainID).UNI_KP3R_WETH_ADDR),
-				addressOfPair: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
-				nameOfPair: 'kLP-KP3R/WETH',
-				balanceOfPair: ethers.constants.Zero,
-				allowanceOfPair: ethers.constants.Zero,
-				addressOfToken1: toAddress(getEnv(chainID).KP3R_TOKEN_ADDR),
-				nameOfToken1: 'KP3R',
-				balanceOfToken1: ethers.constants.Zero,
-				allowanceOfToken1: ethers.constants.Zero,
-				addressOfToken2: toAddress(getEnv(chainID).WETH_TOKEN_ADDR),
-				nameOfToken2: 'WETH',
-				balanceOfToken2: ethers.constants.Zero,
-				allowanceOfToken2: ethers.constants.Zero,
-				priceOfToken1: 0,
-				priceOfToken2: 0,
-				position: {
-					liquidity: ethers.constants.Zero,
-					tokensOwed0: ethers.constants.Zero,
-					tokensOwed1: ethers.constants.Zero
-				}
-			}
-		}
-		);	
-	}, [chainID]);
-	const	[pairs, set_pairs] = useState<TPairsTypes.TKeeperPairs>(chainPairs);
+	const	{address, chainID} = useWeb3();
+	const	[pairs, set_pairs] = useState<TPairsTypes.TKeeperPairs>(getPairsForChain(chainID));
 	const	[, set_nonce] = useState(0);
 
 	/* 📰 - Keep3r *************************************************************
@@ -77,12 +77,13 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 	**	data to correctly display and enable the actions for the user.
 	***************************************************************************/
 	const getPairs = useCallback(async (): Promise<void> => {
-		const	currentProvider = provider || providers.getProvider(chainID);
+		const	currentProvider = providers.getProvider(chainID);
 		const	currentAddress = address || ethers.constants.AddressZero;
 		const	KEEP3R_V2_ADDR = getEnv(chainID).KEEP3R_V2_ADDR;
 		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
+		const	_chainPairs = getPairsForChain(chainID);
 
-		for (const pair of Object.values(chainPairs)) {
+		for (const pair of Object.values(_chainPairs)) {
 			const	token1Contract = new Contract(pair.addressOfToken1, KEEP3RV1_ABI);
 			const	token2Contract = new Contract(pair.addressOfToken2, KEEP3RV1_ABI);
 			const	pairContract = new Contract(pair.addressOfPair, UNI_V3_PAIR_ABI);	
@@ -144,7 +145,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 				set_nonce((n: number): number => n + 1);
 			});
 		}
-	}, [provider, chainID, chainPairs, address]);
+	}, [chainID, address]);
 	useEffect((): void => {
 		getPairs();
 	}, [getPairs]);
