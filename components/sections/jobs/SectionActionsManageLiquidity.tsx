@@ -77,7 +77,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 			.populate(
 				tokenToAdd,
 				getEnv(chainID).KEEP3R_V2_ADDR,
-				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || 0, tokenToAddData?.decimals || 18)
+				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
 			).onSuccess(async (): Promise<void> => {
 				await getTokenToAdd(tokenToAdd);
 			}).perform();
@@ -91,7 +91,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 				chainID,
 				jobStatus.address,
 				tokenToAdd,
-				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || 0, tokenToAddData?.decimals || 18)
+				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
 			).onSuccess(async (): Promise<void> => {
 				await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToAdd(tokenToAdd)]);
 				set_amountTokenToAdd('');
@@ -110,7 +110,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 						!isActive
 						|| isZeroAddress(tokenToAdd)
 						|| amountTokenToAdd === '' || Number(amountTokenToAdd) === 0 
-						|| Number(amountTokenToAdd) > Number(format.units(tokenToAddData?.balanceOf || 0, tokenToAddData?.decimals || 18))
+						|| Number(amountTokenToAdd) > Number(format.units(tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18))
 					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
@@ -123,7 +123,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 				isBusy={txStatusAddCredits.pending}
 				isDisabled={
 					!isActive
-					|| tokenToAddData.balanceOf.eq(0)
+					|| (tokenToAddData.balanceOf || ethers.constants.Zero).eq(0)
 					|| Number(amountTokenToAdd) === 0
 					|| !Number(amountTokenToAdd)
 				}>
@@ -153,7 +153,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 							label={''}
 							value={amountTokenToAdd}
 							onSetValue={(s: string): void => set_amountTokenToAdd(s)}
-							maxValue={tokenToAddData?.balanceOf || 0}
+							maxValue={tokenToAddData?.balanceOf || ethers.constants.Zero}
 							decimals={tokenToAddData?.decimals || 18} />
 					</div>
 					<div>
@@ -269,7 +269,7 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 							label={''}
 							value={amountTokenToWithdraw}
 							onSetValue={(s: string): void => set_amountTokenToWithdraw(s)}
-							maxValue={tokenToWithdrawData?.balanceOf || 0}
+							maxValue={tokenToWithdrawData?.balanceOf || ethers.constants.Zero}
 							decimals={tokenToWithdrawData?.decimals || 18} />
 					</div>
 
