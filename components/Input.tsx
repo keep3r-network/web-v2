@@ -61,6 +61,7 @@ type		TInputBigNumber = {
 	decimals?: number,
 	onValueChange?: (s: string) => void,
 	shouldHideBalance?: boolean
+	canBeZero?: boolean
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 function	InputBigNumber({
@@ -71,6 +72,7 @@ function	InputBigNumber({
 	decimals = 18,
 	onValueChange,
 	shouldHideBalance,
+	canBeZero = false,
 	...props
 }: TInputBigNumber): ReactElement {
 	function	onChange(s: string): void {
@@ -82,7 +84,9 @@ function	InputBigNumber({
 	}
 	return (
 		<label
-			aria-invalid={(value !== '' && (!Number(value) || Number(value) > format.toNormalizedValue(maxValue, decimals)))}
+			aria-invalid={(
+				!canBeZero && value !== '' && (!Number(value) || Number(value) > format.toNormalizedValue(maxValue, decimals))
+			)}
 			className={'space-y-2'}>
 			{label ? <p>{label}</p> : null}
 			<Input

@@ -153,6 +153,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 								onSetValue={(s: string): void => set_amount(s)}
 								maxValue={keeperStatus?.balanceOf || 0}
 								decimals={18}
+								canBeZero
 								shouldHideBalance/>
 						</div>
 					</div>
