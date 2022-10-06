@@ -5,7 +5,6 @@ import {Button} from '@yearn-finance/web-lib/components';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
 import {Transaction, defaultTxStatus, format, isZeroAddress, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
 import Input from 'components/Input';
-import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {useJob} from 'contexts/useJob';
 import {approveERC20} from 'utils/actions/approveToken';
@@ -135,20 +134,20 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	return (
 		<section aria-label={'Add tokens directly'}>
 			<b className={'text-lg'}>{'Add tokens directly'}</b>
-			<div aria-label={'Add tokens directly'} className={'mt-8 mb-10 space-y-6'}>
+			<div aria-label={'Add tokens directly'} className={'mt-4 mb-10 space-y-6'}>
 				<div>
-					<div className={'relative my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
-						<div className={'relative space-y-2'}>
-							<TokenDropdown
-								chainID={chainID}
-								onSelect={(s: string): void => {
-									performBatchedUpdates((): void => {
-										set_tokenToAdd(s);
-										set_amountTokenToAdd('');
-									});
-								}} />
-							<p className={'hidden text-xs text-black-1/0 md:block'}>{'-'}</p>
-						</div>
+					<div className={'my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
+						<label
+							className={'space-y-2'}
+							aria-invalid={tokenToAdd !== '' && isZeroAddress(tokenToAdd)}>
+							<Input
+								value={tokenToAdd}
+								onChange={(s: unknown): void => set_tokenToAdd(s as string)}
+								onSearch={(s: unknown): void => set_tokenToAdd(s as string)}
+								aria-label={'token'}
+								placeholder={'0x...'} />
+						</label>
+
 						<Input.BigNumber
 							label={''}
 							value={amountTokenToAdd}
@@ -256,15 +255,19 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 	return (
 		<section aria-label={'Withdraw tokens directly'}>
 			<b className={'text-lg'}>{'Withdraw tokens'}</b>
-			<div aria-label={'Withdraw tokens'} className={'mt-8 space-y-6'}>
+			<div aria-label={'Withdraw tokens'} className={'mt-4 space-y-6'}>
 				<div>
 					<div className={'my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
-						<div className={'space-y-2'}>
-							<TokenDropdown
-								chainID={chainID}
-								onSelect={(s: string): void => set_tokenToWithdraw(s)} />
-							<p className={'hidden text-xs text-black-1/0 md:block'}>{'-'}</p>
-						</div>
+						<label
+							className={'space-y-2'}
+							aria-invalid={tokenToWithdraw !== '' && isZeroAddress(tokenToWithdraw)}>
+							<Input
+								value={tokenToWithdraw}
+								onChange={(s: unknown): void => set_tokenToWithdraw(s as string)}
+								onSearch={(s: unknown): void => set_tokenToWithdraw(s as string)}
+								aria-label={'token'}
+								placeholder={'0x...'} />
+						</label>
 						<Input.BigNumber
 							label={''}
 							value={amountTokenToWithdraw}
