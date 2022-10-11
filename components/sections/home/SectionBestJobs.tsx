@@ -86,6 +86,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 								</div>
 								<p className={'text-grey-1'}>
 									{utils.truncateHex(job.address, 5)}
+									<span className={'sr-only'}>{job.address}</span>
 								</p>
 							</div>
 							<div className={'space-y-2'}>
