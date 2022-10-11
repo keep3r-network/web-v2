@@ -84,9 +84,9 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 									</b>
 									{job.name ? <IconBadgeCheck className={'ml-auto h-4 min-h-[16px] w-4 min-w-[16px] md:ml-4 md:h-6 md:min-h-[24px] md:w-6 md:min-w-[24px]'} /> : null}
 								</div>
-								<p className={'text-grey-1'}>
+								<p className={'relative text-grey-1'}>
 									{utils.truncateHex(job.address, 5)}
-									<span className={'sr-only'}>{job.address}</span>
+									<span className={'absolute left-0 w-full  overflow-hidden truncate text-transparent'}>{job.address}</span>
 								</p>
 							</div>
 							<div className={'space-y-2'}>
