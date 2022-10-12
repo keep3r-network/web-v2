@@ -114,7 +114,7 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 				})
 				.perform();
 		} else { //is a job
-			if (toAddress(slashTokenAddress) === toAddress(process.env.KLP_KP3R_WETH_ADDR)) {
+			if (toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)) {
 				new Transaction(provider, slashLiquidityFromJob, set_txStatusSlash)
 					.populate(
 						chainID,

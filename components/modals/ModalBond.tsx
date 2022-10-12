@@ -10,6 +10,7 @@ import TokenDropdown from 'components/TokenDropdown';
 import {bond} from 'utils/actions/bond';
 import {approveERC20} from 'utils/actions/approveToken';
 import {activate} from 'utils/actions/activate';
+import {getEnv} from 'utils/env';
 
 type		TModalBond = {
 	chainID: number,
@@ -50,7 +51,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 		const	transaction = (
 			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
 				tokenBonded,
-				process.env.KEEP3R_V2_ADDR,
+				getEnv(chainID).KEEP3R_V2_ADDR,
 				format.toSafeAmount(amount, keeperStatus.balanceOf)
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
