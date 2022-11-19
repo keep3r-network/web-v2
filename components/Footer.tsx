@@ -2,6 +2,8 @@ import	React, {ReactElement}		from	'react';
 import	IconTwitter					from	'components/icons/IconTwitter';
 import	IconMedium					from	'components/icons/IconMedium';
 import	IconDiscourse				from	'components/icons/IconDiscourse';
+import IconDiscord from './icons/IconDiscord';
+import IconTelegram from './icons/IconTelegram';
 
 function	Footer(): ReactElement {
 	return (
@@ -27,6 +29,18 @@ function	Footer(): ReactElement {
 					<a href={'https://medium.com/iearn'} target={'_blank'} rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Medium'}</span>
 						<IconMedium className={'h-8 w-8'} />
+					</a>
+				</div>
+				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
+					<a href={'https://t.me/keep3r_official'} target={'_blank'} rel={'noreferrer'}>
+						<span className={'sr-only'}>{'Check our Telegram'}</span>
+						<IconTelegram className={'h-8 w-8'} />
+					</a>
+				</div>
+				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
+					<a href={'https://discord.gg/RMZaUQCv'} target={'_blank'} rel={'noreferrer'}>
+						<span className={'sr-only'}>{'Check our Discord'}</span>
+						<IconDiscord className={'h-8 w-8'} />
 					</a>
 				</div>
 				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
