@@ -9,6 +9,7 @@ import {ModalMobileMenu} from '@yearn-finance/web-lib/components';
 import {Keep3rContextApp} from 'contexts/useKeep3r';
 import {PricesContextApp, usePrices} from 'contexts/usePrices';
 import {TreasuryContextApp} from 'contexts/useTreasury';
+import {DebtContextApp} from 'contexts/useDebt';
 import {PairsContextApp} from 'contexts/usePairs';
 import {JobContextApp} from 'contexts/useJob';
 import Meta from 'components/Meta';
@@ -287,10 +288,12 @@ function	MyApp(props: AppProps): ReactElement {
 					<Keep3rContextApp>
 						<PairsContextApp>
 							<TreasuryContextApp>
-								<AppWithLayout
-									Component={Component}
-									pageProps={pageProps}
-									router={props.router} />
+								<DebtContextApp>
+									<AppWithLayout
+										Component={Component}
+										pageProps={pageProps}
+										router={props.router} />
+								</DebtContextApp>
 							</TreasuryContextApp>
 						</PairsContextApp>
 					</Keep3rContextApp>
