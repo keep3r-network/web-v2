@@ -17,9 +17,6 @@ function	Debt(): ReactElement {
 		set_tvlUSD(totalUSD);
 	}, [debt]);
 
-
-	console.log(ibAPIData);
-
 	return (
 		<>
 			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>

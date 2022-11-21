@@ -92,11 +92,6 @@ export const DebtContextApp = ({children}: {children: ReactElement}): ReactEleme
 						normalized: format.toNormalizedValue(ibAMM2Debt, 18),
 						normalizedValue: format.toNormalizedValue(ibAMM2Debt, 18) * normalizedPrice
 					}
-
-					// normalized: format.toNormalizedValue(balanceOf, Number(decimals)),
-					// normalizedPrice: format.toNormalizedValue(rawPrice, 6),
-					// normalizedValue: (format.toNormalizedValue(balanceOf, Number(decimals)) * format.toNormalizedValue(rawPrice, 6))
-
 				}
 			});
 		}
