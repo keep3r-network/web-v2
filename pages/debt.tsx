@@ -55,12 +55,12 @@ function	Debt(): ReactElement {
 												<b className={'text-right'}>{'Borrow APY'}</b>
 											</div>
 
-											{Object.entries(debt.borrowBalance).map(([borrower, balance]): ReactElement => (
+											{Object.entries(debt.borrowBalance).map(([borrower, balance], index): ReactElement => (
 												<div key={borrower} className={'grid grid-cols-5'}>
 													<p className={'col-span-2 underline'}>{borrower}</p>
 													<p className={'text-right'}>{format.amount(balance.normalized, 2, 2)}</p>
 													<p className={'text-right'}>{format.amount(balance.normalizedValue, 2, 2)}</p>
-													<p className={'text-right'}>{`${format.amount((data?.borrow_apy?.value * 100) || 0, 2, 2)} %`}</p>
+													<p className={'text-right'}>{index === 0 ? `${format.amount((data?.borrow_apy?.value * 100) || 0, 2, 2)} %` : ''}</p>
 												</div>
 											))}
 										</div>
