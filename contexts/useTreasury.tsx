@@ -40,6 +40,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	ibjpyUsdcContract = new Contract('0x58563C872c791196d0eA17c4E53e77fa1d381D4c', CONVEX_REWARDS_ABI);
 		const	ibkrwUsdcContract = new Contract('0x1900249c7a90D27b246032792004FF0E092Ac2cE', CONVEX_REWARDS_ABI);
 
+		const	vlCVXContract = new Contract('0x72a19342e8F1838460eBFCCEf09F6585e32db86E', CONVEX_REWARDS_ABI);
+
 		const	ibeurAgeurContract = new Contract('0x769499A7B4093b2AA35E3F3C00B1ab5dc8EF7146', CONVEX_REWARDS_ABI); // ibeur-ageur
 		const	ibeurAgeurExtraRewards1Contract = new Contract('0x92dFd397b6d0B878126F5a5f6F446ae9Fc8A8356', CONVEX_REWARDS_ABI); // ANGLE
 		const	ibeurAgeurExtraRewards2Contract = new Contract('0x19Ba12D57aD7B126dE898706AA6dBF7d6DC85FF8', CONVEX_REWARDS_ABI); // KP3R
@@ -185,7 +187,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			lensPriceContract.getPriceUsdcRecommended('0xa258C4606Ca8206D8aA700cE2143D7db854D168c'),
 			yvEthContract.pricePerShare(),
 			lensPriceContract.getPriceUsdcRecommended('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
-			veCRVContract.balanceOf(THE_KEEP3R)
+			veCRVContract.balanceOf(THE_KEEP3R),
+			vlCVXContract.balanceOf(THE_KEEP3R)
 		];
 		const	promise = await Promise.allSettled([
 			ethcallProvider.tryAll(jobsCalls),
@@ -602,6 +605,19 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			)
 			// unclaimedRewards: (Number(yvEthStacked) * Number(pricePerShare)) - Number(yvEthStacked),
 			// unclaimedRewardsUSD: (Number(yvEthStacked) * Number(yvEthPrice)) - (Number(yvEthStacked) * Number(ethPrice))
+		});
+
+		//Locked CVX
+		const	cvxLocked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	cvxLockedExtraEarned = claimable;
+		_treasury.push({
+			name: 'Locked CVX',
+			protocol: 'Convex',
+			rewards: 'CVX',
+			tokenStaked: Number(cvxLocked),
+			tokenStakedUSD: Number(cvxLocked) * Number(cvxPrice),
+			unclaimedRewards: Number(format.units(cvxLockedExtraEarned, 18)),
+			unclaimedRewardsUSD: (Number(format.units(cvxLockedExtraEarned, 18)) * Number(cvxPrice))
 		});
 
 		performBatchedUpdates((): void => {
