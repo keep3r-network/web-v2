@@ -35,7 +35,7 @@ function	Debt(): ReactElement {
 				<div className={'flex flex-col space-y-6'}>
 					{
 						debt
-							.sort((a, b): number => b.totalBorrowBalance.gte(a.totalBorrowBalance) ? 1 : -1)
+							.sort((a, b): number => b.totalBorrowValue - a.totalBorrowValue)
 							.map((debt): ReactElement => {
 								const	data = ibAPIData?.find((ib: any): boolean => ib.underlying_symbol.toLowerCase() === debt.name.toLowerCase());
 								return (
