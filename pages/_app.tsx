@@ -9,14 +9,15 @@ import {ModalMobileMenu} from '@yearn-finance/web-lib/components';
 import {Keep3rContextApp} from 'contexts/useKeep3r';
 import {PricesContextApp, usePrices} from 'contexts/usePrices';
 import {TreasuryContextApp} from 'contexts/useTreasury';
+import {DebtContextApp} from 'contexts/useDebt';
 import {PairsContextApp} from 'contexts/usePairs';
 import {JobContextApp} from 'contexts/useJob';
 import Meta from 'components/Meta';
 import Footer from 'components/Footer';
 import LogoKeep3r from 'components/icons/Keep3r';
+import NetworkSelector from 'components/NetworkSelector';
 
 import	'../style.css';
-import NetworkSelector from 'components/NetworkSelector';
 
 /* 📰 - Keep3r *****************************************************************
 ** Little hack in order to get the correct context based on the page. In short,
@@ -130,6 +131,12 @@ function	AppWithLayout(props: AppProps): ReactElement {
 								<div />
 							</div>
 						</Link>
+						<Link href={'/debt'}>
+							<div aria-selected={pathname === '/debt'} className={'menu_item px-5'}>
+								<b>{'Debt'}</b>
+								<div />
+							</div>
+						</Link>
 						<Link href={'/disputes'}>
 							<div aria-selected={pathname === '/disputes'} className={'menu_item px-5'}>
 								<b>{'Disputes'}</b>
@@ -216,6 +223,19 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						</div>
 					</Link>
 
+					<Link href={'/debt'} key={'/debt'}>
+						<div
+							onClick={(): void => set_hasMobileMenu(false)}
+							aria-selected={pathname === '/debt'}
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
+							<div className={'flex flex-row items-center space-x-3'}>
+								<svg xmlns={'http://www.w3.org/2000/svg'} viewBox={'0 0 384 512'} className={'h-4 w-4'}><path d={'M14 2.2C22.5-1.7 32.5-.3 39.6 5.8L80 40.4 120.4 5.8c9-7.7 22.3-7.7 31.2 0L192 40.4 232.4 5.8c9-7.7 22.2-7.7 31.2 0L304 40.4 344.4 5.8c7.1-6.1 17.1-7.5 25.6-3.6s14 12.4 14 21.8V488c0 9.4-5.5 17.9-14 21.8s-18.5 2.5-25.6-3.6L304 471.6l-40.4 34.6c-9 7.7-22.2 7.7-31.2 0L192 471.6l-40.4 34.6c-9 7.7-22.3 7.7-31.2 0L80 471.6 39.6 506.2c-7.1 6.1-17.1 7.5-25.6 3.6S0 497.4 0 488V24C0 14.6 5.5 6.1 14 2.2zM96 144c-8.8 0-16 7.2-16 16s7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96zM80 352c0 8.8 7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96c-8.8 0-16 7.2-16 16zM96 240c-8.8 0-16 7.2-16 16s7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96z'}/></svg>
+								<b>{'Debt'}</b>
+							</div>
+							<svg xmlns={'http://www.w3.org/2000/svg'} viewBox={'0 0 512 512'} className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} /></svg>
+						</div>
+					</Link>
+
 					<Link href={'/disputes'} key={'/disputes'}>
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
@@ -287,10 +307,12 @@ function	MyApp(props: AppProps): ReactElement {
 					<Keep3rContextApp>
 						<PairsContextApp>
 							<TreasuryContextApp>
-								<AppWithLayout
-									Component={Component}
-									pageProps={pageProps}
-									router={props.router} />
+								<DebtContextApp>
+									<AppWithLayout
+										Component={Component}
+										pageProps={pageProps}
+										router={props.router} />
+								</DebtContextApp>
 							</TreasuryContextApp>
 						</PairsContextApp>
 					</Keep3rContextApp>

@@ -83,6 +83,16 @@ export type TEnvData = {
 	CVX_TOKEN_ADDR: TAddress,
 	LIDO_TOKEN_ADDR: TAddress,
 
+	IB_AMM_ADDR: TAddress,
+	IB_AMM_2_ADDR: TAddress,
+	CY_AUD_TOKEN_ADDR: TAddress,
+	CY_CHF_TOKEN_ADDR: TAddress,
+	CY_GBP_TOKEN_ADDR: TAddress,
+	CY_JPY_TOKEN_ADDR: TAddress,
+	CY_EUR_TOKEN_ADDR: TAddress,
+	CY_KRW_TOKEN_ADDR: TAddress,
+	CY_ZAR_TOKEN_ADDR: TAddress,
+
 	EXPLORER: string,
 	BACKEND_URI: string,
 }
