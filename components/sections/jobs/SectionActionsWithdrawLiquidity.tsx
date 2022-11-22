@@ -1,34 +1,35 @@
-import	React, {ReactElement}					from	'react';
-import	{BigNumber, ethers}						from	'ethers';
-import	{Button}								from	'@yearn-finance/web-lib/components';
-import	{useWeb3}								from	'@yearn-finance/web-lib/contexts';
-import	{format, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
-import	useJob									from	'contexts/useJob';
-import	usePairs								from	'contexts/usePairs';
-import	Input									from	'components/Input';
-import	Line									from	'components/Line';
-import	TokenPairDropdown						from	'components/TokenPairDropdown';
-import	{unbondLiquidityFromJob}				from	'utils/actions/unbondLiquidityFromJob';
-import	{withdrawLiquidityFromJob}				from	'utils/actions/withdrawLiquidityFromJob';
-import	{burn, simulateBurn}					from	'utils/actions/burn';
+import React, {ReactElement, useEffect, useState} from 'react';
+import {BigNumber, ethers} from 'ethers';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Transaction, defaultTxStatus, format, toAddress} from '@yearn-finance/web-lib/utils';
+import {useJob} from 'contexts/useJob';
+import {usePairs} from 'contexts/usePairs';
+import Input from 'components/Input';
+import Line from 'components/Line';
+import TokenPairDropdown from 'components/TokenPairDropdown';
+import {unbondLiquidityFromJob} from 'utils/actions/unbondLiquidityFromJob';
+import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
+import {burn, simulateBurn} from 'utils/actions/burn';
+import {getEnv} from 'utils/env';
 
-function	PanelUnbondTokens(): ReactElement {
+function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, address, isActive} = useWeb3();
 	const	{pairs, getPairs} = usePairs();
 	const	{jobStatus, getJobStatus} = useJob();
-	const	[amountLpToken, set_amountLpToken] = React.useState('');
-	const	[pair, set_pair] = React.useState(pairs[process.env.KLP_KP3R_WETH_ADDR as string]);
-	const	[txStatusUnbond, set_txStatusUnbond] = React.useState(defaultTxStatus);
+	const	[amountLpToken, set_amountLpToken] = useState('');
+	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const	[txStatusUnbond, set_txStatusUnbond] = useState(defaultTxStatus);
 
-	React.useEffect((): void => {
-		set_pair(pairs[process.env.KLP_KP3R_WETH_ADDR as string]);
-	}, [pairs]);
+	useEffect((): void => {
+		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	}, [pairs, chainID]);
 
 	async function	onUnbondLiquidityFromJob(pairAddress: string, amount: BigNumber): Promise<void> {
 		if (!isActive || txStatusUnbond.pending)
 			return;
 		new Transaction(provider, unbondLiquidityFromJob, set_txStatusUnbond)
-			.populate(jobStatus.address, pairAddress, amount)
+			.populate(chainID, jobStatus.address, pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
 				await Promise.all([getJobStatus(), getPairs()]);
 			})
@@ -103,27 +104,28 @@ function	PanelUnbondTokens(): ReactElement {
 	);
 }
 
-function	SectionActionsWithdrawLiquidity(): ReactElement {
+function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{pairs, getPairs} = usePairs();
 	const	{jobStatus, getJobStatus} = useJob();
-	const	[amountLpToken, set_amountLpToken] = React.useState('');
-	const	[expectedUnderlyingAmount, set_expectedUnderlyingAmount] = React.useState({
+	const	[amountLpToken, set_amountLpToken] = useState('');
+	const	[expectedUnderlyingAmount, set_expectedUnderlyingAmount] = useState({
 		token1: ethers.constants.Zero,
 		token2: ethers.constants.Zero
 	});
-	const	[pair, set_pair] = React.useState(pairs[process.env.KLP_KP3R_WETH_ADDR as string]);
-	const	[txStatus, set_txStatus] = React.useState(defaultTxStatus);
-	const	[txStatusBurn, set_txStatusBurn] = React.useState(defaultTxStatus);
+	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
+	const	[txStatusBurn, set_txStatusBurn] = useState(defaultTxStatus);
 
-	React.useEffect((): void => {
-		set_pair(pairs[process.env.KLP_KP3R_WETH_ADDR as string]);
-	}, [pairs]);
+	useEffect((): void => {
+		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	}, [pairs, chainID]);
 
-	React.useEffect((): void => {
+	useEffect((): void => {
 		if (provider) {
 			simulateBurn(
 				provider as ethers.providers.Web3Provider,
+				chainID,
 				pair.addressOfPair,
 				format.toSafeAmount(amountLpToken, pair.balanceOfPair)
 			).then((result): void => {
@@ -133,18 +135,19 @@ function	SectionActionsWithdrawLiquidity(): ReactElement {
 				});
 			});
 		}
-	}, [pair.addressOfPair, pair.balanceOfPair, provider, amountLpToken]);
+	}, [pair.addressOfPair, pair.balanceOfPair, provider, amountLpToken, chainID]);
 
 	async function	onWithdrawLiquidityFromJob(pairAddress: string): Promise<void> {
 		if (!isActive || txStatus.pending)
 			return;
 		new Transaction(provider, withdrawLiquidityFromJob, set_txStatus)
-			.populate(jobStatus.address, pairAddress)
+			.populate(chainID, jobStatus.address, pairAddress)
 			.onSuccess(async (): Promise<void> => {
 				await Promise.all([getJobStatus(), getPairs()]);
 			})
 			.perform();
 	}
+
 	function	renderWithdrawButton(): ReactElement {
 		return (
 			<Button
@@ -173,6 +176,7 @@ function	SectionActionsWithdrawLiquidity(): ReactElement {
 			})
 			.perform();
 	}
+
 	function	renderBurnButton(): ReactElement {
 		return (
 			<Button
@@ -248,12 +252,12 @@ function	SectionActionsWithdrawLiquidity(): ReactElement {
 	);
 }
 
-function	Wrapper(): ReactElement {
+function	Wrapper({chainID}: {chainID: number}): ReactElement {
 	return (
 		<div className={'flex flex-col p-6'}>
 			<section aria-label={'WITHDRAW LIQUIDITY'}>
-				<PanelUnbondTokens />
-				<SectionActionsWithdrawLiquidity />
+				<PanelUnbondTokens chainID={chainID} />
+				<SectionActionsWithdrawLiquidity chainID={chainID} />
 			</section>
 		</div>
 	);

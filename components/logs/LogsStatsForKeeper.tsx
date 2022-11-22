@@ -1,22 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import	React, {ReactElement, ReactNode}			from	'react';
-import	{useTable, usePagination, useSortBy}		from	'react-table';
-import	Link										from	'next/link';
-import	axios										from	'axios';
-import	{Chevron, LinkOut}							from	'@yearn-finance/web-lib/icons';
-import	{format, performBatchedUpdates, toAddress}	from	'@yearn-finance/web-lib/utils';
-import	IconLoader									from	'components/icons/IconLoader';
-import	IconChevronFilled							from	'components/icons/IconChevronFilled';
-import	REGISTRY									from	'utils/registry';
+import React, {ReactElement, ReactNode, useEffect, useMemo, useState} from 'react';
+import {usePagination, useSortBy, useTable} from 'react-table';
+import Link from 'next/link';
+import axios from 'axios';
+import {Chevron, LinkOut} from '@yearn-finance/web-lib/icons';
+import {format, performBatchedUpdates, toAddress} from '@yearn-finance/web-lib/utils';
+import IconLoader from 'components/icons/IconLoader';
+import IconChevronFilled from 'components/icons/IconChevronFilled';
+import REGISTRY, {TRegistry} from 'utils/registry';
+import {getEnv} from 'utils/env';
 
-type		TWorkLogs = {
-	keeperAddress: string,
-	searchTerm: string,
-	prices: {
-		ethereum: number,
-		keep3rv1: number
-	}
-}
 type		TLogs = {
 	time: number,
 	txHash: string,
@@ -27,12 +20,28 @@ type		TLogs = {
 	gwei: string,
 	normalizedKp3rPrice: number
 }
-function	LogsStatsForKeeper({keeperAddress, searchTerm}: TWorkLogs): ReactElement {
-	const	[isInit, set_isInit] = React.useState(false);
-	const	[logs, set_logs] = React.useState<TLogs[]>([]);
+type		TWorkLogs = {
+	keeperAddress: string,
+	searchTerm: string,
+	chainID: number
+}
 
-	React.useEffect((): void => {
-		axios.get(`${process.env.BACKEND_URI as string}/keeper/${toAddress(keeperAddress)}`)
+function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): ReactElement {
+	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const	[isInit, set_isInit] = useState(false);
+	const	[logs, set_logs] = useState<TLogs[]>([]);
+	const	chainRegistry = useMemo((): TRegistry => {
+		const	_registry: TRegistry = {};
+		for (const r of Object.values(REGISTRY)) {
+			if (r.chainID === chainID) {
+				_registry[r.address] = r;
+			}
+		}
+		return _registry;
+	}, [chainID]);
+
+	useEffect((): void => {
+		axios.get(`${getEnv(chainID).BACKEND_URI}/keeper/${toAddress(keeperAddress)}`)
 			.then((_logs): void => {
 				performBatchedUpdates((): void => {
 					set_logs(_logs.data || []);
@@ -40,26 +49,30 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm}: TWorkLogs): ReactElemen
 				});
 			})
 			.catch((): void => set_isInit(true));
-	}, [keeperAddress]);
+	}, [keeperAddress, chainID]);
 
-	const data = React.useMemo((): unknown[] => (
+	useEffect((): void => {
+		set_selectedExplorer(getEnv(chainID).EXPLORER);
+	}, [chainID]);
+
+	const data = useMemo((): unknown[] => (
 		logs
 			.filter((log): boolean => (
 				(log.job).toLowerCase()?.includes(searchTerm.toLowerCase())
-				|| (REGISTRY[toAddress(log.job)]?.name || '').toLowerCase()?.includes(searchTerm.toLowerCase())
+				|| (chainRegistry[toAddress(log.job)]?.name || '').toLowerCase()?.includes(searchTerm.toLowerCase())
 			))
 			.map((log): unknown => ({
 				date: format.date(Number(log.time) * 1000, true),
-				jobName: REGISTRY[toAddress(log.job)]?.name || 'Unverified Job',
+				jobName: chainRegistry[toAddress(log.job)]?.name || 'Unverified Job',
 				earnedKp3r: format.toNormalizedValue(log.earned, 18),
 				earnedUsd: format.toNormalizedValue(log.earned, 18),
 				fees: format.toNormalizedValue(log.fees, 18),
 				gweiPerCall: format.toNormalizedValue(log.gwei, 9),
 				linkOut: log.job
 			}))
-	), [logs, searchTerm]);
+	), [logs, searchTerm, chainRegistry]);
 
-	const columns = React.useMemo((): unknown[] => [
+	const columns = useMemo((): unknown[] => [
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
 		{Header: 'Job name', accessor: 'jobName', className: 'cell-end pr-8', sortType: 'basic'},
 		{
@@ -85,15 +98,15 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm}: TWorkLogs): ReactElemen
 					role={'button'}
 					onClick={(event: any): void => {
 						event.stopPropagation();
-						window.open(`https://etherscan.io/address/${value}`, '_blank');
+						window.open(`https://${selectedExplorer}/address/${value}`, '_blank');
 					}}>
-					<a href={`https://etherscan.io/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
+					<a href={`https://${selectedExplorer}/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
 						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
 			)
 		}
-	], []);
+	], [selectedExplorer]);
 
 	const {
 		getTableProps,
@@ -171,7 +184,7 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm}: TWorkLogs): ReactElemen
 					{page.map((row: any): ReactElement => {
 						prepareRow(row);
 						return (
-							<Link key={row.getRowProps().key} href={`/jobs/${row.values.linkOut}`}>
+							<Link key={row.getRowProps().key} href={`/jobs/${chainID}/${row.values.linkOut}`}>
 								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (

@@ -1,25 +1,25 @@
-import	React, {ReactElement}							from	'react';
-import	{Button}										from	'@yearn-finance/web-lib/components';
-import	{isZeroAddress, Transaction, defaultTxStatus}	from	'@yearn-finance/web-lib/utils';
-import	{useWeb3}										from	'@yearn-finance/web-lib/contexts';
-import	useKeep3r										from	'contexts/useKeep3r';
-import	Input											from	'components/Input';
-import	{dispute}										from	'utils/actions/dispute';
-import	{resolve}										from	'utils/actions/resolve';
+import React, {ReactElement, useState} from 'react';
+import {Button} from '@yearn-finance/web-lib/components';
+import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {useKeep3r} from 'contexts/useKeep3r';
+import Input from 'components/Input';
+import {dispute} from 'utils/actions/dispute';
+import {resolve} from 'utils/actions/resolve';
 
-function	SectionDispute(): ReactElement {
+function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
 	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[disputeAddress, set_disputeAddress] = React.useState('');
-	const	[resolveAddress, set_resolveAddress] = React.useState('');
-	const	[txStatusDispute, set_txStatusDispute] = React.useState(defaultTxStatus);
-	const	[txStatusResolve, set_txStatusResolve] = React.useState(defaultTxStatus);
+	const	[disputeAddress, set_disputeAddress] = useState('');
+	const	[resolveAddress, set_resolveAddress] = useState('');
+	const	[txStatusDispute, set_txStatusDispute] = useState(defaultTxStatus);
+	const	[txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
 
 	async function	onDispute(): Promise<void> {
 		if (!isActive || txStatusDispute.pending)
 			return;
 		new Transaction(provider, dispute, set_txStatusDispute)
-			.populate(disputeAddress)
+			.populate(chainID, disputeAddress)
 			.onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 				set_disputeAddress('');
@@ -31,7 +31,7 @@ function	SectionDispute(): ReactElement {
 		if (!isActive || txStatusResolve.pending)
 			return;
 		new Transaction(provider, resolve, set_txStatusResolve)
-			.populate(resolveAddress)
+			.populate(chainID, resolveAddress)
 			.onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 				set_resolveAddress('');

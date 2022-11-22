@@ -42,6 +42,7 @@ export type	TKeep3rContext = {
 	keeperStatus: TKeeperStatus,
 	getJobs: () => Promise<void>,
 	getKeeperStatus: () => Promise<void>,
+	hasLoadedJobs: boolean,
 }
 
 export type	TJobStatus = {

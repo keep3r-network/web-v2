@@ -1,12 +1,12 @@
-import	React, {ReactElement, useContext, createContext}		from	'react';
-import	{Contract}												from	'ethcall';
-import 	{BigNumber, ethers}										from	'ethers';
-import	axios													from	'axios';
-import	{useWeb3}												from	'@yearn-finance/web-lib/contexts';
-import	{providers, performBatchedUpdates, format, toAddress}	from	'@yearn-finance/web-lib/utils';
-import	KEEP3RV2_ABI											from	'utils/abi/keep3rv2.abi';
-import	REGISTRY												from	'utils/registry';
-import type * as TJobTypes										from	'contexts/useJob.d';
+import React, {ReactElement, createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {Contract} from 'ethcall';
+import  {BigNumber, ethers} from 'ethers';
+import axios from 'axios';
+import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import REGISTRY, {TRegistry} from 'utils/registry';
+import type * as TJobTypes from 'contexts/useJob.d';
+import {getEnv} from 'utils/env';
 
 const	defaultProps = {
 	jobStatus: {
@@ -40,12 +40,23 @@ const	defaultProps = {
 	getJobStatus: async (): Promise<void> => undefined
 };
 const	JobContext = createContext<TJobTypes.TJobContext>(defaultProps);
-export const JobContextApp = (
-	{jobAddress, children}: {jobAddress: string, children: ReactElement}
-): ReactElement => {
-	const	{provider} = useWeb3();
-	const	[jobStatus, set_jobStatus] = React.useState<TJobTypes.TJobStatus>(defaultProps.jobStatus);
-	const	[, set_nonce] = React.useState(0);
+export const JobContextApp = ({jobAddress, chainID, children}: {
+	chainID: number;
+	jobAddress: string,
+	children: ReactElement
+}): ReactElement => {
+	const	[jobStatus, set_jobStatus] = useState<TJobTypes.TJobStatus>(defaultProps.jobStatus);
+	const	[, set_nonce] = useState(0);
+
+	const	chainRegistry = useMemo((): TRegistry => {
+		const	_registry: TRegistry = {};
+		for (const r of Object.values(REGISTRY)) {
+			if (r.chainID === chainID) {
+				_registry[r.address] = r;
+			}
+		}
+		return _registry;
+	}, [chainID]);
 
 	/* 📰 - Keep3r *************************************************************
 	**	If the user's navigate to a page inside the `pages/jobs` directory, we
@@ -53,30 +64,33 @@ export const JobContextApp = (
 	**	Data includes some on-chain related ones, but also some off-chain
 	**	(stats) related ones, fetched from our backend
 	***************************************************************************/
-	const getJobStatus = React.useCallback(async (): Promise<void> => {
+	const getJobStatus = useCallback(async (): Promise<void> => {
 		if (!jobAddress) {
 			return;
 		}
-		const	_provider = provider || providers.getProvider(1);
+		
+		const	_provider = providers.getProvider(chainID);
 		const	{timestamp} = await _provider.getBlock('latest');
 		const	ethcallProvider = await providers.newEthCallProvider(_provider);
-		const	keep3rV2 = new Contract(process.env.KEEP3R_V2_ADDR as string, KEEP3RV2_ABI);
+		const	KEEP3R_V2_ADDR = toAddress(getEnv(chainID).KEEP3R_V2_ADDR);
+		const	KLP_KP3R_WETH_ADDR = toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR);
+		const	keep3rV2 = new Contract(KEEP3R_V2_ADDR, KEEP3RV2_ABI);
 		const	calls = [
 			keep3rV2.jobLiquidityCredits(jobAddress),
 			keep3rV2.jobOwner(jobAddress),
 			keep3rV2.jobPeriodCredits(jobAddress),
-			keep3rV2.jobTokenCredits(jobAddress, process.env.KLP_KP3R_WETH_ADDR as string),
-			keep3rV2.liquidityAmount(jobAddress, process.env.KLP_KP3R_WETH_ADDR as string),
+			keep3rV2.jobTokenCredits(jobAddress, KLP_KP3R_WETH_ADDR),
+			keep3rV2.liquidityAmount(jobAddress, KLP_KP3R_WETH_ADDR),
 			keep3rV2.totalJobCredits(jobAddress),
-			keep3rV2.pendingUnbonds(jobAddress, process.env.KLP_KP3R_WETH_ADDR as string),
-			keep3rV2.canWithdrawAfter(jobAddress, process.env.KLP_KP3R_WETH_ADDR as string),
+			keep3rV2.pendingUnbonds(jobAddress, KLP_KP3R_WETH_ADDR),
+			keep3rV2.canWithdrawAfter(jobAddress, KLP_KP3R_WETH_ADDR),
 			keep3rV2.unbondTime(),
 			keep3rV2.pendingJobMigrations(jobAddress),
 			keep3rV2.disputes(jobAddress)
 		];
 		const	[results, works] = await Promise.all([
 			ethcallProvider.tryAll(calls),
-			axios.get(`${process.env.BACKEND_URI as string}/job/${jobAddress}`)
+			axios.get(`${getEnv(chainID).BACKEND_URI}/job/${jobAddress}`)
 		]) as [never[], any];
 	
 		const	[
@@ -85,6 +99,7 @@ export const JobContextApp = (
 			pendingUnbonds, canWithdrawAfter, unbondTime,
 			pendingJobMigrations, disputes
 		] = results;
+
 
 		const	allWorks = works.data || [];
 		const	lastWork = allWorks?.[0]?.time;
@@ -107,7 +122,7 @@ export const JobContextApp = (
 
 		performBatchedUpdates((): void => {
 			set_jobStatus({
-				name: REGISTRY[toAddress(jobAddress)]?.name || 'Unverified job',
+				name: chainRegistry[toAddress(jobAddress)]?.name || 'Unverified job',
 				address: toAddress(jobAddress),
 				pendingJobMigrations: toAddress(pendingJobMigrations),
 				jobLiquidityCredits,
@@ -121,7 +136,7 @@ export const JobContextApp = (
 				canWithdrawIn: format.duration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true),
 				canWithdraw: ((timestamp * 1000) - (Number(unbondTime) + Number(canWithdrawAfter) * 1000)) > 0,
 				hasDispute: disputes,
-				isVerified: REGISTRY[toAddress(jobAddress)]?.name ? true : false,
+				isVerified: chainRegistry[toAddress(jobAddress)]?.name ? true : false,
 				isLoaded: true,
 				workDone: allWorks.length,
 				averageWorkDonePerDay: averageWorkPerDay,
@@ -135,8 +150,9 @@ export const JobContextApp = (
 			});
 			set_nonce((n: number): number => n + 1);
 		});
-	}, [jobAddress, provider]);
-	React.useEffect((): void => {
+	}, [jobAddress, chainID, chainRegistry]);
+
+	useEffect((): void => {
 		getJobStatus();
 	}, [getJobStatus]);
 

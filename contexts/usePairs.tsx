@@ -1,31 +1,63 @@
-import	React, {ReactElement, useContext, createContext}		from	'react';
-import	{Contract}												from	'ethcall';
-import	{request}												from	'graphql-request';
-import	{useWeb3}												from	'@yearn-finance/web-lib/contexts';
-import	{toAddress, providers, performBatchedUpdates, format}	from	'@yearn-finance/web-lib/utils';
-import	KEEP3RV1_ABI											from	'utils/abi/keep3rv1.abi';
-import	UNI_V3_PAIR_ABI											from	'utils/abi/univ3Pair.abi';
-import 	{BigNumber, ethers}										from	'ethers';
-import type * as TPairsTypes									from	'contexts/usePairs.d';
+import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {Contract} from 'ethcall';
+import {request} from 'graphql-request';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
+import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
+import  {BigNumber, ethers} from 'ethers';
+import * as TPairsTypes from 'contexts/usePairs.d';
+import {TEnv} from 'utils/types.d';
+import {getEnv} from 'utils/env';
 
-const	defaultProps = {
-	pairs: {
-		[toAddress(process.env.KLP_KP3R_WETH_ADDR as string)]: {
-			addressOfUni: toAddress(process.env.UNI_KP3R_WETH_ADDR as string),
-			addressOfPair: toAddress(process.env.KLP_KP3R_WETH_ADDR as string),
+function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
+	return ({
+		[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]: {
+			addressOfUni: toAddress(getEnv(chainID).UNI_KP3R_WETH_ADDR),
+			addressOfPair: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
 			nameOfPair: 'kLP-KP3R/WETH',
 			balanceOfPair: ethers.constants.Zero,
 			allowanceOfPair: ethers.constants.Zero,
-			addressOfToken1: toAddress(process.env.KP3R_TOKEN_ADDR as string),
+			addressOfToken1: toAddress(getEnv(chainID).KP3R_TOKEN_ADDR),
 			nameOfToken1: 'KP3R',
 			balanceOfToken1: ethers.constants.Zero,
 			allowanceOfToken1: ethers.constants.Zero,
-			addressOfToken2: toAddress(process.env.WETH_TOKEN_ADDR as string),
+			addressOfToken2: toAddress(getEnv(chainID).WETH_TOKEN_ADDR),
 			nameOfToken2: 'WETH',
 			balanceOfToken2: ethers.constants.Zero,
 			allowanceOfToken2: ethers.constants.Zero,
 			priceOfToken1: 0,
 			priceOfToken2: 0,
+			hasPrice: true,
+			position: {
+				liquidity: ethers.constants.Zero,
+				tokensOwed0: ethers.constants.Zero,
+				tokensOwed1: ethers.constants.Zero
+			}
+		}
+	});	
+}
+
+const	defaultChain = (process.env as TEnv).CHAINS[1];
+const	defaultProps = {
+	pairs: {
+		[toAddress(defaultChain.KLP_KP3R_WETH_ADDR)]: {
+			addressOfUni: toAddress(defaultChain.UNI_KP3R_WETH_ADDR),
+			addressOfPair: toAddress(defaultChain.KLP_KP3R_WETH_ADDR),
+			nameOfPair: 'kLP-KP3R/WETH',
+			balanceOfPair: ethers.constants.Zero,
+			allowanceOfPair: ethers.constants.Zero,
+			addressOfToken1: toAddress(defaultChain.KP3R_TOKEN_ADDR),
+			nameOfToken1: 'KP3R',
+			balanceOfToken1: ethers.constants.Zero,
+			allowanceOfToken1: ethers.constants.Zero,
+			addressOfToken2: toAddress(defaultChain.WETH_TOKEN_ADDR),
+			nameOfToken2: 'WETH',
+			balanceOfToken2: ethers.constants.Zero,
+			allowanceOfToken2: ethers.constants.Zero,
+			priceOfToken1: 0,
+			priceOfToken2: 0,
+			hasPrice: true,
 			position: {
 				liquidity: ethers.constants.Zero,
 				tokensOwed0: ethers.constants.Zero,
@@ -37,30 +69,33 @@ const	defaultProps = {
 };
 const	Pairs = createContext<TPairsTypes.TPairsContext>(defaultProps);
 export const PairsContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{provider, isActive, address} = useWeb3();
-	const	[pairs, set_pairs] = React.useState<TPairsTypes.TKeeperPairs>(defaultProps.pairs);
-	const	[, set_nonce] = React.useState(0);
+	const	{address, chainID} = useWeb3();
+	const	[pairs, set_pairs] = useState<TPairsTypes.TKeeperPairs>(getPairsForChain(chainID));
+	const	[, set_nonce] = useState(0);
 
 	/* 📰 - Keep3r *************************************************************
 	**	Keeper is working with a bunch of approved pairs. Right now, only one
 	**	pair is activated, the KEEP3R - WETH pair. We need to get a bunch of
 	**	data to correctly display and enable the actions for the user.
 	***************************************************************************/
-	const getPairs = React.useCallback(async (): Promise<void> => {
-		if (!provider || !isActive)
-			return;
-		const	ethcallProvider = await providers.newEthCallProvider(provider);
-		for (const pair of Object.values(defaultProps.pairs)) {
-			const	token1Contract = new Contract(pair.addressOfToken1 as string, KEEP3RV1_ABI);
+	const getPairs = useCallback(async (): Promise<void> => {
+		const	currentProvider = providers.getProvider(chainID);
+		const	currentAddress = address || ethers.constants.AddressZero;
+		const	KEEP3R_V2_ADDR = getEnv(chainID).KEEP3R_V2_ADDR;
+		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
+		const	_chainPairs = getPairsForChain(chainID);
+
+		for (const pair of Object.values(_chainPairs)) {
+			const	token1Contract = new Contract(pair.addressOfToken1, KEEP3RV1_ABI);
 			const	token2Contract = new Contract(pair.addressOfToken2, KEEP3RV1_ABI);
-			const	pairContract = new Contract(pair.addressOfPair as string, UNI_V3_PAIR_ABI);	
+			const	pairContract = new Contract(pair.addressOfPair, UNI_V3_PAIR_ABI);	
 			const	calls = [
-				token2Contract.balanceOf(address),
-				token2Contract.allowance(address, pair.addressOfPair),
-				token1Contract.balanceOf(address),
-				token1Contract.allowance(address, pair.addressOfPair),
-				pairContract.balanceOf(address),
-				pairContract.allowance(address, process.env.KEEP3R_V2_ADDR as string),
+				token2Contract.balanceOf(currentAddress),
+				token2Contract.allowance(currentAddress, pair.addressOfPair),
+				token1Contract.balanceOf(currentAddress),
+				token1Contract.allowance(currentAddress, pair.addressOfPair),
+				pairContract.balanceOf(currentAddress),
+				pairContract.allowance(currentAddress, KEEP3R_V2_ADDR),
 				pairContract.position()
 			];
 			const	[results, {pool}] = await Promise.all([
@@ -71,7 +106,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 						token1Price
 					}
 				}`)
-			]);
+			]) as [any, any];
 
 			performBatchedUpdates((): void => {
 				const	[
@@ -80,9 +115,9 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 					balanceOfPair, allowanceOfPair,
 					position 
 				] = results;
-				const	liquidity = (position as {liquidity: BigNumber}).liquidity;
-				const	tokensOwed0 = (position as {tokensOwed0: BigNumber}).tokensOwed0;
-				const	tokensOwed1 = (position as {tokensOwed1: BigNumber}).tokensOwed1;
+				const	liquidity = format.BN(position?.liquidity);
+				const	tokensOwed0 = format.BN(position?.tokensOwed0);
+				const	tokensOwed1 = format.BN(position?.tokensOwed1);
 				const	_pair = {
 					addressOfUni: toAddress(pair.addressOfUni),
 					addressOfPair: toAddress(pair.addressOfPair),
@@ -97,8 +132,9 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 					nameOfToken2: 'WETH',
 					balanceOfToken2: format.BN(balanceOfToken2 as BigNumber),
 					allowanceOfToken2: format.BN(allowanceOfToken2 as BigNumber),
-					priceOfToken1: pool.token0Price,
-					priceOfToken2: pool.token1Price,
+					priceOfToken1: pool?.token0Price || 0,
+					priceOfToken2: pool?.token1Price || 0,
+					hasPrice: pool?.token0Price && pool?.token1Price,
 					position: {
 						liquidity: format.BN(liquidity as BigNumber),
 						tokensOwed0: format.BN(tokensOwed0 as BigNumber),
@@ -112,8 +148,8 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 				set_nonce((n: number): number => n + 1);
 			});
 		}
-	}, [address, provider, isActive]);
-	React.useEffect((): void => {
+	}, [chainID, address]);
+	useEffect((): void => {
 		getPairs();
 	}, [getPairs]);
 

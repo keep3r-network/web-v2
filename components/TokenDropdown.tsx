@@ -1,30 +1,46 @@
-import	React, {ReactElement}		from	'react';
-import	{Chevron}					from	'@yearn-finance/web-lib/icons';
-import	LogoConvex					from	'components/icons/LogoConvex';
-import	LogoLido					from	'components/icons/LogoLido';
-import	IconKeep3r					from	'components/icons/IconKeep3r';
-import	IconWEth					from	'components/icons/IconWEth';
-import	{Listbox, Transition}		from	'@headlessui/react';
+import React, {Fragment, ReactElement, useEffect, useMemo, useState} from 'react';
+import {toAddress} from '@yearn-finance/web-lib/utils';
+import {Chevron} from '@yearn-finance/web-lib/icons';
+import LogoConvex from 'components/icons/LogoConvex';
+import LogoLido from 'components/icons/LogoLido';
+import IconKeep3r from 'components/icons/IconKeep3r';
+import IconWEth from 'components/icons/IconWEth';
+import {Listbox, Transition} from '@headlessui/react';
+import {getEnv} from 'utils/env';
 
-const	keeperToken = {
-	name: 'kLP-KP3R/WETH',
-	address: process.env.KLP_KP3R_WETH_ADDR as string,
-	icon: <IconKeep3r className={'h-8 w-8'}/>
-};
-
-const 	tokenList = [
-	{name: 'CVX', address: '0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b', icon: <LogoConvex className={'h-8 w-8'}/>},
-	{name: 'Lido', address: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', icon: <LogoLido className={'h-8 w-8'}/>}
-];
-
-type		TTokenDropdown = {
+type	TDropdownToken = {
+	name: string,
+	address: string,
+	icon: ReactElement,
+}
+type	TTokenDropdown = {
 	onSelect: (s: string) => void,
+	chainID: number,
 	withKeeper?: boolean
 }
-function	TokenDropdownBase({onSelect, withKeeper}: TTokenDropdown): ReactElement {
-	const [selected, set_selected] = React.useState(withKeeper ? keeperToken : tokenList[0]);
-  
-	React.useEffect((): void => {
+function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
+	const	keeperToken = useMemo((): TDropdownToken => ({
+		name: 'kLP-KP3R/WETH',
+		address: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
+		icon: <IconKeep3r className={'h-8 w-8'}/>
+	}), [chainID]);
+	
+	const 	tokenList = useMemo((): TDropdownToken[] => ([
+		{
+			name: 'CVX',
+			address: toAddress(getEnv(chainID).CVX_TOKEN_ADDR),
+			icon: <LogoConvex className={'h-8 w-8'}/>
+		},
+		{
+			name: 'Lido',
+			address: toAddress(getEnv(chainID).LIDO_TOKEN_ADDR),
+			icon: <LogoLido className={'h-8 w-8'}/>
+		}
+	]), [chainID]);
+	
+	const [selected, set_selected] = useState(withKeeper ? keeperToken : tokenList[0]);
+
+	useEffect((): void => {
 		if (withKeeper) {
 			onSelect(keeperToken.address);
 		} else {
@@ -43,7 +59,7 @@ function	TokenDropdownBase({onSelect, withKeeper}: TTokenDropdown): ReactElement
 				<div className={'relative'}>
 					<Listbox.Button className={'flex w-full flex-row items-center justify-between !bg-grey-3 p-2 hover:!bg-grey-4'}>
 						<div className={'flex flex-row items-center space-x-2'}>
-							{selected.address === '0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44' ? (
+							{toAddress(selected.address) === toAddress(getEnv(chainID).KEEP3R_V1_ADDR) ? (
 								<div className={'flex h-8 w-12 flex-row -space-x-4'}>
 									<IconWEth className={'h-8 w-8'} />
 									<IconKeep3r className={'h-8 w-8'} />
@@ -60,7 +76,7 @@ function	TokenDropdownBase({onSelect, withKeeper}: TTokenDropdown): ReactElement
 						</span>
 					</Listbox.Button>
 					<Transition
-						as={React.Fragment}
+						as={Fragment}
 						leave={'transition ease-in duration-100'}
 						leaveFrom={'opacity-100'}
 						leaveTo={'opacity-0'}>
@@ -71,7 +87,7 @@ function	TokenDropdownBase({onSelect, withKeeper}: TTokenDropdown): ReactElement
 									className={'relative cursor-pointer select-none bg-grey-3 p-2 transition-colors hover:bg-grey-4'}
 									value={token}>
 									<div className={'flex flex-row items-center space-x-2'}>
-										{token.address === '0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44' ? (
+										{toAddress(token.address) === toAddress(getEnv(chainID).KEEP3R_V1_ADDR) ? (
 											<div className={'flex h-8 w-12 flex-row -space-x-4'}>
 												<IconWEth className={'h-8 w-8'} />
 												<IconKeep3r className={'h-8 w-8'} />

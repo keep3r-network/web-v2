@@ -47,6 +47,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'The Keep3r Logo'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/the_keep3r_black.png'}
 									width={264}
 									height={168} />
@@ -63,6 +64,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'The Keep3r Network Logo'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/the_keep3r_network_black.png'}
 									width={474}
 									height={168} />
@@ -79,6 +81,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'Mark'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/keep3r_mark_black.png'}
 									width={168}
 									height={168} />
@@ -96,6 +99,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'The Keep3r Logo'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/the_keep3r_white.png'}
 									width={264}
 									height={168} />
@@ -112,6 +116,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'The Keep3r Network Logo'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/the_keep3r_network_white.png'}
 									width={474}
 									height={168} />
@@ -128,6 +133,7 @@ function	Index(): ReactElement {
 							<b className={'text-lg'}>{'Mark'}</b>
 							<div>
 								<Image
+									alt={''}
 									src={'/presskit/keep3r_mark_white.png'}
 									width={168}
 									height={168} />

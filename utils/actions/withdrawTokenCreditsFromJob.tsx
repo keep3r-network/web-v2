@@ -1,8 +1,10 @@
-import	{ContractInterface, ethers} from	'ethers';
-import	KEEP3RV2_ABI				from	'utils/abi/keep3rv2.abi';
+import {ContractInterface, ethers} from 'ethers';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import {getEnv} from 'utils/env';
 
 export async function	withdrawTokenCreditsFromJob(
 	provider: ethers.providers.Web3Provider,
+	chainID: number,
 	jobAddress: string,
 	tokenAddress: string,
 	tokenAmount: ethers.BigNumber,
@@ -12,7 +14,7 @@ export async function	withdrawTokenCreditsFromJob(
 
 	try {
 		const	contract = new ethers.Contract(
-			process.env.KEEP3R_V2_ADDR as string,
+			getEnv(chainID).KEEP3R_V2_ADDR,
 			KEEP3RV2_ABI as ContractInterface,
 			signer
 		);

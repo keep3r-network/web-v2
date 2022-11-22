@@ -16,6 +16,7 @@ export type	TKeeperPair = {
 	allowanceOfToken2: BigNumber,
 	priceOfToken1: number,
 	priceOfToken2: number,
+	hasPrice: boolean,
 	position: {
 		liquidity: BigNumber,
 		tokensOwed0: BigNumber,
