@@ -17,6 +17,15 @@ export function getEnv(chainID: number, canFallback = true): TEnvData {
 			UNI_KP3R_WETH_ADDR: toAddress(ethers.constants.AddressZero),
 			CVX_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
 			LIDO_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			IB_AMM_ADDR: toAddress(ethers.constants.AddressZero),
+			IB_AMM_2_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_AUD_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_CHF_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_GBP_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_JPY_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_EUR_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_KRW_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
+			CY_ZAR_TOKEN_ADDR: toAddress(ethers.constants.AddressZero),
 			EXPLORER: '',
 			BACKEND_URI: ''
 		};
