@@ -38,7 +38,7 @@ function	Footer(): ReactElement {
 					</a>
 				</div>
 				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://discord.gg/RMZaUQCv'} target={'_blank'} rel={'noreferrer'}>
+					<a href={'https://discord.gg/Mwunmt7ZvD'} target={'_blank'} rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Discord'}</span>
 						<IconDiscord className={'h-8 w-8'} />
 					</a>
