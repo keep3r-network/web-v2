@@ -41,6 +41,7 @@ function	StatsKeeper(): ReactElement {
 		set_selectedExplorer(getEnv(chainID).EXPLORER);
 	}, [chainID]);
 
+	const	Keep3rButton = Button as any;
 	return (
 		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
@@ -105,11 +106,11 @@ function	StatsKeeper(): ReactElement {
 				</div>
 
 				<div className={'flex flex-col items-center justify-center bg-white p-6'}>
-					<Button
+					<Keep3rButton
 						onClick={(): void => set_isModalBondOpen(true)}
 						variant={'reverted'}>
 						{'Become a Keeper'}
-					</Button>
+					</Keep3rButton>
 				</div>
 
 			</div>
