@@ -114,7 +114,7 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			};
 		}
 
-		saveJobs(jobData, currentProvider?.network?.chainId || chainID);
+		saveJobs(jobData, (currentProvider as any)?.network?.chainId || chainID);
 	}, [provider, chainID, chainRegistry, saveJobs]);
 
 	useEffect((): void => {
