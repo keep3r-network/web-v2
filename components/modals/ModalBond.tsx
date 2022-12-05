@@ -1,16 +1,18 @@
-import React, {ReactElement, useState} from 'react';
-import {ethers} from 'ethers';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, format} from '@yearn-finance/web-lib/utils';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
-import {bond} from 'utils/actions/bond';
-import {approveERC20} from 'utils/actions/approveToken';
+import {useKeep3r} from 'contexts/useKeep3r';
+import {ethers} from 'ethers';
 import {activate} from 'utils/actions/activate';
+import {approveERC20} from 'utils/actions/approveToken';
+import {bond} from 'utils/actions/bond';
 import {getEnv} from 'utils/env';
+import {Button, Modal} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Cross} from '@yearn-finance/web-lib/icons';
+import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+
+import type {ReactElement} from 'react';
 
 type		TModalBond = {
 	chainID: number,
@@ -27,8 +29,9 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 	const	[txStatusActivate, set_txStatusActivate] = useState(defaultTxStatus);
 
 	async function	onBond(): Promise<void> {
-		if (!isActive || txStatusBond.pending || keeperStatus.hasDispute)
+		if (!isActive || txStatusBond.pending || keeperStatus.hasDispute) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, bond, set_txStatusBond).populate(
 				chainID,
@@ -46,8 +49,9 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 	}
 
 	async function	onApprove(): Promise<void> {
-		if (!isActive || txStatusApprove.pending || keeperStatus.hasDispute)
+		if (!isActive || txStatusApprove.pending || keeperStatus.hasDispute) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
 				tokenBonded,
@@ -62,8 +66,9 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 	}
 	
 	async function	onActivate(): Promise<void> {
-		if (!isActive || txStatusActivate.pending || keeperStatus.hasDispute)
+		if (!isActive || txStatusActivate.pending || keeperStatus.hasDispute) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, activate, set_txStatusActivate).populate(
 				chainID,
@@ -124,12 +129,12 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					<div className={'space-y-6'}>
 						<p>
 							{'To become a keeper, you simply need to call '}
-							<code className={'inline text-grey-2'}>{'bond(address,uint)'}</code>
+							<code className={'text-grey-2 inline'}>{'bond(address,uint)'}</code>
 							{'. No funds are required to become a keeper, however, certain jobs might require a minimum amount of funds.'}
 						</p>
 						<p>
 							{'There is a bond time (default 3-day) delay before you can become an active keeper. Once this delay has passed, you will have to call '}
-							<code className={'inline text-grey-2'}>{'activate()'}</code>
+							<code className={'text-grey-2 inline'}>{'activate()'}</code>
 							{'.'}
 						</p>
 					</div>

@@ -1,18 +1,21 @@
-import React, {ReactElement, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
+import IconBadgeCheck from 'components/icons/IconBadgeCheck';
+import {ModalMigrate} from 'components/modals/ModalMigrate';
+import SectionActions from 'components/sections/jobs/SectionActions';
+import SectionDocumentation from 'components/sections/jobs/SectionDocumentation';
+import SectionStatus from 'components/sections/jobs/SectionStatus';
+import {useJob} from 'contexts/useJob';
+import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
 import {Button} from '@yearn-finance/web-lib/components';
 import {Copy, LinkOut, SocialGithub} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, truncateHex} from '@yearn-finance/web-lib/utils';
-import {useJob} from 'contexts/useJob';
-import IconBadgeCheck from 'components/icons/IconBadgeCheck';
-import {ModalMigrate} from 'components/modals/ModalMigrate';
-import SectionStatus from 'components/sections/jobs/SectionStatus';
-import SectionActions from 'components/sections/jobs/SectionActions';
-import SectionDocumentation from 'components/sections/jobs/SectionDocumentation';
-import {getEnv} from 'utils/env';
+import {copyToClipboard} from '@yearn-finance/web-lib/utils';
+import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
@@ -40,6 +43,7 @@ function	StatsJob(): ReactElement {
 		set_selectedExplorer(getEnv(chainID).EXPLORER);
 	}, [chainID]);
 
+	const	Keep3rButton = Button as any;
 	return (
 		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
@@ -63,14 +67,22 @@ function	StatsJob(): ReactElement {
 							<b>{truncateHex(stats?.job || '', 5)}</b>
 							<div><Copy onClick={(): void => copyToClipboard(stats?.job || '')} className={'h-4 w-4 cursor-pointer text-black'} /></div>
 							<div>
-								<a href={`https://${selectedExplorer}/address/${stats?.job || ''}`} target={'_blank'} rel={'noopener noreferrer'}>
+								<a
+									href={`https://${selectedExplorer}/address/${stats?.job || ''}`}
+									target={'_blank'}
+									rel={'noopener noreferrer'}>
 									<LinkOut className={'h-4 w-4 cursor-pointer text-black'} />
 								</a>
 							</div>
 							<div>
-								{stats?.repository ? <a href={stats?.repository} target={'_blank'} rel={'noopener noreferrer'}>
-									<SocialGithub className={'ml-0.5 h-4 w-4 cursor-pointer text-black'} />
-								</a> : null}
+								{stats?.repository ? (
+									<a
+										href={stats?.repository}
+										target={'_blank'}
+										rel={'noopener noreferrer'}>
+										<SocialGithub className={'ml-0.5 h-4 w-4 cursor-pointer text-black'} />
+									</a>
+								) : null}
 							</div>
 						</div>
 					</div>
@@ -81,13 +93,13 @@ function	StatsJob(): ReactElement {
 						<SectionActions chainID={chainID} />
 					</div>
 					<div className={'flex-center flex h-full justify-center space-x-4 bg-white py-6 px-8'}>
-						<Button
+						<Keep3rButton
 							onClick={(): void => set_isModalMigrateOpen(true)}
 							variant={'reverted'}>
 							{'Migrate'}
-						</Button>
+						</Keep3rButton>
 						<Link href={`/jobs/${chainID}/${jobStatus.address}/calls`}>
-							<Button variant={'reverted'}>{'View calls'}</Button>
+							<Keep3rButton variant={'reverted'}>{'View calls'}</Keep3rButton>
 						</Link>
 					</div>
 				</div>

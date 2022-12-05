@@ -1,10 +1,13 @@
-import React, {ReactElement, useState} from 'react';
-import {Button} from '@yearn-finance/web-lib/components';
-import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useState} from 'react';
 import Input from 'components/Input';
+import {useKeep3r} from 'contexts/useKeep3r';
 import {revoke} from 'utils/actions/revoke';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionBlacklist({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -13,8 +16,9 @@ function	SectionBlacklist({chainID}: {chainID: number}): ReactElement {
 	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRevoke(): Promise<void> {
-		if (!isActive || txStatus.pending)
+		if (!isActive || txStatus.pending) {
 			return;
+		}
 		new Transaction(provider, revoke, set_txStatus)
 			.populate(chainID, blackListAddress)
 			.onSuccess(async (): Promise<void> => {
@@ -31,8 +35,8 @@ function	SectionBlacklist({chainID}: {chainID: number}): ReactElement {
 				<div className={'grid grid-cols-5 gap-4'}>
 					<div className={'col-span-3 flex flex-col space-y-2'}>
 						<span>
-							<b className={'hidden text-black-1 md:block'}>{'Blacklist keeper from network'}</b>
-							<b className={'block text-black-1 md:hidden'}>{'Blacklist keeper'}</b>
+							<b className={'text-black-1 hidden md:block'}>{'Blacklist keeper from network'}</b>
+							<b className={'text-black-1 block md:hidden'}>{'Blacklist keeper'}</b>
 						</span>
 						<label aria-invalid={blackListAddress !== '' && isZeroAddress(blackListAddress)}>
 							<Input

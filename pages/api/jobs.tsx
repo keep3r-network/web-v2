@@ -1,6 +1,8 @@
-import {NextApiRequest, NextApiResponse} from 'next';
-import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils';
-import REGISTRY, {TRegistry} from 'utils/registry';
+import REGISTRY from 'utils/registry';
+import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {NextApiRequest, NextApiResponse} from 'next';
+import type {TRegistry} from 'utils/registry';
 import type {TJobIndexData} from 'utils/types.d';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {

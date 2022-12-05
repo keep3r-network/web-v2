@@ -1,6 +1,7 @@
-import {toAddress} from '@yearn-finance/web-lib/utils';
 import {ethers} from 'ethers';
-import {TEnv, TEnvData} from './types.d';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {TEnv, TEnvData} from './types.d';
 
 export function getEnv(chainID: number, canFallback = true): TEnvData {
 	const	envForChain = (process.env as TEnv).CHAINS[chainID];

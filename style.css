@@ -1,5 +1,5 @@
 /* This will load Tailwindcss + all the overwrite from Yearn lib */
-@import '@yearn-finance/web-lib/dist/style.next.css';
+@import '@yearn-finance/web-lib/style.next.css';
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;800&display=swap');
 
 /* 📰 - Keep3r *****************************************************************

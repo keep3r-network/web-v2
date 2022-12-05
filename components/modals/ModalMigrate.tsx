@@ -1,18 +1,21 @@
-import React, {ReactElement, useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
-import {ethers} from 'ethers';
+import Input from 'components/Input';
+import {useJob} from 'contexts/useJob';
+import {useKeep3r} from 'contexts/useKeep3r';
 import {Contract} from 'ethcall';
+import {ethers} from 'ethers';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import {acceptJobMigration} from 'utils/actions/acceptJobMigration';
+import {migrateJob} from 'utils/actions/migrateJob';
+import {getEnv} from 'utils/env';
 import {Button, Modal} from '@yearn-finance/web-lib/components';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, isZeroAddress, providers, toAddress} from '@yearn-finance/web-lib/utils';
 import {Cross} from '@yearn-finance/web-lib/icons';
-import {useKeep3r} from 'contexts/useKeep3r';
-import {useJob} from 'contexts/useJob';
-import Input from 'components/Input';
-import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import {migrateJob} from 'utils/actions/migrateJob';
-import {acceptJobMigration} from 'utils/actions/acceptJobMigration';
-import {getEnv} from 'utils/env';
+import {defaultTxStatus, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 type	TJobToStatus = {hasDispute: boolean, owner: string}
 type	TModalMigrate = {
@@ -70,8 +73,9 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 	}, [jobStatus.pendingJobMigrations]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	async function	onMigrateJob(): Promise<void> {
-		if (!isActive || txStatusMigrate.pending)
+		if (!isActive || txStatusMigrate.pending) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, migrateJob, set_txStatusMigrate).populate(
 				chainID,
@@ -87,8 +91,9 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 	}
 
 	async function	onAcceptMigration(): Promise<void> {
-		if (!isActive || txStatusAccept.pending)
+		if (!isActive || txStatusAccept.pending) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, acceptJobMigration, set_txStatusAccept).populate(
 				chainID,
@@ -134,8 +139,8 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 					</div>
 					<div className={'mb-6 space-y-2'}>
 						<b className={'text-black-1'}>{'Current address'}</b>
-						<div className={'overflow-hidden border border-grey-1 py-3 px-4'}>
-							<p className={'overflow-hidden text-ellipsis text-grey-1'}>{currentAddress}</p>
+						<div className={'border-grey-1 overflow-hidden border py-3 px-4'}>
+							<p className={'text-grey-1 overflow-hidden text-ellipsis'}>{currentAddress}</p>
 						</div>
 					</div>
 					<label

@@ -1,6 +1,7 @@
-import axios from 'axios';
-import {NextApiRequest, NextApiResponse} from 'next';
 import {getEnv} from 'utils/env';
+import axios from 'axios';
+
+import type {NextApiRequest, NextApiResponse} from 'next';
 import type {TStatsIndexData} from 'utils/types.d';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {
@@ -11,9 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		currentChainID = 1;
 	}
 
-	const	[data] = await Promise.allSettled([
-		axios.get(`${getEnv(currentChainID, false).BACKEND_URI}/stats`)
-	]);
+	const	[data] = await Promise.allSettled([axios.get(`${getEnv(currentChainID, false).BACKEND_URI}/stats`)]);
 	if (data.status === 'rejected') {
 		const	statData: TStatsIndexData = {
 			bondedKp3r: '',
@@ -30,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			prices: {keep3rv1: 0, ethereum: 0}
 		});
 	}
-	const	stats = data.value.data.stats;
-	const	prices = data.value.data.prices;
+	const	{stats} = data.value.data;
+	const	{prices} = data.value.data;
 
 	const	statData: TStatsIndexData = {
 		bondedKp3r: stats?.bondedKp3r || '0',

@@ -1,13 +1,15 @@
-import React, {ReactElement} from 'react';
+import React from 'react';
+import LogsDispute from 'components/logs/LogsDispute';
+import SectionBlacklist from 'components/sections/disputes/SectionBlacklist';
+import SectionDispute from 'components/sections/disputes/SectionDispute';
+import SectionSlash from 'components/sections/disputes/SectionSlash';
 import axios from 'axios';
 import useSWR from 'swr';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
 import {Copy} from '@yearn-finance/web-lib/icons';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils';
-import LogsDispute from 'components/logs/LogsDispute';
-import SectionDispute from 'components/sections/disputes/SectionDispute';
-import SectionSlash from 'components/sections/disputes/SectionSlash';
-import SectionBlacklist from 'components/sections/disputes/SectionBlacklist';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 

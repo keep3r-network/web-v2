@@ -1,16 +1,20 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {BigNumber, ethers} from 'ethers';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, format, performBatchedUpdates, toAddress} from '@yearn-finance/web-lib/utils';
-import {usePairs} from 'contexts/usePairs';
-import {useJob} from 'contexts/useJob';
+import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
 import TokenPairDropdown from 'components/TokenPairDropdown';
-import {approveERC20} from 'utils/actions/approveToken';
+import {useJob} from 'contexts/useJob';
+import {usePairs} from 'contexts/usePairs';
+import {ethers} from 'ethers';
 import {addLiquidityToJob} from 'utils/actions/addLiquidityToJob';
+import {approveERC20} from 'utils/actions/approveToken';
 import {mint} from 'utils/actions/mint';
 import {getEnv} from 'utils/env';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, format, performBatchedUpdates, Transaction} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
 
 function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -27,8 +31,9 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	}, [pairs, chainID]);
 
 	async function	onApproveToken1(token: string, spender: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusApproveToken1.pending)
+		if (!isActive || txStatusApproveToken1.pending) {
 			return;
+		}
 		new Transaction(provider, approveERC20, set_txStatusApproveToken1)
 			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
@@ -38,8 +43,9 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	}
 
 	async function	onApproveToken2(token: string, spender: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusApproveToken2.pending)
+		if (!isActive || txStatusApproveToken2.pending) {
 			return;
+		}
 		new Transaction(provider, approveERC20, set_txStatusApproveToken2)
 			.populate(chainID, token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
@@ -49,8 +55,9 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	}
 
 	async function	onMint(pairAddress: string, amount1: BigNumber, amount2: BigNumber): Promise<void> {
-		if (!isActive || txStatusMint.pending)
+		if (!isActive || txStatusMint.pending) {
 			return;
+		}
 		new Transaction(provider, mint, set_txStatusMint)
 			.populate(pairAddress, amount1, amount2)
 			.onSuccess(async (): Promise<void> => {
@@ -164,8 +171,9 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 	}, [pairs, chainID]);
 
 	async function	onApprove(token: string, spender: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusApprove.pending)
+		if (!isActive || txStatusApprove.pending) {
 			return;
+		}
 		new Transaction(provider, approveERC20, set_txStatusApprove)
 			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
@@ -175,8 +183,9 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 	}
 
 	async function	onAddLiquidityToJob(pairAddress: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusAddLiquidity.pending)
+		if (!isActive || txStatusAddLiquidity.pending) {
 			return;
+		}
 		new Transaction(provider, addLiquidityToJob, set_txStatusAddLiquidity)
 			.populate(chainID, jobStatus.address, pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {

@@ -1,11 +1,14 @@
-import React, {ReactElement, useState} from 'react';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useState} from 'react';
 import Input from 'components/Input';
+import {useKeep3r} from 'contexts/useKeep3r';
 import {registerJob} from 'utils/actions/registerJob';
+import {Button, Modal} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Cross} from '@yearn-finance/web-lib/icons';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 type		TModalRegisterJobs = {
 	chainID: number,
@@ -19,8 +22,9 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRegisterJob(): Promise<void> {
-		if (!isActive || txStatus.pending || isZeroAddress(address))
+		if (!isActive || txStatus.pending || isZeroAddress(address)) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, registerJob, set_txStatus)
 				.populate(chainID, address)

@@ -1,10 +1,12 @@
-import React, {ReactElement, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useRouter} from 'next/router';
+import Input from 'components/Input';
+import LogsStatsPerKeeper from 'components/logs/LogsStatsPerKeeper';
 import axios from 'axios';
 import useSWR from 'swr';
 import {format} from '@yearn-finance/web-lib/utils';
-import Input from 'components/Input';
-import LogsStatsPerKeeper from 'components/logs/LogsStatsPerKeeper';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
@@ -23,7 +25,7 @@ function	Stats(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'mb-4 bg-grey-3'}>
+			<section aria-label={'general statistics'} className={'bg-grey-3 mb-4'}>
 				<div className={'mx-auto grid w-full max-w-6xl grid-cols-2 gap-6 py-6 px-4 md:grid-cols-5 md:gap-4'}>
 					<div className={'space-y-2'}>
 						<p>{'Function calls'}</p>

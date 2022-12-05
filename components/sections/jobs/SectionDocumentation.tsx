@@ -1,4 +1,6 @@
-import	React, {ReactElement}					from	'react';
+import	React					from	'react';
+
+import type {ReactElement} from 'react';
 
 function	SectionDocumentation(): ReactElement {
 	return (
@@ -10,7 +12,12 @@ function	SectionDocumentation(): ReactElement {
 					<p>{'Provide liquidity to Uniswap v3 full-range position to mint kLP tokens. kLP tokens represent your position in the pool and can be redeemed for underlying assets.'}</p>
 					<p>
 						{'Choose maximum desired amount of each asset to provide, and '}
-						<a href={'https://docs.keep3r.network/registry#pair-managers'} target={'_blank'} className={'underline'} rel={'noreferrer'}>{'Pair Manager'}</a>
+						<a
+							href={'https://docs.keep3r.network/registry#pair-managers'}
+							target={'_blank'}
+							className={'underline'}
+							rel={'noreferrer'}>{'Pair Manager'}
+						</a>
 						{' will calculate the exact input amount of each token.'}
 					</p>
 					<p>
@@ -20,7 +27,7 @@ function	SectionDocumentation(): ReactElement {
 				</div>
 
 				<div aria-label={'Add liquidity'} className={'mb-10 space-y-4'}>
-					<b className={'mb-4 text-intermediate'}>{'Add liquidity'}</b>
+					<b className={'text-intermediate mb-4'}>{'Add liquidity'}</b>
 
 					<p>{'As a job owner, you have to ensure your job has enough liquidity credits. Take your time to calculate necessary amount of governance approved kLPs. Only then, mint and add kLP tokens to your job.'}</p>
 
@@ -31,7 +38,12 @@ function	SectionDocumentation(): ReactElement {
 					<p>
 						<b>{'Note: '}</b>
 						{'If you add credits to job which is considered malicious, your kLP tokens might get slashed. Read '}
-						<a href={'https://docs.keep3r.network/'} target={'_blank'} className={'underline'} rel={'noreferrer'}>{'docs'}</a>
+						<a
+							href={'https://docs.keep3r.network/'}
+							target={'_blank'}
+							className={'underline'}
+							rel={'noreferrer'}>{'docs'}
+						</a>
 						{' for more info.'}
 					</p>
 				</div>

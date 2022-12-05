@@ -1,18 +1,21 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {ethers} from 'ethers';
-import {Contract} from 'ethcall';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, format, isZeroAddress, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
-import {useKeep3r} from 'contexts/useKeep3r';
 import {useJob} from 'contexts/useJob';
-import {approveERC20} from 'utils/actions/approveToken';
-import {addTokenCreditsToJob} from 'utils/actions/addTokenCreditsToJob';
-import {withdrawTokenCreditsFromJob} from 'utils/actions/withdrawTokenCreditsFromJob';
+import {useKeep3r} from 'contexts/useKeep3r';
+import {Contract} from 'ethcall';
+import {ethers} from 'ethers';
 import ERC20_ABI from 'utils/abi/keep3rv1.abi';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
+import {addTokenCreditsToJob} from 'utils/actions/addTokenCreditsToJob';
+import {approveERC20} from 'utils/actions/approveToken';
+import {withdrawTokenCreditsFromJob} from 'utils/actions/withdrawTokenCreditsFromJob';
 import {getEnv} from 'utils/env';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, format, performBatchedUpdates, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive, address} = useWeb3();
@@ -70,8 +73,9 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	}, [tokenToAdd, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	async function	onApprove(): Promise<void> {
-		if (!isActive || txStatusApprove.pending)
+		if (!isActive || txStatusApprove.pending) {
 			return;
+		}
 		new Transaction(provider, approveERC20, set_txStatusApprove)
 			.populate(
 				tokenToAdd,
@@ -83,8 +87,9 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	}
 
 	async function	onAddTokenCreditsToJob(): Promise<void> {
-		if (!isActive || txStatusAddCredits.pending)
+		if (!isActive || txStatusAddCredits.pending) {
 			return;
+		}
 		new Transaction(provider, addTokenCreditsToJob, set_txStatusAddCredits)
 			.populate(
 				chainID,
@@ -220,8 +225,9 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 	}, [tokenToWithdraw, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	async function	onWithdrawTokenCreditsFromJob(): Promise<void> {
-		if (!isActive || txStatusWithdrawCredits.pending)
+		if (!isActive || txStatusWithdrawCredits.pending) {
 			return;
+		}
 		new Transaction(provider, withdrawTokenCreditsFromJob, set_txStatusWithdrawCredits)
 			.populate(
 				chainID,

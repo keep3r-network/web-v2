@@ -1,18 +1,22 @@
-import React, {ReactElement, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Link from 'next/link';
-import {Button} from '@yearn-finance/web-lib/components';
-import {ArrowDown} from '@yearn-finance/web-lib/icons';
-import * as utils from '@yearn-finance/web-lib/utils';
-import IconLoader from 'components/icons/IconLoader';
 import IconBadgeCheck from 'components/icons/IconBadgeCheck';
+import IconLoader from 'components/icons/IconLoader';
 import Input from 'components/Input';
 import {ModalRegisterJobs} from 'components/modals/ModalRegisterJobs';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {TJobData} from 'contexts/useKeep3r.d';
+import {Button} from '@yearn-finance/web-lib/components';
+import {ArrowDown} from '@yearn-finance/web-lib/icons';
+import * as utils from '@yearn-finance/web-lib/utils';
+import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {TJobData} from 'contexts/useKeep3r.d';
+import type {ReactElement} from 'react';
 
 function	deepFind(job: TJobData, term: string): boolean {
-	if (term.length === 0)
+	if (term.length === 0) {
 		return true;
+	}
 	return (
 		(job?.name || '').toLowerCase().includes(term.toLowerCase()) ||
 		(job?.address || '').toLowerCase().includes(term.toLowerCase())
@@ -29,10 +33,11 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 
 	useEffect((): void => {
 		const	_jobsWithOrder = jobs.sort((a: TJobData, b: TJobData): number => {
-			if (sortBy === '-totalCredits')
+			if (sortBy === '-totalCredits') {
 				return b.totalCreditsNormalized - a.totalCreditsNormalized;
-			else
+			} else {
 				return a.totalCreditsNormalized - b.totalCreditsNormalized;
+			}
 		});
 		utils.performBatchedUpdates((): void => {
 			set_jobsWithOrder(_jobsWithOrder.filter((job): boolean => deepFind(job, searchTerm)));
@@ -76,7 +81,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 				) : null}
 				{jobsWithOrder.map((job, index): ReactElement => (
 					<Link href={`/jobs/${chainID}/${job.address}`} key={index}>
-						<div className={'grid cursor-pointer grid-cols-3 gap-4 bg-white py-6 px-4 transition-colors hover:bg-grey-4 md:gap-2'}>
+						<div className={'hover:bg-grey-4 grid cursor-pointer grid-cols-3 gap-4 bg-white py-6 px-4 transition-colors md:gap-2'}>
 							<div className={'col-span-2 space-y-2'}>
 								<div className={'flex flex-row items-center'}>
 									<b className={'overflow-hidden text-ellipsis pr-2 text-xl md:pr-0'}>
@@ -84,8 +89,8 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 									</b>
 									{job.name ? <IconBadgeCheck className={'ml-auto h-4 min-h-[16px] w-4 min-w-[16px] md:ml-4 md:h-6 md:min-h-[24px] md:w-6 md:min-w-[24px]'} /> : null}
 								</div>
-								<p className={'relative text-grey-1'}>
-									{utils.truncateHex(job.address, 5)}
+								<p className={'text-grey-1 relative'}>
+									{truncateHex(job.address, 5)}
 									<span className={'absolute left-0 w-full  overflow-hidden truncate text-transparent'}>{job.address}</span>
 								</p>
 							</div>

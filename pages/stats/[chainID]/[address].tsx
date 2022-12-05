@@ -1,15 +1,18 @@
-import React, {ReactElement, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/router';
+import Input from 'components/Input';
+import LogsStatsForKeeper from 'components/logs/LogsStatsForKeeper';
+import {ModalBond} from 'components/modals/ModalBond';
+import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
 import {Button} from '@yearn-finance/web-lib/components';
 import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, format, toAddress, truncateHex} from '@yearn-finance/web-lib/utils';
-import Input from 'components/Input';
-import {ModalBond} from 'components/modals/ModalBond';
-import LogsStatsForKeeper from 'components/logs/LogsStatsForKeeper';
-import {useRouter} from 'next/router';
-import {getEnv} from 'utils/env';
+import {copyToClipboard, format} from '@yearn-finance/web-lib/utils';
+import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
@@ -47,7 +50,10 @@ function	StatsKeeper(): ReactElement {
 				</p>
 				<div><Copy onClick={(): void => copyToClipboard(data?.stats?.keeper || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
 				<div>
-					<a href={`https://${selectedExplorer}/address/${data?.stats?.keeper || '-'}`} target={'_blank'} rel={'noopener noreferrer'}>
+					<a
+						href={`https://${selectedExplorer}/address/${data?.stats?.keeper || '-'}`}
+						target={'_blank'}
+						rel={'noopener noreferrer'}>
 						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>

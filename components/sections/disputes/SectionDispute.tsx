@@ -1,11 +1,14 @@
-import React, {ReactElement, useState} from 'react';
-import {Button} from '@yearn-finance/web-lib/components';
-import {Transaction, defaultTxStatus, isZeroAddress} from '@yearn-finance/web-lib/utils';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useState} from 'react';
 import Input from 'components/Input';
+import {useKeep3r} from 'contexts/useKeep3r';
 import {dispute} from 'utils/actions/dispute';
 import {resolve} from 'utils/actions/resolve';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -16,8 +19,9 @@ function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 	const	[txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
 
 	async function	onDispute(): Promise<void> {
-		if (!isActive || txStatusDispute.pending)
+		if (!isActive || txStatusDispute.pending) {
 			return;
+		}
 		new Transaction(provider, dispute, set_txStatusDispute)
 			.populate(chainID, disputeAddress)
 			.onSuccess(async (): Promise<void> => {
@@ -28,8 +32,9 @@ function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 	}
 
 	async function	onResolve(): Promise<void> {
-		if (!isActive || txStatusResolve.pending)
+		if (!isActive || txStatusResolve.pending) {
 			return;
+		}
 		new Transaction(provider, resolve, set_txStatusResolve)
 			.populate(chainID, resolveAddress)
 			.onSuccess(async (): Promise<void> => {

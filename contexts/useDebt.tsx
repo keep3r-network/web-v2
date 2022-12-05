@@ -1,10 +1,12 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {BigNumber} from 'ethers';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Contract} from 'ethcall';
-import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
-import {getEnv} from 'utils/env';
 import CY_TOKEN_ABI from 'utils/abi/cy.abi';
 import LENS_PRICE_ABI from 'utils/abi/lens.abi';
+import {getEnv} from 'utils/env';
+import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
 
 export type	TDebt = {
 	name: string;

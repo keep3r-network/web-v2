@@ -1,11 +1,13 @@
-import axios from 'axios';
-import {NextApiRequest, NextApiResponse} from 'next';
 import {Contract} from 'ethcall';
-import {BigNumber} from 'ethers';
-import {providers, toAddress} from '@yearn-finance/web-lib/utils';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
+import axios from 'axios';
+import {providers} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {BigNumber} from 'ethers';
+import type {NextApiRequest, NextApiResponse} from 'next';
 import type {TStatsAddressData} from 'utils/types.d';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {
@@ -49,8 +51,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		});
 	}
 
+	// eslint-disable-next-line prefer-destructuring
 	const	keeperDetails = data.value.data.works[0];
-	const	prices = data.value.data.prices;
+	const	{prices} = data.value.data;
 	const	keeperStats: TStatsAddressData = {
 		balanceOf: balanceOf,
 		bonds: bonds,

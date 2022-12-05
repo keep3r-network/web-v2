@@ -1,12 +1,15 @@
-import React, {ReactElement, useMemo, useState} from 'react';
-import {Button} from '@yearn-finance/web-lib/components';
-import {format, toAddress} from '@yearn-finance/web-lib/utils';
+import React, {useMemo, useState} from 'react';
 import Line from 'components/Line';
-import TokenDropdown from 'components/TokenDropdown';
 import {ModalBond} from 'components/modals/ModalBond';
 import {ModalUnbond} from 'components/modals/ModalUnbond';
+import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {getEnv} from 'utils/env';
+import {Button} from '@yearn-finance/web-lib/components';
+import {format} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 	const	{keeperStatus} = useKeep3r();
@@ -26,7 +29,7 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 			<div className={'my-4'}>
 				<dl className={'w-full space-y-4'}>
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Balance'}</dt>
+						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Balance'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />
@@ -40,7 +43,7 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 					</div>
 
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Bonds'}</dt>
+						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Bonds'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />
@@ -54,7 +57,7 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 					</div>
 
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Work Completed'}</dt>
+						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Work Completed'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />
