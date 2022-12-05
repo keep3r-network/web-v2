@@ -1,4 +1,4 @@
-import type {TAddress} from '@yearn-finance/web-lib/utils';
+import type {TAddress} from '@yearn-finance/web-lib/utils/address';
 
 export type	TPrices = {
 	ethereum: number,
