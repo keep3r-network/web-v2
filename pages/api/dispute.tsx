@@ -1,10 +1,12 @@
-import axios from 'axios';
-import {NextApiRequest, NextApiResponse} from 'next';
 import {Contract} from 'ethcall';
-import {providers, toAddress} from '@yearn-finance/web-lib/utils';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import type {TDisputeData} from 'utils/types.d';
 import {getEnv} from 'utils/env';
+import axios from 'axios';
+import {providers} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {NextApiRequest, NextApiResponse} from 'next';
+import type {TDisputeData} from 'utils/types.d';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {
 	const	{chainID} = req.query;
@@ -33,12 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	]);
 
 	//Safechecks
-	if (slashers.status === 'fulfilled')
+	if (slashers.status === 'fulfilled') {
 		slashersList = slashers.value.data.map((s: string): string => toAddress(s));
-	if (disputers.status === 'fulfilled')
+	}
+	if (disputers.status === 'fulfilled') {
 		disputersList = disputers.value.data.map((s: string): string => toAddress(s));
-	if (results.status === 'fulfilled')
+	}
+	if (results.status === 'fulfilled') {
 		governance = toAddress(results.value[0] as string);
+	}
 
 	//Assignation
 	const	disputeStats: TDisputeData = {

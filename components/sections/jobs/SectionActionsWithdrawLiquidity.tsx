@@ -1,17 +1,21 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {BigNumber, ethers} from 'ethers';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Transaction, defaultTxStatus, format, toAddress} from '@yearn-finance/web-lib/utils';
-import {useJob} from 'contexts/useJob';
-import {usePairs} from 'contexts/usePairs';
+import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
 import Line from 'components/Line';
 import TokenPairDropdown from 'components/TokenPairDropdown';
+import {useJob} from 'contexts/useJob';
+import {usePairs} from 'contexts/usePairs';
+import {ethers} from 'ethers';
+import {burn, simulateBurn} from 'utils/actions/burn';
 import {unbondLiquidityFromJob} from 'utils/actions/unbondLiquidityFromJob';
 import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
-import {burn, simulateBurn} from 'utils/actions/burn';
 import {getEnv} from 'utils/env';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
 
 function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, address, isActive} = useWeb3();
@@ -26,8 +30,9 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 	}, [pairs, chainID]);
 
 	async function	onUnbondLiquidityFromJob(pairAddress: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusUnbond.pending)
+		if (!isActive || txStatusUnbond.pending) {
 			return;
+		}
 		new Transaction(provider, unbondLiquidityFromJob, set_txStatusUnbond)
 			.populate(chainID, jobStatus.address, pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
@@ -81,13 +86,13 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 						</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'kLP-KP3R/WETH'}</dt>
+								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'kLP-KP3R/WETH'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
 											{format.toNormalizedAmount(jobStatus?.pendingUnbonds || 0, 18)}
 										</p>
 									</div>
@@ -138,8 +143,9 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}, [pair.addressOfPair, pair.balanceOfPair, provider, amountLpToken, chainID]);
 
 	async function	onWithdrawLiquidityFromJob(pairAddress: string): Promise<void> {
-		if (!isActive || txStatus.pending)
+		if (!isActive || txStatus.pending) {
 			return;
+		}
 		new Transaction(provider, withdrawLiquidityFromJob, set_txStatus)
 			.populate(chainID, jobStatus.address, pairAddress)
 			.onSuccess(async (): Promise<void> => {
@@ -166,8 +172,9 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}
 
 	async function	onBurn(pairAddress: string, amount: BigNumber): Promise<void> {
-		if (!isActive || txStatusBurn.pending)
+		if (!isActive || txStatusBurn.pending) {
 			return;
+		}
 		new Transaction(provider, burn, set_txStatusBurn)
 			.populate(pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
@@ -214,13 +221,13 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 						<b>{'You will receive'}</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'KP3R'}</dt>
+								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'KP3R'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
 											{format.toNormalizedAmount(expectedUnderlyingAmount?.token1 || 0, 18)}
 										</p>
 									</div>
@@ -228,13 +235,13 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 							</div>
 
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'wETH'}</dt>
+								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'wETH'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
 											{format.toNormalizedAmount(expectedUnderlyingAmount?.token2 || 0, 18)}
 										</p>
 									</div>

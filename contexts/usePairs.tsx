@@ -1,14 +1,18 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Contract} from 'ethcall';
+import  {ethers} from 'ethers';
 import {request} from 'graphql-request';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
-import  {BigNumber, ethers} from 'ethers';
-import * as TPairsTypes from 'contexts/usePairs.d';
-import {TEnv} from 'utils/types.d';
 import {getEnv} from 'utils/env';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type * as TPairsTypes from 'contexts/usePairs.d';
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
+import type {TEnv} from 'utils/types.d';
 
 function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
 	return ({
@@ -38,6 +42,7 @@ function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
 	});	
 }
 
+// eslint-disable-next-line prefer-destructuring
 const	defaultChain = (process.env as TEnv).CHAINS[1];
 const	defaultProps = {
 	pairs: {
@@ -81,7 +86,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 	const getPairs = useCallback(async (): Promise<void> => {
 		const	currentProvider = providers.getProvider(chainID);
 		const	currentAddress = address || ethers.constants.AddressZero;
-		const	KEEP3R_V2_ADDR = getEnv(chainID).KEEP3R_V2_ADDR;
+		const	{KEEP3R_V2_ADDR} = getEnv(chainID);
 		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
 		const	_chainPairs = getPairsForChain(chainID);
 

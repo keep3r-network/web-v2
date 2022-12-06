@@ -1,9 +1,12 @@
-import React, {ReactElement} from 'react';
-import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, format, truncateHex} from '@yearn-finance/web-lib/utils';
+import React from 'react';
 import {useJob} from 'contexts/useJob';
 import {usePrices} from 'contexts/usePrices';
 import {getEnv} from 'utils/env';
+import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
+import {copyToClipboard, format} from '@yearn-finance/web-lib/utils';
+import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 	const	{jobStatus} = useJob();
@@ -122,7 +125,10 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 							<b>{jobStatus?.jobOwner ? truncateHex(jobStatus?.jobOwner, 5) : '-'}</b>
 							<div><Copy onClick={(): void => copyToClipboard(jobStatus?.jobOwner || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
 							<div>
-								<a href={`https://${getEnv(chainID).EXPLORER}/address/${jobStatus.jobOwner}`} target={'_blank'} rel={'noopener noreferrer'}>
+								<a
+									href={`https://${getEnv(chainID).EXPLORER}/address/${jobStatus.jobOwner}`}
+									target={'_blank'}
+									rel={'noopener noreferrer'}>
 									<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 								</a>
 							</div>

@@ -1,13 +1,15 @@
-import React, {ReactElement, useState} from 'react';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {Transaction, defaultTxStatus, format} from '@yearn-finance/web-lib/utils';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
+import {useKeep3r} from 'contexts/useKeep3r';
 import {unbond} from 'utils/actions/unbond';
 import {withdraw} from 'utils/actions/withdraw';
+import {Button, Modal} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {Cross} from '@yearn-finance/web-lib/icons';
+import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+
+import type {ReactElement} from 'react';
 
 type		TModalUnbond = {
 	tokenBonded: string,
@@ -23,8 +25,9 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 	const	[txStatusWithdraw, set_txStatusWithdraw] = useState(defaultTxStatus);
 
 	async function	onUnbond(): Promise<void> {
-		if (!isActive || txStatusUnbond.pending)
+		if (!isActive || txStatusUnbond.pending) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, unbond, set_txStatusUnbond).populate(
 				chainID,
@@ -42,8 +45,9 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 	}
 
 	async function	onWithdraw(): Promise<void> {
-		if (!isActive || txStatusWithdraw.pending || keeperStatus.hasDispute)
+		if (!isActive || txStatusWithdraw.pending || keeperStatus.hasDispute) {
 			return;
+		}
 		const	transaction = (
 			new Transaction(provider, withdraw, set_txStatusWithdraw)
 				.populate(chainID, tokenBonded)
@@ -72,12 +76,12 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 					<div className={'space-y-6'}>
 						<p>
 							{'If you no longer wish to be a keeper you have to call '}
-							<code className={'inline text-grey-2'}>{'unbond(address,uint)'}</code>
+							<code className={'text-grey-2 inline'}>{'unbond(address,uint)'}</code>
 							{' and deactivate your account.'}
 						</p>
 						<p>
 							{'There is an unbond time (default 14-day) delay before you can withdraw any bonded assets. Once this delay has passed, you will have to call '}
-							<code className={'inline text-grey-2'}>{'withdraw(address)'}</code>
+							<code className={'text-grey-2 inline'}>{'withdraw(address)'}</code>
 							{' and claim the assets.'}
 						</p>
 					</div>

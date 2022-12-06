@@ -1,4 +1,6 @@
-import	React, {ReactElement}	from	'react';
+import	React	from	'react';
+
+import type {ReactElement} from 'react';
 
 function	SectionUnderstandSetup(): ReactElement {
 	return (
@@ -15,7 +17,7 @@ function	SectionUnderstandSetup(): ReactElement {
   
 						<p>
 							{'Each time keepers perform such a job, they are rewarded in either ETH, tokens, or systems native token KP3R. The maximum amount of KP3R to receive is '}
-							<code className={'inline text-grey-2'}>{'gasUsed'}</code>
+							<code className={'text-grey-2 inline'}>{'gasUsed'}</code>
 							{' + premium (configurable by governance).'}
 						</p>
 								
@@ -33,20 +35,24 @@ function	SectionUnderstandSetup(): ReactElement {
 					<div className={'mt-4 mb-8 space-y-6'}>  
 						<p>
 							{'To join as a keeper, you simply need to call '}
-							<code className={'inline text-grey-2'}>{'bond(address,uint)'}</code>
+							<code className={'text-grey-2 inline'}>{'bond(address,uint)'}</code>
 							{'. No funds are required to become a keeper, however, certain jobs might require a minimum amount of funds.'}
 						</p>
 
 						<p>
 							{'After waiting '}
-							<code className={'inline text-grey-2'}>{'bondTime'}</code>
+							<code className={'text-grey-2 inline'}>{'bondTime'}</code>
 							{' bonding delay (default 3 days) and you can '}
-							<code className={'inline text-grey-2'}>{'activate'}</code>
+							<code className={'text-grey-2 inline'}>{'activate'}</code>
 							{' as a keeper.'}
 						</p>
 
 						<p>
-							<a href={'https://docs.keep3r.network/core/keepers'} target={'_blank'} rel={'noreferrer'} className={'underline'}>
+							<a
+								href={'https://docs.keep3r.network/core/keepers'}
+								target={'_blank'}
+								rel={'noreferrer'}
+								className={'underline'}>
 								<span className={'sr-only'}>{'Learn more about the keepers'}</span>
 								{'More'}
 							</a>

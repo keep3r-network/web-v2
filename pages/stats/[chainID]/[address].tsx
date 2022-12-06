@@ -1,15 +1,18 @@
-import React, {ReactElement, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Link from 'next/link';
+import {useRouter} from 'next/router';
+import Input from 'components/Input';
+import LogsStatsForKeeper from 'components/logs/LogsStatsForKeeper';
+import {ModalBond} from 'components/modals/ModalBond';
+import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
 import {Button} from '@yearn-finance/web-lib/components';
 import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, format, toAddress, truncateHex} from '@yearn-finance/web-lib/utils';
-import Input from 'components/Input';
-import {ModalBond} from 'components/modals/ModalBond';
-import LogsStatsForKeeper from 'components/logs/LogsStatsForKeeper';
-import {useRouter} from 'next/router';
-import {getEnv} from 'utils/env';
+import {copyToClipboard, format} from '@yearn-finance/web-lib/utils';
+import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
@@ -38,6 +41,7 @@ function	StatsKeeper(): ReactElement {
 		set_selectedExplorer(getEnv(chainID).EXPLORER);
 	}, [chainID]);
 
+	const	Keep3rButton = Button as any;
 	return (
 		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
@@ -47,7 +51,10 @@ function	StatsKeeper(): ReactElement {
 				</p>
 				<div><Copy onClick={(): void => copyToClipboard(data?.stats?.keeper || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
 				<div>
-					<a href={`https://${selectedExplorer}/address/${data?.stats?.keeper || '-'}`} target={'_blank'} rel={'noopener noreferrer'}>
+					<a
+						href={`https://${selectedExplorer}/address/${data?.stats?.keeper || '-'}`}
+						target={'_blank'}
+						rel={'noopener noreferrer'}>
 						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
@@ -99,11 +106,11 @@ function	StatsKeeper(): ReactElement {
 				</div>
 
 				<div className={'flex flex-col items-center justify-center bg-white p-6'}>
-					<Button
+					<Keep3rButton
 						onClick={(): void => set_isModalBondOpen(true)}
 						variant={'reverted'}>
 						{'Become a Keeper'}
-					</Button>
+					</Keep3rButton>
 				</div>
 
 			</div>

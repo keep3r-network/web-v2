@@ -1,13 +1,16 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {BigNumber, ethers} from 'ethers';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {Contract} from 'ethcall';
+import {ethers} from 'ethers';
+import CONVEX_REWARDS_ABI from 'utils/abi/convexRewards.abi';
+import CVX_ABI from 'utils/abi/cvx.abi';
+import LENS_PRICE_ABI from 'utils/abi/lens.abi';
+import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
+import {getEnv} from 'utils/env';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
 import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
-import CONVEX_REWARDS_ABI from 'utils/abi/convexRewards.abi';
-import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
-import LENS_PRICE_ABI from 'utils/abi/lens.abi';
-import CVX_ABI from 'utils/abi/cvx.abi';
-import {getEnv} from 'utils/env';
+
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
 
 export type	TTreasury = {
 	name: string;
@@ -87,7 +90,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			currentProvider as ethers.providers.Web3Provider
 		);
 
-		const	THE_KEEP3R = getEnv(chainID).THE_KEEP3R;
+		const	{THE_KEEP3R} = getEnv(chainID);
 		const	jobsCalls = [
 			cvxContract.totalSupply(),
 			cvxContract.reductionPerCliff(),
@@ -197,10 +200,12 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 
 		let		resultsJobsCall: unknown[] = [];
 		let		claimable = ethers.constants.Zero;
-		if (promise[0].status === 'fulfilled')
+		if (promise[0].status === 'fulfilled') {
 			resultsJobsCall = promise[0].value;
-		if (promise[1].status === 'fulfilled')
+		}
+		if (promise[1].status === 'fulfilled') {
 			claimable = promise[1].value;
+		}
 
 		let	rIndex = 0;
 		const	_treasury: TTreasury[] = [];

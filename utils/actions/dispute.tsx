@@ -1,6 +1,8 @@
-import {ContractInterface, ethers} from 'ethers';
+import {ethers} from 'ethers';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
+
+import type {ContractInterface} from 'ethers';
 
 export async function	dispute(
 	provider: ethers.providers.Web3Provider,

@@ -1,13 +1,17 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Contract} from 'ethcall';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import  {ethers} from 'ethers';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import REGISTRY, {TRegistry} from 'utils/registry';
-import  {ethers} from 'ethers';
-import type * as TKeep3rTypes from 'contexts/useKeep3r.d';
 import {getEnv} from 'utils/env';
+import REGISTRY from 'utils/registry';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type * as TKeep3rTypes from 'contexts/useKeep3r.d';
+import type {ReactElement} from 'react';
+import type {TRegistry} from 'utils/registry';
 
 const	defaultProps = {
 	jobs: [],
@@ -110,7 +114,7 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			};
 		}
 
-		saveJobs(jobData, currentProvider.network.chainId);
+		saveJobs(jobData, (currentProvider as any)?.network?.chainId || chainID);
 	}, [provider, chainID, chainRegistry, saveJobs]);
 
 	useEffect((): void => {
@@ -123,8 +127,9 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	**	there that can be used accross the app.
 	***************************************************************************/
 	const getKeeperStatus = useCallback(async (): Promise<void> => {
-		if (!provider || !isActive)
+		if (!provider || !isActive) {
 			return;
+		}
 		const	KEEP3R_V1_ADDR = toAddress(getEnv(chainID).KEEP3R_V1_ADDR);
 		const	KEEP3R_V2_ADDR = toAddress(getEnv(chainID).KEEP3R_V2_ADDR);
 		const	KP3R_TOKEN_ADDR = toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);

@@ -1,6 +1,8 @@
-import	{ContractInterface, ethers} from	'ethers';
-import	{providers}					from	'@yearn-finance/web-lib/utils';
+import	{ethers} from	'ethers';
 import	UNI_V3_PAIR_ABI				from	'utils/abi/univ3Pair.abi';
+import	{providers}					from	'@yearn-finance/web-lib/utils';
+
+import type {ContractInterface} from 'ethers';
 
 export async function	simulateBurn(
 	provider: ethers.providers.Web3Provider,

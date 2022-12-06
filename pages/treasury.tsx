@@ -1,9 +1,11 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {format} from '@yearn-finance/web-lib/utils';
-import {useTreasury} from 'contexts/useTreasury';
+import React, {useEffect, useState} from 'react';
+import Image from 'next/image';
 import LogoConvex from 'components/icons/LogoConvex';
 import LogoYearn from 'components/icons/LogoYearn';
-import Image from 'next/image';
+import {useTreasury} from 'contexts/useTreasury';
+import {format} from '@yearn-finance/web-lib/utils';
+
+import type {ReactElement} from 'react';
 
 function	Treasury(): ReactElement {
 	const	{treasury} = useTreasury();
@@ -16,13 +18,15 @@ function	Treasury(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
+			<section aria-label={'general statistics'} className={'bg-grey-3 mb-6'}>
 				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'TVL'}</p>
-						<div><b className={'text-2xl'}>
-							{`$ ${tvlUSD === 0 ? '0.00' : format.amount(tvlUSD, 2, 2)}`}
-						</b></div>
+						<div>
+							<b className={'text-2xl'}>
+								{`$ ${tvlUSD === 0 ? '0.00' : format.amount(tvlUSD, 2, 2)}`}
+							</b>
+						</div>
 					</div>
 				</div> 
 			</section>
@@ -42,7 +46,11 @@ function	Treasury(): ReactElement {
 												treasure.protocol === 'Yearn' ?
 													<LogoYearn /> : 
 													treasure.protocol === 'Curve' ?
-														<Image alt={''} src={'/curveneutral.png'} width={32} height={32} /> : <div />
+														<Image
+															alt={''}
+															src={'/curveneutral.png'}
+															width={32}
+															height={32} /> : <div />
 										}
 										<h3 className={'text-2xl font-bold'}>{treasure.protocol}</h3>
 									</div>
@@ -69,9 +77,11 @@ function	Treasury(): ReactElement {
 											<>
 												<div>
 													<p>{'Unclaimed rewards, $'}</p>
-													<div className={'py-0 md:pt-2 md:pb-1'}><b className={'text-2xl'}>
-														{format.amount(treasure.unclaimedRewardsUSD, 2, 2)}
-													</b></div>
+													<div className={'py-0 md:pt-2 md:pb-1'}>
+														<b className={'text-2xl'}>
+															{format.amount(treasure.unclaimedRewardsUSD, 2, 2)}
+														</b>
+													</div>
 												</div>
 											</>
 										}

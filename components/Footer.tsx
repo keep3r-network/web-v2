@@ -1,13 +1,16 @@
-import	React, {ReactElement}		from	'react';
-import	IconTwitter					from	'components/icons/IconTwitter';
-import	IconMedium					from	'components/icons/IconMedium';
+import	React		from	'react';
 import	IconDiscourse				from	'components/icons/IconDiscourse';
+import	IconMedium					from	'components/icons/IconMedium';
+import	IconTwitter					from	'components/icons/IconTwitter';
+
 import IconDiscord from './icons/IconDiscord';
 import IconTelegram from './icons/IconTelegram';
 
+import type {ReactElement} from 'react';
+
 function	Footer(): ReactElement {
 	return (
-		<footer className={'mt-auto w-full bg-grey-3 py-7'}>
+		<footer className={'bg-grey-3 mt-auto w-full py-7'}>
 			<div className={'mx-auto hidden w-full max-w-6xl flex-row items-center md:flex'}>
 				<div className={'space-y-1'}>
 					<b className={''}>
@@ -19,32 +22,47 @@ function	Footer(): ReactElement {
 					</div>
 				</div>
 
-				<div className={'ml-auto cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://twitter.com/thekeep3r'} target={'_blank'} rel={'noreferrer'}>
+				<div className={'hover:text-black-2 ml-auto cursor-pointer px-2 text-black transition-colors'}>
+					<a
+						href={'https://twitter.com/thekeep3r'}
+						target={'_blank'}
+						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check Twitter account'}</span>
 						<IconTwitter className={'h-8 w-8'} />
 					</a>
 				</div>
-				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://medium.com/iearn'} target={'_blank'} rel={'noreferrer'}>
+				<div className={'hover:text-black-2 cursor-pointer px-2 text-black transition-colors'}>
+					<a
+						href={'https://medium.com/iearn'}
+						target={'_blank'}
+						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Medium'}</span>
 						<IconMedium className={'h-8 w-8'} />
 					</a>
 				</div>
-				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://t.me/keep3r_official'} target={'_blank'} rel={'noreferrer'}>
+				<div className={'hover:text-black-2 cursor-pointer px-2 text-black transition-colors'}>
+					<a
+						href={'https://t.me/keep3r_official'}
+						target={'_blank'}
+						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Telegram'}</span>
 						<IconTelegram className={'h-8 w-8'} />
 					</a>
 				</div>
-				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://discord.gg/Mwunmt7ZvD'} target={'_blank'} rel={'noreferrer'}>
+				<div className={'hover:text-black-2 cursor-pointer px-2 text-black transition-colors'}>
+					<a
+						href={'https://discord.gg/Mwunmt7ZvD'}
+						target={'_blank'}
+						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Discord'}</span>
 						<IconDiscord className={'h-8 w-8'} />
 					</a>
 				</div>
-				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
-					<a href={'https://gov.yearn.finance/c/projects/keep3r/20'} target={'_blank'} rel={'noreferrer'}>
+				<div className={'hover:text-black-2 cursor-pointer px-2 text-black transition-colors'}>
+					<a
+						href={'https://gov.yearn.finance/c/projects/keep3r/20'}
+						target={'_blank'}
+						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Access Keep3r Discourse'}</span>
 						<IconDiscourse className={'h-8 w-8'} />
 					</a>

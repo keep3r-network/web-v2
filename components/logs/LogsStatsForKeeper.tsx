@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, {ReactElement, ReactNode, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {usePagination, useSortBy, useTable} from 'react-table';
 import Link from 'next/link';
+import IconChevronFilled from 'components/icons/IconChevronFilled';
+import IconLoader from 'components/icons/IconLoader';
+import {getEnv} from 'utils/env';
+import REGISTRY from 'utils/registry';
 import axios from 'axios';
 import {Chevron, LinkOut} from '@yearn-finance/web-lib/icons';
-import {format, performBatchedUpdates, toAddress} from '@yearn-finance/web-lib/utils';
-import IconLoader from 'components/icons/IconLoader';
-import IconChevronFilled from 'components/icons/IconChevronFilled';
-import REGISTRY, {TRegistry} from 'utils/registry';
-import {getEnv} from 'utils/env';
+import {format, performBatchedUpdates} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement, ReactNode} from 'react';
+import type {TRegistry} from 'utils/registry';
 
 type		TLogs = {
 	time: number,
@@ -76,23 +80,38 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 		{Header: 'Date', accessor: 'date', className: 'pr-8'},
 		{Header: 'Job name', accessor: 'jobName', className: 'cell-end pr-8', sortType: 'basic'},
 		{
-			Header: 'Earned, KP3R', accessor: 'earnedKp3r', className: 'cell-end pr-8', sortType: 'basic',
+			Header: 'Earned, KP3R',
+			accessor: 'earnedKp3r',
+			className: 'cell-end pr-8',
+			sortType: 'basic',
 			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
 		},
 		{
-			Header: 'Earned, $', accessor: 'earnedUsd', className: 'cell-end pr-8', sortType: 'basic',
+			Header: 'Earned, $',
+			accessor: 'earnedUsd',
+			className: 'cell-end pr-8',
+			sortType: 'basic',
 			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
 		},
 		{
-			Header: 'TX fees, ETH', accessor: 'fees', className: 'cell-end pr-8', sortType: 'basic',
+			Header: 'TX fees, ETH',
+			accessor: 'fees',
+			className: 'cell-end pr-8',
+			sortType: 'basic',
 			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
 		},
 		{
-			Header: 'GWEI per call', accessor: 'gweiPerCall', className: 'cell-end pr-6', sortType: 'basic',
+			Header: 'GWEI per call',
+			accessor: 'gweiPerCall',
+			className: 'cell-end pr-6',
+			sortType: 'basic',
 			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
 		},
 		{
-			Header: '', accessor: 'linkOut', className: 'cell-end', disableSortBy: true,
+			Header: '',
+			accessor: 'linkOut',
+			className: 'cell-end',
+			disableSortBy: true,
 			Cell: ({value}: {value: string}): ReactNode => (
 				<div
 					role={'button'}
@@ -100,7 +119,10 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 						event.stopPropagation();
 						window.open(`https://${selectedExplorer}/address/${value}`, '_blank');
 					}}>
-					<a href={`https://${selectedExplorer}/address/${value}`} target={'_blank'} rel={'noopener noreferrer'}>
+					<a
+						href={`https://${selectedExplorer}/address/${value}`}
+						target={'_blank'}
+						rel={'noopener noreferrer'}>
 						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
@@ -123,8 +145,9 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
 	function	renderPreviousChevron(): ReactElement {
-		if (!canPreviousPage) 
+		if (!canPreviousPage) {
 			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
+		}
 		return (
 			<Chevron
 				className={'h-4 w-4 cursor-pointer'}
@@ -133,8 +156,9 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 	}
 
 	function	renderNextChevron(): ReactElement {
-		if (!canNextPage) 
+		if (!canNextPage) {
 			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
+		}
 		return (
 			<Chevron
 				className={'h-4 w-4 rotate-180 cursor-pointer'}
@@ -162,18 +186,22 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 							{headerGroup.headers.map((column: any): ReactElement => (
 								<th
 									key={column.getHeaderProps().key}
-									{...column.getHeaderProps(column.getSortByToggleProps([{
-										className: 'pt-2 pb-8 text-left text-base font-bold whitespace-pre'
-									}]))}>
+									{...column.getHeaderProps(column.getSortByToggleProps([
+										{
+											className: 'pt-2 pb-8 text-left text-base font-bold whitespace-pre'
+										}
+									]))}>
 									<div className={`flex flex-row items-center ${column.className}`}>
 										{column.render('Header')}
-										{column.canSort ? <div className={'ml-1'}>
-											{column.isSorted
-												? column.isSortedDesc
-													? <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-500'} />
-													: <IconChevronFilled className={'h-4 w-4 rotate-180 cursor-pointer text-neutral-500'} />
-												: <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-300 transition-colors hover:text-neutral-500'} />}
-										</div> : null}
+										{column.canSort ? (
+											<div className={'ml-1'}>
+												{column.isSorted
+													? column.isSortedDesc
+														? <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-500'} />
+														: <IconChevronFilled className={'h-4 w-4 rotate-180 cursor-pointer text-neutral-500'} />
+													: <IconChevronFilled className={'h-4 w-4 cursor-pointer text-neutral-300 transition-colors hover:text-neutral-500'} />}
+											</div>
+										) : null}
 									</div>
 								</th>
 							))}
@@ -194,7 +222,8 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 													{
 														className: `pt-2 pb-6 text-base font-mono whitespace-pre ${cell.column.className}`,
 														style: cell.column.style
-													}])
+													}
+												])
 												}>
 												{cell.render('Cell')}
 											</td>
@@ -206,13 +235,15 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 					})}
 				</tbody>
 			</table>
-			{canPreviousPage || canNextPage ? <div className={'flex flex-row items-center justify-end space-x-2 p-4'}>
-				{renderPreviousChevron()}
-				<p className={'select-none text-sm tabular-nums'}>
-					{`${pageIndex + 1}/${pageOptions.length}`}
-				</p>
-				{renderNextChevron()}
-			</div> : null}
+			{canPreviousPage || canNextPage ? (
+				<div className={'flex flex-row items-center justify-end space-x-2 p-4'}>
+					{renderPreviousChevron()}
+					<p className={'select-none text-sm tabular-nums'}>
+						{`${pageIndex + 1}/${pageOptions.length}`}
+					</p>
+					{renderNextChevron()}
+				</div>
+			) : null}
 		</div>
 	);
 }

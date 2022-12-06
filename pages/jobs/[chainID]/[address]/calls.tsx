@@ -1,10 +1,12 @@
-import	React, {ReactElement, useMemo, useState}			from	'react';
+import	React, {useMemo, useState}			from	'react';
 import	Link							from	'next/link';
 import {useRouter} from 'next/router';
-import axios from 'axios';
-import useSWR from 'swr';
 import	Input							from	'components/Input';
 import	LogsForJobCalls					from	'components/logs/LogsForJobCalls';
+import axios from 'axios';
+import useSWR from 'swr';
+
+import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 

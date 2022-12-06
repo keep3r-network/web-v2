@@ -1,7 +1,9 @@
-import React, {ReactElement, createContext, useContext, useEffect, useState} from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import {useWeb3} from '@yearn-finance/web-lib/contexts';
 import {useLocalStorage} from '@yearn-finance/web-lib/hooks';
+
+import type {ReactElement} from 'react';
 import type * as usePricesTypes from './usePrices.d';
 
 const	PricesContext = createContext<usePricesTypes.TPricesContext>({prices: {}});

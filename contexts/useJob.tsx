@@ -1,12 +1,17 @@
-import React, {ReactElement, createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Contract} from 'ethcall';
-import  {BigNumber, ethers} from 'ethers';
-import axios from 'axios';
-import {format, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
+import  {ethers} from 'ethers';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import REGISTRY, {TRegistry} from 'utils/registry';
-import type * as TJobTypes from 'contexts/useJob.d';
 import {getEnv} from 'utils/env';
+import REGISTRY from 'utils/registry';
+import axios from 'axios';
+import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type * as TJobTypes from 'contexts/useJob.d';
+import type {BigNumber} from 'ethers';
+import type {ReactElement} from 'react';
+import type {TRegistry} from 'utils/registry';
 
 const	defaultProps = {
 	jobStatus: {

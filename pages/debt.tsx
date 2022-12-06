@@ -1,8 +1,11 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {format, truncateHex} from '@yearn-finance/web-lib/utils';
+import React, {useEffect, useState} from 'react';
 import {useDebt} from 'contexts/useDebt';
-import useSWR from 'swr';
 import axios from 'axios';
+import useSWR from 'swr';
+import {format} from '@yearn-finance/web-lib/utils';
+import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 const	fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
@@ -19,7 +22,7 @@ function	Debt(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
+			<section aria-label={'general statistics'} className={'bg-grey-3 mb-6'}>
 				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'Debt'}</p>

@@ -1,17 +1,20 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {ethers} from 'ethers';
-import {Contract} from 'ethcall';
-import {Button} from '@yearn-finance/web-lib/components';
-import {Transaction, defaultTxStatus, format, isZeroAddress, performBatchedUpdates, providers, toAddress} from '@yearn-finance/web-lib/utils';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {useKeep3r} from 'contexts/useKeep3r';
+import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
+import {useKeep3r} from 'contexts/useKeep3r';
+import {Contract} from 'ethcall';
+import {ethers} from 'ethers';
+import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {slash} from 'utils/actions/slash';
 import {slashLiquidityFromJob} from 'utils/actions/slashLiquidityFromJob';
 import {slashTokenFromJob} from 'utils/actions/slashTokenFromJob';
-import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
+import {Button} from '@yearn-finance/web-lib/components';
+import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {defaultTxStatus, format, performBatchedUpdates, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+
+import type {ReactElement} from 'react';
 
 function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -96,8 +99,9 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 	}
 
 	async function	onSlash(): Promise<void> {
-		if (!isActive || txStatusSlash.pending)
+		if (!isActive || txStatusSlash.pending) {
 			return;
+		}
 
 		if (isKeeper) {
 			new Transaction(provider, slash, set_txStatusSlash)
@@ -159,8 +163,8 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 				<div className={'mb-8 grid grid-cols-5 gap-4'}>
 					<div className={'col-span-3 flex flex-col space-y-2'}>
 						<span>
-							<b className={'hidden text-black-1 md:block'}>{'Slash keeper and its bonded assets'}</b>
-							<b className={'block text-black-1 md:hidden'}>{'Slash keeper'}</b>
+							<b className={'text-black-1 hidden md:block'}>{'Slash keeper and its bonded assets'}</b>
+							<b className={'text-black-1 block md:hidden'}>{'Slash keeper'}</b>
 						</span>
 						<label
 							aria-invalid={slashAddress !== '' && isZeroAddress(slashAddress)}
