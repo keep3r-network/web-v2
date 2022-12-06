@@ -155,13 +155,9 @@ function	AppWithLayout(props: AppProps): ReactElement {
 					</nav>
 					<div className={'flex flex-row items-end'}>
 						<div className={'mr-5 flex flex-col space-y-3'}>
-							<a
-								className={'text-grey-2 font-bold underline'}
-								target={'_blank'}
-								href={'https://cowswap.exchange/#/swap?outputCurrency=0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44&referral=0x0D5Dc686d0a2ABBfDaFDFb4D0533E886517d4E83'}
-								rel={'noreferrer'}>
+							<p className={'text-grey-2 font-bold'}>
 								{`KP3R: $${tokenPrice ? tokenPrice : '0.00'}`}
-							</a>
+							</p>
 							<div className={'h-1 w-full bg-transparent'} />
 						</div>
 
