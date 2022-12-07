@@ -9,8 +9,10 @@ type TOptions = {label: string, value: number};
 
 const	options: TOptions[] = [
 	{label: 'Ethereum Mainnet', value: 1},
-	{label: 'Goerli Testnet', value: 5},
+	{label: 'Optimistic Ethereum', value: 10},
 	{label: 'Fantom Opera', value: 250},
+	{label: 'Goerli Testnet', value: 5},
+	{label: 'Optimistic Goerli Testnet', value: 420},
 	{label: 'Forknet', value: 1337}
 ];
 
@@ -18,7 +20,7 @@ function	NetworkSelector(): ReactElement {
 	const	[isInit, set_isInit] = useState(false);
 	const	{chainID, onSwitchChain} = useWeb3();
 	const	selected = useMemo((): TOptions => (options.find((e): boolean => e.value === Number(chainID)) || options[0]), [chainID]);
-	
+
 	useEffect((): void => {
 		set_isInit(true);
 	}, []);

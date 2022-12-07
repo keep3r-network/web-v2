@@ -78,6 +78,18 @@ const	REGISTRY: TRegistry = {
 		address: '0xe74379Ed6e94C85dA90d27B92DF670DB282995af',
 		name: 'GrizzlyHarvest',
 		repository: 'https://github.com/borus-dev/grizzly-keeper-scripts'
+	},
+	'0xa2c7A15FFc02e00cdeedBba56c41dAaed84f8734': {
+		chainID: 5,
+		address: '0xa2c7A15FFc02e00cdeedBba56c41dAaed84f8734',
+		name: 'BasicJob',
+		repository: 'https://github.com/keep3r-network/keep3r-network-v2'
+	},
+	'0x9abB5cfF47b9F604351a6f0730d9fe39Fb620B2b': {
+		chainID: 420,
+		address: '0x9abB5cfF47b9F604351a6f0730d9fe39Fb620B2b',
+		name: 'BasicJob',
+		repository: 'https://github.com/keep3r-network/keep3r-network-v2'
 	}
 };
 
