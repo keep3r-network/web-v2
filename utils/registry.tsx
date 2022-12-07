@@ -19,35 +19,35 @@ const	REGISTRY: TRegistry = {
 		name: 'MakerDAOUpkeep',
 		repository: 'https://github.com/defi-wonderland/keep3r-cli-job-maker'
 	},
-	'0x2DFb2C5C013826a0728440D8036305b254Ad9cCE': {
+	'0x62496bDF47De3c07e12F84a20681426AbCC618e2': {
 		chainID: 1,
-		address: '0x2DFb2C5C013826a0728440D8036305b254Ad9cCE',
+		address: '0x62496bDF47De3c07e12F84a20681426AbCC618e2',
 		name: 'DCAKeep3rJob',
-		repository: 'https://github.com/Mean-Finance/keep3r-cli-jobs'
+		repository: 'https://github.com/Mean-Finance/keep3r-script'
 	},
 	'0x220a85bCd2212ab0b27EFd0de8b5e03175f0adee': {
 		chainID: 1,
 		address: '0x220a85bCd2212ab0b27EFd0de8b5e03175f0adee',
 		name: 'YearnHarvestV2',
-		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
 	},
 	'0xE6DD4B94B0143142E6d7ef3110029c1dcE8215cb': {
 		chainID: 1,
 		address: '0xE6DD4B94B0143142E6d7ef3110029c1dcE8215cb',
 		name: 'YearnHarvestV2',
-		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
 	},
 	'0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa': {
 		chainID: 1,
 		address: '0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa',
 		name: 'YearnTendV2',
-		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
 	},
 	'0xcD7f72F12c4b87dAbd31d3aa478A1381150c32b3': {
 		chainID: 1,
 		address: '0xcD7f72F12c4b87dAbd31d3aa478A1381150c32b3',
 		name: 'YearnTendV2',
-		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
 	},
 	'0x656027367B5e27dC21984B546e64dC24dBFaA187': {
 		chainID: 1,
