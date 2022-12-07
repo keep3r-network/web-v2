@@ -45,7 +45,7 @@ const	REGISTRY: TRegistry = {
 	},
 	'0xcD7f72F12c4b87dAbd31d3aa478A1381150c32b3': {
 		chainID: 1,
-		address: '0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa',
+		address: '0xcD7f72F12c4b87dAbd31d3aa478A1381150c32b3',
 		name: 'YearnTendV2',
 		repository: 'https://github.com/yearn/keep3r-cli-jobs'
 	},
