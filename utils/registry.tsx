@@ -31,7 +31,19 @@ const	REGISTRY: TRegistry = {
 		name: 'YearnHarvestV2',
 		repository: 'https://github.com/yearn/keep3r-cli-jobs'
 	},
+	'0xE6DD4B94B0143142E6d7ef3110029c1dcE8215cb': {
+		chainID: 1,
+		address: '0xE6DD4B94B0143142E6d7ef3110029c1dcE8215cb',
+		name: 'YearnHarvestV2',
+		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+	},
 	'0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa': {
+		chainID: 1,
+		address: '0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa',
+		name: 'YearnTendV2',
+		repository: 'https://github.com/yearn/keep3r-cli-jobs'
+	},
+	'0xcD7f72F12c4b87dAbd31d3aa478A1381150c32b3': {
 		chainID: 1,
 		address: '0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa',
 		name: 'YearnTendV2',
