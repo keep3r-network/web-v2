@@ -5,6 +5,7 @@ import LogoConvex from 'components/icons/LogoConvex';
 import LogoLido from 'components/icons/LogoLido';
 import {getEnv} from 'utils/env';
 import {Listbox, Transition} from '@headlessui/react';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 
@@ -21,24 +22,30 @@ type	TTokenDropdown = {
 	withKeeper?: boolean
 }
 function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
+	const	{safeChainID} = useChainID();
 	const	keeperToken = useMemo((): TDropdownToken => ({
 		name: 'kLP-KP3R/WETH',
 		address: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
 		icon: <IconKeep3r className={'h-8 w-8'}/>
 	}), [chainID]);
 	
-	const 	tokenList = useMemo((): TDropdownToken[] => ([
-		{
-			name: 'CVX',
-			address: toAddress(getEnv(chainID).CVX_TOKEN_ADDR),
-			icon: <LogoConvex className={'h-8 w-8'}/>
-		},
-		{
-			name: 'Lido',
-			address: toAddress(getEnv(chainID).LIDO_TOKEN_ADDR),
-			icon: <LogoLido className={'h-8 w-8'}/>
+	const 	tokenList = useMemo((): TDropdownToken[] => {
+		if (safeChainID === 1) {
+			return ([
+				{
+					name: 'CVX',
+					address: toAddress(getEnv(chainID).CVX_TOKEN_ADDR),
+					icon: <LogoConvex className={'h-8 w-8'}/>
+				},
+				{
+					name: 'Lido',
+					address: toAddress(getEnv(chainID).LIDO_TOKEN_ADDR),
+					icon: <LogoLido className={'h-8 w-8'}/>
+				}
+			]);
 		}
-	]), [chainID]);
+		return [];
+	}, [safeChainID, chainID]);
 	
 	const [selected, set_selected] = useState(withKeeper ? keeperToken : tokenList[0]);
 
