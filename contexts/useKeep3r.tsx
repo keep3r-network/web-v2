@@ -6,6 +6,7 @@ import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
 import REGISTRY from 'utils/registry';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatDuration} from '@yearn-finance/web-lib/utils/format.time';
@@ -47,7 +48,8 @@ const	defaultProps = {
 };
 const	Keep3rContext = createContext<TKeep3rTypes.TKeep3rContext>(defaultProps);
 export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{provider, isActive, isDisconnected, address, chainID} = useWeb3();
+	const	{provider, isActive, isDisconnected, address} = useWeb3();
+	const	{chainID} = useChainID();
 	const	[jobs, set_jobs] = useState<TKeep3rTypes.TJobData[]>(defaultProps.jobs);
 	const	[hasLoadedJobs, set_hasLoadedJobs] = useState(false);
 	const	[keeperStatus, set_keeperStatus] = useState<TKeep3rTypes.TKeeperStatus>(defaultProps.keeperStatus);

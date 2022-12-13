@@ -115,6 +115,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	const	{provider, isActive} = useWeb3();
 	const	{pairs, getPairs} = usePairs();
 	const	{jobStatus, getJobStatus} = useJob();
+	const	{safeChainID} = useChainID();
 	const	[amountLpToken, set_amountLpToken] = useState('');
 	const	[expectedUnderlyingAmount, set_expectedUnderlyingAmount] = useState({
 		token1: ethers.constants.Zero,
@@ -187,6 +188,18 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}
 
 	function	renderBurnButton(): ReactElement {
+		if (safeChainID !== 1) {
+			return (
+				<a
+					href={'https://bridge.connext.network/'}
+					target={'_blank'}
+					rel={'noreferrer'}>
+					<Button>
+						{'Bridge tokens'}
+					</Button>
+				</a>
+			);
+		}
 		return (
 			<Button
 				onClick={(): void => {
@@ -204,8 +217,10 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}
 
 	return (
-		<div aria-label={'Withdraw and Burn'} className={'flex flex-col'}>
-			<b className={'text-lg'}>{'Withdraw and Burn'}</b>
+		<div aria-label={'Withdraw'} className={'flex flex-col'}>
+			<b className={'text-lg'}>
+				{safeChainID === 1 ? 'Withdraw and Burn' : 'Withdraw'}
+			</b>
 			<div className={'mt-8 space-y-6'}>
 				<div>
 					<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
@@ -219,7 +234,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 							maxValue={pair?.balanceOfPair || 0}
 							decimals={18} />
 					</div>
-					<div className={'mb-6 space-y-2'}>
+					<div className={`mb-6 space-y-2 ${safeChainID === 1 ? '' : 'hidden'}`}>
 						<b>{'You will receive'}</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>

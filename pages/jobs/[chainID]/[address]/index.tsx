@@ -94,15 +94,21 @@ function	StatsJob(): ReactElement {
 					<div className={'bg-white'}>
 						<SectionActions chainID={chainID} />
 					</div>
-					<div className={'flex-center flex h-full justify-center space-x-4 bg-white py-6 px-8'}>
-						<Keep3rButton
-							onClick={(): void => set_isModalMigrateOpen(true)}
-							variant={'reverted'}>
-							{'Migrate'}
-						</Keep3rButton>
-						<Link href={`/jobs/${chainID}/${jobStatus.address}/calls`}>
-							<Keep3rButton variant={'reverted'}>{'View calls'}</Keep3rButton>
-						</Link>
+					<div>
+						<div className={'flex-center flex h-full justify-center space-x-4 bg-white py-6 px-8'}>
+							<div className={'w-1/2'}>
+								<Keep3rButton
+									onClick={(): void => set_isModalMigrateOpen(true)}
+									variant={'reverted'}>
+									{'Migrate'}
+								</Keep3rButton>
+							</div>
+							<div className={'w-1/2'}>
+								<Link href={`/jobs/${chainID}/${jobStatus.address}/calls`}>
+									<Keep3rButton variant={'reverted'}>{'View calls'}</Keep3rButton>
+								</Link>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

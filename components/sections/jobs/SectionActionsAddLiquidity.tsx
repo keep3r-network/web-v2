@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Input from 'components/Input';
 import TokenPairDropdown from 'components/TokenPairDropdown';
 import {useJob} from 'contexts/useJob';
@@ -17,6 +17,42 @@ import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/tr
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
+
+
+function	PanelBridgeTokens(): ReactElement {
+	const	{chainID} = useChainID();
+	const	chainName = useMemo((): string => {
+		if (chainID === 5) {
+			return 'Goerli';
+		} else if (chainID === 10) {
+			return 'Optimism';
+		} else if (chainID === 420) {
+			return 'Goerli Optimism';
+		} else if (chainID === 1337) {
+			return 'Mainnet fork';
+		}
+		return 'Unknown';
+	}, [chainID]);
+
+	return (
+		<div aria-label={'Bridge tokens'} className={'flex flex-col'}>
+			<b className={'text-lg'}>{'Bridge tokens'}</b>
+			<p className={'mt-4'}>
+				{`You are on ${chainName} right now. To use Keep3r Network and automate your job, you’ll have to bridge kLP-KP3R/WETH from Ethereum to ${chainName}. Once you click “Bridge tokens” you’ll be redirected to Connext. Follow instructions on their website and come back after that.`}
+			</p>
+			<div className={'mt-8 mb-10'}>
+				<a
+					href={'https://bridge.connext.network/'}
+					target={'_blank'}
+					rel={'noreferrer'}>
+					<Button>
+						{'Bridge tokens'}
+					</Button>
+				</a>
+			</div>
+		</div>
+	);
+}
 
 function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -265,10 +301,20 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 }
 
 function	Wrapper({chainID}: {chainID: number}): ReactElement {
+	if (chainID === 1) {
+		return (
+			<div className={'flex flex-col p-6'}>
+				<section aria-label={'ADD LIQUIDITY'}>
+					<PanelMintTokens chainID={chainID}/>
+					<SectionActionsAddLiquidity chainID={chainID}/>
+				</section>
+			</div>
+		);	
+	}
 	return (
 		<div className={'flex flex-col p-6'}>
 			<section aria-label={'ADD LIQUIDITY'}>
-				<PanelMintTokens chainID={chainID}/>
+				<PanelBridgeTokens />
 				<SectionActionsAddLiquidity chainID={chainID}/>
 			</section>
 		</div>

@@ -15,6 +15,7 @@ import NProgress from 'nprogress';
 import {ModalMobileMenu} from '@yearn-finance/web-lib/components/ModalMobileMenu';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {WithYearn} from '@yearn-finance/web-lib/contexts/WithYearn';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
@@ -73,7 +74,8 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	const	{Component, pageProps, router} = props;
 	const	{pathname} = router;
 	const	{prices} = usePrices();
-	const	{isActive, openLoginModal, onSwitchChain, address, ens, onDesactivate, chainID} = useWeb3();
+	const	{isActive, openLoginModal, onSwitchChain, address, ens, onDesactivate} = useWeb3();
+	const	{chainID} = useChainID();
 	const	[hasMobileMenu, set_hasMobileMenu] = useState(false);
 	const	[tokenPrice, set_tokenPrice] = useState('0');
 	const	[walletIdentity, set_walletIdentity] = useState('Connect wallet');
@@ -213,7 +215,10 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						</div>
 					</Link>
 
-					<Link href={`/stats/${chainID}`} key={`/stats/${chainID}`}>
+					<Link
+						suppressHydrationWarning
+						href={`/stats/${chainID}`}
+						key={`/stats/${chainID}`}>
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname.startsWith('/stats/')}

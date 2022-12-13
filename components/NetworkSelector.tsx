@@ -1,6 +1,7 @@
 import React, {Fragment, useEffect, useMemo, useState} from 'react';
 import {Menu, Transition} from '@headlessui/react';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
 
 import type {ReactElement} from 'react';
@@ -18,7 +19,8 @@ const	options: TOptions[] = [
 
 function	NetworkSelector(): ReactElement {
 	const	[isInit, set_isInit] = useState(false);
-	const	{chainID, onSwitchChain} = useWeb3();
+	const	{onSwitchChain} = useWeb3();
+	const	{chainID} = useChainID();
 	const	selected = useMemo((): TOptions => (options.find((e): boolean => e.value === Number(chainID)) || options[0]), [chainID]);
 
 	useEffect((): void => {

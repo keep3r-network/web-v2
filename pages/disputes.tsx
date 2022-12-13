@@ -5,7 +5,7 @@ import SectionDispute from 'components/sections/disputes/SectionDispute';
 import SectionSlash from 'components/sections/disputes/SectionSlash';
 import axios from 'axios';
 import useSWR from 'swr';
-import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import Copy from '@yearn-finance/web-lib/icons/IconCopy';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
@@ -14,7 +14,7 @@ import type {ReactElement} from 'react';
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
 function	Disputes(): ReactElement {
-	const	{chainID} = useWeb3();
+	const	{chainID} = useChainID();
 	const	{data: stats} = useSWR(`/api/dispute?chainID=${chainID}`, fetcher, {shouldRetryOnError: false});
 
 	return (

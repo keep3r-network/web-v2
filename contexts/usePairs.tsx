@@ -6,6 +6,7 @@ import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
 import {getEnv} from 'utils/env';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
@@ -76,7 +77,8 @@ const	defaultProps = {
 };
 const	Pairs = createContext<TPairsTypes.TPairsContext>(defaultProps);
 export const PairsContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{address, chainID} = useWeb3();
+	const	{address, provider} = useWeb3();
+	const	{chainID} = useChainID();
 	const	[pairs, set_pairs] = useState<TPairsTypes.TKeeperPairs>(getPairsForChain(chainID));
 	const	[, set_nonce] = useState(0);
 
@@ -86,7 +88,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 	**	data to correctly display and enable the actions for the user.
 	***************************************************************************/
 	const getPairs = useCallback(async (): Promise<void> => {
-		const	currentProvider = getProvider(chainID);
+		const	currentProvider = provider || getProvider(chainID);
 		const	currentAddress = address || ethers.constants.AddressZero;
 		const	{KEEP3R_V2_ADDR} = getEnv(chainID);
 		const	ethcallProvider = await newEthCallProvider(currentProvider);
@@ -155,7 +157,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 				set_nonce((n: number): number => n + 1);
 			});
 		}
-	}, [chainID, address]);
+	}, [chainID, address, provider]);
 	useEffect((): void => {
 		getPairs();
 	}, [getPairs]);
