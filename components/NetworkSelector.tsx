@@ -13,7 +13,7 @@ const	options: TOptions[] = [
 	{label: 'Optimistic Ethereum', value: 10},
 	{label: 'Fantom Opera', value: 250},
 	{label: 'Goerli Testnet', value: 5},
-	{label: 'Optimistic Goerli Testnet', value: 420},
+	{label: 'Optimistic Goerli', value: 420},
 	{label: 'Forknet', value: 1337}
 ];
 
@@ -44,7 +44,7 @@ function	NetworkSelector(): ReactElement {
 						leave={'transition duration-75 ease-out'}
 						leaveFrom={'transform scale-100 opacity-100'}
 						leaveTo={'transform scale-95 opacity-0'}>
-						<Menu.Items className={'absolute right-[-75%] mt-4 flex max-h-60 w-full min-w-[180px] -translate-x-1/2 flex-col overflow-y-scroll border-0 bg-black-2'}>
+						<Menu.Items className={'absolute right-[-60%] mt-4 flex max-h-60 w-full min-w-[200px] -translate-x-1/2 flex-col overflow-y-scroll border-0 bg-black-2'}>
 							{options.map((option): ReactElement => (
 								<Menu.Item key={option.value}>
 									{({active}): ReactElement => (
