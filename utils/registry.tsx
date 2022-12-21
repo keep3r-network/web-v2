@@ -76,7 +76,7 @@ const	REGISTRY: TRegistry = {
 	'0xe74379Ed6e94C85dA90d27B92DF670DB282995af': {
 		chainID: 1,
 		address: '0xe74379Ed6e94C85dA90d27B92DF670DB282995af',
-		name: 'MonetaHarvest',
+		name: 'GrizzlyHarvest',
 		repository: 'https://github.com/borus-dev/grizzly-keeper-scripts'
 	}
 };
