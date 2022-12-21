@@ -55,7 +55,7 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 						<p>
 							{'Anyone can register a job in the network – address is the only thing necessary. Job owner will be set to "Register job" transaction sender. Please, submit a pull request to job registry '}
 							<a
-								href={'https://github.com/keep3r-network/job-registry'}
+								href={'https://github.com/keep3r-network/web-v2'}
 								target={'_blank'}
 								className={'underline'}
 								rel={'noreferrer'}>
