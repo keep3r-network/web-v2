@@ -72,6 +72,12 @@ const	REGISTRY: TRegistry = {
 		address: '0x553591d6eac7A127dE36063a1b6cD31D2FB9E42d',
 		name: 'SidechainOracles Job',
 		repository: 'https://github.com/defi-wonderland/sidechain-oracles-keeper-scripts'
+	},
+	'0xe74379Ed6e94C85dA90d27B92DF670DB282995af': {
+		chainID: 1,
+		address: '0xe74379Ed6e94C85dA90d27B92DF670DB282995af',
+		name: 'GrizzlyHarvest',
+		repository: 'https://github.com/borus-dev/grizzly-keeper-scripts'
 	}
 };
 
