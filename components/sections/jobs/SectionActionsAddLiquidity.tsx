@@ -301,7 +301,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 }
 
 function	Wrapper({chainID}: {chainID: number}): ReactElement {
-	if (chainID === 1) {
+	if ([1, 1337, 5].includes(chainID)) {
 		return (
 			<div className={'flex flex-col p-6'}>
 				<section aria-label={'ADD LIQUIDITY'}>

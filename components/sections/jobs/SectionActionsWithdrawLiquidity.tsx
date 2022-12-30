@@ -219,7 +219,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	return (
 		<div aria-label={'Withdraw'} className={'flex flex-col'}>
 			<b className={'text-lg'}>
-				{safeChainID === 1 ? 'Withdraw and Burn' : 'Withdraw'}
+				{[1, 1337, 5].includes(safeChainID) ? 'Withdraw and Burn' : 'Withdraw'}
 			</b>
 			<div className={'mt-8 space-y-6'}>
 				<div>
@@ -234,7 +234,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 							maxValue={pair?.balanceOfPair || 0}
 							decimals={18} />
 					</div>
-					<div className={`mb-6 space-y-2 ${safeChainID === 1 ? '' : 'hidden'}`}>
+					<div className={`mb-6 space-y-2 ${[1, 1337, 5].includes(safeChainID) ? '' : 'hidden'}`}>
 						<b>{'You will receive'}</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
