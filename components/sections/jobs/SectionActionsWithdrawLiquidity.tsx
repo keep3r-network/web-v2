@@ -8,7 +8,7 @@ import {ethers} from 'ethers';
 import {burn, simulateBurn} from 'utils/actions/burn';
 import {unbondLiquidityFromJob} from 'utils/actions/unbondLiquidityFromJob';
 import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
-import {getEnv} from 'utils/env';
+import {getBridgeURI, getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
@@ -191,7 +191,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 		if (safeChainID !== 1) {
 			return (
 				<a
-					href={'https://bridge.connext.network/'}
+					href={getBridgeURI(safeChainID)}
 					target={'_blank'}
 					rel={'noreferrer'}>
 					<Button>
