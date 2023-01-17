@@ -72,7 +72,7 @@ export type	TDispute = {
 
 
 export type TEnvData = {
-	THE_KEEP3R: TAddress,
+	THE_KEEP3R_GOVERNANCE: TAddress,
 	KEEP3R_V1_ADDR: TAddress,
 	KEEP3R_V2_ADDR: TAddress,
 	KP3R_TOKEN_ADDR: TAddress,
