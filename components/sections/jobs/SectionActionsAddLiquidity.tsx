@@ -85,7 +85,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 			return;
 		}
 		new Transaction(provider, approveERC20, set_txStatusApproveToken2)
-			.populate(chainID, token, spender, amount)
+			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
 				await getPairs();
 			})
