@@ -11,6 +11,7 @@ import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
 import {getBridgeURI, getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
 import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';

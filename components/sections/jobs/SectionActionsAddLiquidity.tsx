@@ -10,6 +10,7 @@ import {mint} from 'utils/actions/mint';
 import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN, formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
@@ -24,11 +25,11 @@ function	PanelBridgeTokens(): ReactElement {
 	const	chainName = useMemo((): string => {
 		if (chainID === 5) {
 			return 'Goerli';
-		} else if (chainID === 10) {
+		} if (chainID === 10) {
 			return 'Optimism';
-		} else if (chainID === 420) {
+		} if (chainID === 420) {
 			return 'Goerli Optimism';
-		} else if (chainID === 1337) {
+		} if (chainID === 1337) {
 			return 'Mainnet fork';
 		}
 		return 'Unknown';
