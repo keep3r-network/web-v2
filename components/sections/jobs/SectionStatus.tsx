@@ -2,9 +2,12 @@ import React from 'react';
 import {useJob} from 'contexts/useJob';
 import {usePrices} from 'contexts/usePrices';
 import {getEnv} from 'utils/env';
-import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, format} from '@yearn-finance/web-lib/utils';
+import Copy from '@yearn-finance/web-lib/icons/IconCopy';
+import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
+import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 
@@ -21,25 +24,25 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Current credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.toNormalizedAmount(jobStatus?.jobLiquidityCredits || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.jobLiquidityCredits || 0, 18)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Pending credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.toNormalizedAmount(jobStatus?.totalJobCredits || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.totalJobCredits || 0, 18)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Per call, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount(jobStatus?.averageEarned || 0, 6, 6)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.averageEarned || 0, 6, 6)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Refill schedule, KP3R/Days'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount(Number(format.units(jobStatus?.jobPeriodCredits || 0, 18)) / 5, 6, 6)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(Number(formatUnits(jobStatus?.jobPeriodCredits || 0, 18)) / 5, 6, 6)}
 						</dd>
 					</div>
 				</dl>
@@ -51,7 +54,7 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Total, kLP-KP3R/WETH'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.toNormalizedAmount(jobStatus?.liquidityAmount || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.liquidityAmount || 0, 18)}
 						</dd>
 					</div>
 				</dl>
@@ -69,7 +72,7 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Per day, #'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount(jobStatus?.averageWorkDonePerDay || 0, 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.averageWorkDonePerDay || 0, 2, 2)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
@@ -87,13 +90,13 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Total, $'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount((jobStatus?.totalFees || 0) * Number(prices?.ethereum?.usd || 0), 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount((jobStatus?.totalFees || 0) * Number(prices?.ethereum?.usd || 0), 2, 2)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Per call, $'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount((jobStatus?.averageFees || 0) * Number(prices?.ethereum?.usd || 0), 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount((jobStatus?.averageFees || 0) * Number(prices?.ethereum?.usd || 0), 2, 2)}
 						</dd>
 					</div>
 				</dl>
@@ -105,13 +108,13 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Active keepers, #'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount(jobStatus?.uniqueKeepers || 0, 0, 0)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.uniqueKeepers || 0, 0, 0)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Calls per keeper, #'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : format.amount(jobStatus?.workPerKeeper || 0, 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.workPerKeeper || 0, 2, 2)}
 						</dd>
 					</div>
 				</dl>

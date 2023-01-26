@@ -9,11 +9,13 @@ import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {acceptJobMigration} from 'utils/actions/acceptJobMigration';
 import {migrateJob} from 'utils/actions/migrateJob';
 import {getEnv} from 'utils/env';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {defaultTxStatus, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {Modal} from '@yearn-finance/web-lib/components/Modal';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import Cross from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
@@ -50,8 +52,8 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 	}, [goDown]);
 
 	async function getMigrationDestination(migrationAddress: string): Promise<void> {
-		const	_provider = provider || providers.getProvider(chainID);
-		const	ethcallProvider = await providers.newEthCallProvider(_provider);
+		const	_provider = provider || getProvider(chainID);
+		const	ethcallProvider = await newEthCallProvider(_provider);
 		const	keep3rV2 = new Contract(
 			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
 			KEEP3RV2_ABI
@@ -139,8 +141,8 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 					</div>
 					<div className={'mb-6 space-y-2'}>
 						<b className={'text-black-1'}>{'Current address'}</b>
-						<div className={'border-grey-1 overflow-hidden border py-3 px-4'}>
-							<p className={'text-grey-1 overflow-hidden text-ellipsis'}>{currentAddress}</p>
+						<div className={'overflow-hidden border border-grey-1 py-3 px-4'}>
+							<p className={'overflow-hidden text-ellipsis text-grey-1'}>{currentAddress}</p>
 						</div>
 					</div>
 					<label

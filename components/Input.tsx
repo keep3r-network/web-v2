@@ -1,6 +1,7 @@
-import	React					from	'react';
-import	{ethers}						from	'ethers';
-import	{format, performBatchedUpdates}			from	'@yearn-finance/web-lib/utils';
+import React from 'react';
+import {ethers} from 'ethers';
+import {formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
@@ -34,7 +35,7 @@ function	InputBase({
 			}}>
 			<div
 				aria-label={ariaLabel}
-				className={`border-grey-3 bg-grey-3 flex h-12 w-full flex-row items-center border-2 py-2 px-4 text-black transition-colors focus-within:border-black ${className}`}>
+				className={`flex h-12 w-full flex-row items-center border-2 border-grey-3 bg-grey-3 py-2 px-4 text-black transition-colors focus-within:border-black ${className}`}>
 				<span className={'sr-only'}>{ariaLabel}</span>
 				<input
 					value={value}
@@ -94,7 +95,7 @@ function	InputBigNumber({
 			aria-invalid={(
 				value !== '' &&
 				((!Number(value) && !canBeZero) ||
-				(Number(value) > format.toNormalizedValue(maxValue, decimals)))
+				(Number(value) > formatToNormalizedValue(maxValue, decimals)))
 			)}
 			className={'space-y-2'}>
 			{label ? <p>{label}</p> : null}
@@ -106,10 +107,10 @@ function	InputBigNumber({
 				onSearch={(s: unknown): void => onChange(s as string)}
 				aria-label={'amountToken1'}
 				placeholder={'0.00000000'}
-				max={format.toNormalizedValue(maxValue, decimals)}
+				max={formatToNormalizedValue(maxValue, decimals)}
 				onMaxClick={(): void => {
 					if (!maxValue.isZero()) {
-						const	valueAsString = format.toNormalizedValue(maxValue, decimals).toString();
+						const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 						if (valueAsString.includes('e')) {
 							return;
 						}
@@ -123,14 +124,14 @@ function	InputBigNumber({
 					className={'cursor-pointer text-xs'}
 					onClick={(): void => {
 						if (!maxValue.isZero()) {
-							const	valueAsString = format.toNormalizedValue(maxValue, decimals).toString();
+							const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 							if (valueAsString.includes('e')) {
 								return;
 							}
 							onChange(valueAsString);
 						}
 					}}>
-					{`Balance: ${maxValue.isZero() ? '0.000000' : format.toNormalizedAmount(maxValue, decimals)}`}
+					{`Balance: ${maxValue.isZero() ? '0.000000' : formatToNormalizedAmount(maxValue, decimals)}`}
 				</p>
 			)}
 		</label>

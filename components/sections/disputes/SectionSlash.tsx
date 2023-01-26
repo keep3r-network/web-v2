@@ -9,10 +9,13 @@ import {slash} from 'utils/actions/slash';
 import {slashLiquidityFromJob} from 'utils/actions/slashLiquidityFromJob';
 import {slashTokenFromJob} from 'utils/actions/slashTokenFromJob';
 import {getEnv} from 'utils/env';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {defaultTxStatus, format, performBatchedUpdates, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
@@ -32,8 +35,8 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 	});
 
 	async function	getSlashed(_slashAddress: string, _slashTokenAddress: string, _isKeeper: boolean): Promise<void> {
-		const	_provider = provider || providers.getProvider(1);
-		const	ethcallProvider = await providers.newEthCallProvider(_provider);
+		const	_provider = provider || getProvider(1);
+		const	ethcallProvider = await newEthCallProvider(_provider);
 		const	keep3rV2 = new Contract(
 			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
 			KEEP3RV2_ABI
@@ -109,8 +112,8 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 					chainID,
 					slashAddress,
 					getEnv(chainID).KP3R_TOKEN_ADDR, //always KP3R
-					format.toSafeAmount(amountOfTokenBonded, slashed.bonds),
-					format.toSafeAmount(amountOfTokenUnbonded, slashed.pendingUnbonds)
+					toSafeAmount(amountOfTokenBonded, slashed.bonds),
+					toSafeAmount(amountOfTokenUnbonded, slashed.pendingUnbonds)
 				)
 				.onSuccess(async (): Promise<void> => {
 					await Promise.all([getKeeperStatus(), getSlashed(slashAddress, slashTokenAddress, true)]);
@@ -124,7 +127,7 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 						chainID,
 						slashAddress,
 						getEnv(chainID).KLP_KP3R_WETH_ADDR, //The LP
-						format.toSafeAmount(amountOfTokenBonded, slashed.bonds)
+						toSafeAmount(amountOfTokenBonded, slashed.bonds)
 					)
 					.onSuccess(async (): Promise<void> => {
 						await Promise.all([getKeeperStatus(), getSlashed(slashAddress, slashTokenAddress, false)]);
@@ -137,7 +140,7 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 						chainID,
 						slashAddress,
 						slashTokenAddress,
-						format.toSafeAmount(amountOfTokenBonded, slashed.bonds)
+						toSafeAmount(amountOfTokenBonded, slashed.bonds)
 					)
 					.onSuccess(async (): Promise<void> => {
 						await Promise.all([getKeeperStatus(), getSlashed(slashAddress, slashTokenAddress, false)]);
@@ -163,8 +166,8 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 				<div className={'mb-8 grid grid-cols-5 gap-4'}>
 					<div className={'col-span-3 flex flex-col space-y-2'}>
 						<span>
-							<b className={'text-black-1 hidden md:block'}>{'Slash keeper and its bonded assets'}</b>
-							<b className={'text-black-1 block md:hidden'}>{'Slash keeper'}</b>
+							<b className={'hidden text-black-1 md:block'}>{'Slash keeper and its bonded assets'}</b>
+							<b className={'block text-black-1 md:hidden'}>{'Slash keeper'}</b>
 						</span>
 						<label
 							aria-invalid={slashAddress !== '' && isZeroAddress(slashAddress)}

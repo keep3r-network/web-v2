@@ -4,10 +4,13 @@ import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {unbond} from 'utils/actions/unbond';
 import {withdraw} from 'utils/actions/withdraw';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {Modal} from '@yearn-finance/web-lib/components/Modal';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import Cross from '@yearn-finance/web-lib/icons/IconCross';
+import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
@@ -32,7 +35,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 			new Transaction(provider, unbond, set_txStatusUnbond).populate(
 				chainID,
 				tokenBonded,
-				format.toSafeAmount(amount, keeperStatus.bonds)
+				toSafeAmount(amount, keeperStatus.bonds)
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 			})
@@ -76,27 +79,27 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 					<div className={'space-y-6'}>
 						<p>
 							{'If you no longer wish to be a keeper you have to call '}
-							<code className={'text-grey-2 inline'}>{'unbond(address,uint)'}</code>
+							<code className={'inline text-grey-2'}>{'unbond(address,uint)'}</code>
 							{' and deactivate your account.'}
 						</p>
 						<p>
 							{'There is an unbond time (default 14-day) delay before you can withdraw any bonded assets. Once this delay has passed, you will have to call '}
-							<code className={'text-grey-2 inline'}>{'withdraw(address)'}</code>
+							<code className={'inline text-grey-2'}>{'withdraw(address)'}</code>
 							{' and claim the assets.'}
 						</p>
 					</div>
 					<div className={'space-y-10 bg-white p-6'}>
 						<div>
 							<p className={'mb-2'}>{'Balance, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Pending, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.pendingUnbonds, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.pendingUnbonds, 18)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Bonded, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.bonds, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.bonds, 18)}</b>
 						</div>
 					</div>
 				</div>
@@ -116,7 +119,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 							onSearch={(s: unknown): void => set_amount(s as string)}
 							aria-label={'amount'}
 							placeholder={'0.00000000'}
-							onMaxClick={(): void => set_amount(format.units(keeperStatus.bonds, 18))}
+							onMaxClick={(): void => set_amount(formatUnits(keeperStatus.bonds, 18))}
 							withMax />
 					</div>
 				</div>

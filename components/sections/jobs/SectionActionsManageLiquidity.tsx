@@ -10,10 +10,13 @@ import {addTokenCreditsToJob} from 'utils/actions/addTokenCreditsToJob';
 import {approveERC20} from 'utils/actions/approveToken';
 import {withdrawTokenCreditsFromJob} from 'utils/actions/withdrawTokenCreditsFromJob';
 import {getEnv} from 'utils/env';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {defaultTxStatus, format, performBatchedUpdates, providers, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
@@ -33,8 +36,8 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	});
 
 	async function	getTokenToAdd(_tokenToAdd: string): Promise<void> {
-		const	_provider = provider || providers.getProvider(1);
-		const	ethcallProvider = await providers.newEthCallProvider(_provider);
+		const	_provider = provider || getProvider(1);
+		const	ethcallProvider = await newEthCallProvider(_provider);
 		const	tokenToAddContract = new Contract(_tokenToAdd as string, ERC20_ABI);
 		const	results = await ethcallProvider.tryAll([
 			tokenToAddContract.balanceOf(address),
@@ -80,7 +83,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 			.populate(
 				tokenToAdd,
 				getEnv(chainID).KEEP3R_V2_ADDR,
-				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
+				toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
 			).onSuccess(async (): Promise<void> => {
 				await getTokenToAdd(tokenToAdd);
 			}).perform();
@@ -95,7 +98,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 				chainID,
 				jobStatus.address,
 				tokenToAdd,
-				format.toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
+				toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
 			).onSuccess(async (): Promise<void> => {
 				await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToAdd(tokenToAdd)]);
 				set_amountTokenToAdd('');
@@ -114,7 +117,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 						!isActive
 						|| isZeroAddress(tokenToAdd)
 						|| amountTokenToAdd === '' || Number(amountTokenToAdd) === 0 
-						|| Number(amountTokenToAdd) > Number(format.units(tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18))
+						|| Number(amountTokenToAdd) > Number(formatUnits(tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18))
 					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
@@ -188,8 +191,8 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 	}, [address]);
 
 	async function	getTokenToWithdraw(_tokenToWithdraw: string): Promise<void> {
-		const	_provider = provider || providers.getProvider(1);
-		const	ethcallProvider = await providers.newEthCallProvider(_provider);
+		const	_provider = provider || getProvider(1);
+		const	ethcallProvider = await newEthCallProvider(_provider);
 		const	contract = new Contract(getEnv(chainID).KEEP3R_V2_ADDR, KEEP3RV2_ABI);
 		const	tokenToWithdrawContract = new Contract(_tokenToWithdraw, ERC20_ABI);
 		const	results = await ethcallProvider.tryAll([
@@ -233,7 +236,7 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 				chainID,
 				jobStatus.address,
 				tokenToWithdraw,
-				format.toSafeAmount(amountTokenToWithdraw, tokenToWithdrawData?.balanceOf || 0, tokenToWithdrawData?.decimals || 18),
+				toSafeAmount(amountTokenToWithdraw, tokenToWithdrawData?.balanceOf || 0, tokenToWithdrawData?.decimals || 18),
 				receiver
 			).onSuccess(async (): Promise<void> => {
 				await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToWithdraw(tokenToWithdraw)]);

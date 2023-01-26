@@ -7,10 +7,12 @@ import {activate} from 'utils/actions/activate';
 import {approveERC20} from 'utils/actions/approveToken';
 import {bond} from 'utils/actions/bond';
 import {getEnv} from 'utils/env';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {Modal} from '@yearn-finance/web-lib/components/Modal';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import Cross from '@yearn-finance/web-lib/icons/IconCross';
+import {formatToNormalizedAmount, formatToNormalizedValue, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
@@ -36,7 +38,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			new Transaction(provider, bond, set_txStatusBond).populate(
 				chainID,
 				tokenBonded,
-				format.toSafeAmount(amount, keeperStatus.balanceOf)
+				toSafeAmount(amount, keeperStatus.balanceOf)
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 			})
@@ -56,7 +58,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
 				tokenBonded,
 				getEnv(chainID).KEEP3R_V2_ADDR,
-				format.toSafeAmount(amount, keeperStatus.balanceOf)
+				toSafeAmount(amount, keeperStatus.balanceOf)
 			).onSuccess(async (): Promise<void> => {
 				await getKeeperStatus();
 			})
@@ -94,7 +96,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					isDisabled={
 						!isActive ||
 						keeperStatus.hasDispute ||
-						Number(amount) > format.toNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+						Number(amount) > formatToNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
 					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
@@ -108,7 +110,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 				isDisabled={
 					!isActive ||
 					keeperStatus.hasDispute ||
-					Number(amount) > format.toNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+					Number(amount) > formatToNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
 				}>
 				{txStatusBond.error ? 'Transaction failed' : txStatusBond.success ? 'Transaction successful' : 'Bond'}
 			</Button>
@@ -129,27 +131,27 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					<div className={'space-y-6'}>
 						<p>
 							{'To become a keeper, you simply need to call '}
-							<code className={'text-grey-2 inline'}>{'bond(address,uint)'}</code>
+							<code className={'inline text-grey-2'}>{'bond(address,uint)'}</code>
 							{'. No funds are required to become a keeper, however, certain jobs might require a minimum amount of funds.'}
 						</p>
 						<p>
 							{'There is a bond time (default 3-day) delay before you can become an active keeper. Once this delay has passed, you will have to call '}
-							<code className={'text-grey-2 inline'}>{'activate()'}</code>
+							<code className={'inline text-grey-2'}>{'activate()'}</code>
 							{'.'}
 						</p>
 					</div>
 					<div className={'space-y-10 bg-white p-6'}>
 						<div>
 							<p className={'mb-2'}>{'Balance, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Pending, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.pendingBonds, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.pendingBonds, 18)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Bonded, KP3R'}</p>
-							<b className={'text-xl'}>{format.toNormalizedAmount(keeperStatus.bonds, 18)}</b>
+							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.bonds, 18)}</b>
 						</div>
 					</div>
 				</div>

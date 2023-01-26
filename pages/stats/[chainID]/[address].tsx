@@ -7,10 +7,13 @@ import {ModalBond} from 'components/modals/ModalBond';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
-import {Button} from '@yearn-finance/web-lib/components';
-import {Copy, LinkOut} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard, format} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import Copy from '@yearn-finance/web-lib/icons/IconCopy';
+import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
+import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 
@@ -62,21 +65,21 @@ function	StatsKeeper(): ReactElement {
 			<div className={'mb-6 grid grid-cols-2 gap-4 md:grid-cols-4'}>
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Earned, KP3R'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.earned || 0), 2, 2)}</b></div>
-					<p className={'text-xs'}>{`Earned, $: ${!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.earned || 0), 2, 2)}`}</p>
+					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0), 2, 2)}</b></div>
+					<p className={'text-xs'}>{`Earned, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0), 2, 2)}`}</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'TX fees, ETH'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.fees || 0), 2, 2)}</b></div>
-					<p className={'text-xs'}>{`TX fees, $: ${!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.fees || 0), 2, 2)}`}</p>
+					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.fees || 0), 2, 2)}</b></div>
+					<p className={'text-xs'}>{`TX fees, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.fees || 0), 2, 2)}`}</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Net earnings, $'}</p>
 					<div>
 						<b className={'text-xl'}>
-							{!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.earned || 0) - Number(data?.stats?.fees || 0), 2, 2)}
+							{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) - Number(data?.stats?.fees || 0), 2, 2)}
 						</b>
 					</div>
 				</div>
@@ -88,20 +91,20 @@ function	StatsKeeper(): ReactElement {
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'KP3R per call'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}</b></div>
-					<p className={'text-xs'}>{`$ per call ${!data?.stats?.isSuccessful ? '-' : format.amount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}`}</p>
+					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}</b></div>
+					<p className={'text-xs'}>{`$ per call ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}`}</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Bonded, KP3R'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : format.toNormalizedAmount(data?.stats?.bonds || 0, 18)}</b></div>
-					<p className={'text-xs'}>{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : format.amount(format.toNormalizedValue(data?.stats?.bonds || 0, 18) * data?.prices?.keep3rv1 || 0, 2, 2)}`}</p>
+					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatToNormalizedAmount(data?.stats?.bonds || 0, 18)}</b></div>
+					<p className={'text-xs'}>{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(formatToNormalizedValue(data?.stats?.bonds || 0, 18) * data?.prices?.keep3rv1 || 0, 2, 2)}`}</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Balance, KP3R'}</p>
 					<div>
-						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : format.toNormalizedAmount(data?.stats?.balanceOf || 0, 18)}</b>
+						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatToNormalizedAmount(data?.stats?.balanceOf || 0, 18)}</b>
 					</div>
 				</div>
 

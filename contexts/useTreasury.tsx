@@ -6,8 +6,11 @@ import CVX_ABI from 'utils/abi/cvx.abi';
 import LENS_PRICE_ABI from 'utils/abi/lens.abi';
 import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
 import {getEnv} from 'utils/env';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import axios from 'axios';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
+import {formatBN, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
@@ -28,13 +31,16 @@ type	TTreasuryContext = {
 
 const	TreasuryContext = createContext<TTreasuryContext>({treasury: []});
 export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{chainID} = useWeb3();
+	const	{safeChainID} = useChainID();
 	const	[treasury, set_treasury] = useState<TTreasury[]>([]);
 	const	[, set_nonce] = useState(0);
 
 	const getTreasury = useCallback(async (): Promise<void> => {
-		const	currentProvider = providers.getProvider(1);
-		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
+		const	currentProvider = getProvider(1);
+		const	[ethcallProvider, kp3rEthPrice] = await Promise.all([
+			newEthCallProvider(currentProvider),
+			axios.get('https://ydaemon-dev.yearn.finance/1/prices/0x4647B6D835f3B393C7A955df51EEfcf0db961606')
+		]);
 		const	lensPriceContract = new Contract('0x83d95e0D5f402511dB06817Aff3f9eA88224B030', LENS_PRICE_ABI);
 		const	ibaudUsdcContract = new Contract('0xbAFC4FAeB733C18411886A04679F11877D8629b1', CONVEX_REWARDS_ABI);
 		const	ibchfUsdcContract = new Contract('0x9BEc26bDd9702F4e0e4de853dd65Ec75F90b1F2e', CONVEX_REWARDS_ABI);
@@ -90,7 +96,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			currentProvider as ethers.providers.Web3Provider
 		);
 
-		const	{THE_KEEP3R} = getEnv(chainID);
+		const	{THE_KEEP3R} = getEnv(safeChainID);
 		const	jobsCalls = [
 			cvxContract.totalSupply(),
 			cvxContract.reductionPerCliff(),
@@ -126,7 +132,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			
 			kp3rEthContract.balanceOf(THE_KEEP3R),
 			kp3rEthContract.earned(THE_KEEP3R),
-			lensPriceContract.getPriceUsdcRecommended('0x21410232B484136404911780bC32756D5d1a9Fa9'),
+			// lensPriceContract.getPriceUsdcRecommended('0x21410232B484136404911780bC32756D5d1a9Fa9'),
 			
 			mim3CrvContract.balanceOf(THE_KEEP3R),
 			mim3CrvContract.earned(THE_KEEP3R),
@@ -214,15 +220,15 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	cvxReductionPerCliff = resultsJobsCall[rIndex++] as BigNumber;
 		const	cvxTotalCliffs = resultsJobsCall[rIndex++] as BigNumber;
 		const	reduction = cvxTotalCliffs.sub(cvxTotalSupply.div(cvxReductionPerCliff));
-		const	cvxPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	crvPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	kp3rPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	threeCRVPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	cvxPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	crvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	kp3rPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	threeCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 
 		// ibAUD //
-		const	ibAUDStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibAUD + USDC',
 			protocol: 'Convex',
@@ -231,16 +237,16 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibAUDStacked) * Number(ibAUDPrice),
 			unclaimedRewards: Number(ibAUDEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibAUDEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibAUDEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibAUDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibAUDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibCHF //
-		const	ibCHFStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibCHF + USDC',
 			protocol: 'Convex',
@@ -249,16 +255,16 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibCHFStacked) * Number(ibCHFPrice),
 			unclaimedRewards: Number(ibCHFEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibCHFEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibCHFEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibCHFEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibCHFEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibEUR //
-		const	ibEURStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibEUREarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibEUR + USDC',
 			protocol: 'Convex',
@@ -267,16 +273,16 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibEURStacked) * Number(ibEURPrice),
 			unclaimedRewards: Number(ibEUREarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibEUREarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibEUREarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibGBP //
-		const	ibGBPStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibGBP + USDC',
 			protocol: 'Convex',
@@ -285,16 +291,16 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibGBPStacked) * Number(ibGBPPrice),
 			unclaimedRewards: Number(ibGBPEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibGBPEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibGBPEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibGBPEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibGBPEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibJPY //
-		const	ibJPYStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibJPY + USDC',
 			protocol: 'Convex',
@@ -303,16 +309,16 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibJPYStacked) * Number(ibJPYPrice),
 			unclaimedRewards: Number(ibJPYEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibJPYEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibJPYEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibJPYEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibJPYEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibKRW //
-		const	ibKRWStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibKRW + USDC',
 			protocol: 'Convex',
@@ -321,34 +327,35 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibKRWStacked) * Number(ibKRWPrice),
 			unclaimedRewards: Number(ibKRWEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibKRWEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibKRWEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibKRWEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibKRWEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// kp3rEth //
-		const	kp3rEthStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	kp3rEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	kp3rEthCrvEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	kp3rEthPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	kp3rEthPriceFormated = formatUnits(formatBN(kp3rEthPrice.data) as BigNumber, 6);
+
 		_treasury.push({
 			name: 'kp3rEth',
 			protocol: 'Convex',
 			rewards: 'CVX',
 			tokenStaked: Number(kp3rEthStacked),
-			tokenStakedUSD: Number(kp3rEthStacked) * Number(kp3rEthPrice),
-			unclaimedRewards: Number(format.units(kp3rEthCrvEarned, 18)),
+			tokenStakedUSD: Number(kp3rEthStacked) * Number(kp3rEthPriceFormated),
+			unclaimedRewards: Number(formatUnits(kp3rEthCrvEarned, 18)),
 			unclaimedRewardsUSD: (
-				Number(format.units(kp3rEthCrvEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(kp3rEthCrvEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(kp3rEthCrvEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(kp3rEthCrvEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// mim3Crv //
-		const	mim3CrvStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	mim3CrvStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	mim3CrvEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	mim3CrvPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	mim3CrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'mim3Crv',
 			protocol: 'Convex',
@@ -357,18 +364,18 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(mim3CrvStacked) * Number(mim3CrvPrice),
 			unclaimedRewards: Number(mim3CrvEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(mim3CrvEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(mim3CrvEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(mim3CrvEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(mim3CrvEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// crvSUSD //
-		const	crvSUSDStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	crvSUSDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	crvSUSDEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	crvSUSDExtra0Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	crvSUSDPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	crvSUSDExtra0Price = format.units(resultsJobsCall[rIndex++] as BigNumber, 6); //SNX
+		const	crvSUSDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	crvSUSDExtra0Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //SNX
 		_treasury.push({
 			name: 'crvSUSD',
 			protocol: 'Convex',
@@ -377,21 +384,21 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(crvSUSDStacked) * Number(crvSUSDPrice),
 			unclaimedRewards: Number(crvSUSDEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(crvSUSDEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(crvSUSDEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(crvSUSDExtra0Earned, 18)) * Number(crvSUSDExtra0Price)
+				Number(formatUnits(crvSUSDExtra0Earned, 18)) * Number(crvSUSDExtra0Price)
 				+
-				Number(format.units(crvSUSDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(crvSUSDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibeur-ageur //
-		const	ibEURAgEURStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibEURAgEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibEURAgEUREarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibEURAgEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibEURAgEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURAgEURPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	ibEURAgEURExtra1Price = format.units(resultsJobsCall[rIndex++] as BigNumber, 6); //ANGLE
+		const	ibEURAgEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibEURAgEURExtra1Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //ANGLE
 		_treasury.push({
 			name: 'ibEUR + AgEUR',
 			protocol: 'Convex',
@@ -400,22 +407,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibEURAgEURStacked) * Number(ibEURAgEURPrice),
 			unclaimedRewards: Number(ibEURAgEUREarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibEURAgEUREarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibEURAgEUREarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibEURAgEURExtra1Earned, 18)) * Number(ibEURAgEURExtra1Price)
+				Number(formatUnits(ibEURAgEURExtra1Earned, 18)) * Number(ibEURAgEURExtra1Price)
 				+
-				Number(format.units(ibEURAgEURExtra2Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibEURAgEURExtra2Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibEURAgEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibEURAgEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibAUD+sAUD
-		const	ibAUDsAUDStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibAUDsAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibAUDsAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibAUDsAUDExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibAUDsAUDExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDsAUDPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibAUDsAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibAUD + sAUD',
 			protocol: 'Convex',
@@ -424,22 +431,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibAUDsAUDStacked) * Number(ibAUDsAUDPrice),
 			unclaimedRewards: Number(ibAUDsAUDEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibAUDsAUDEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibAUDsAUDEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibAUDsAUDExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibAUDsAUDExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibAUDsAUDExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibAUDsAUDExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibAUDsAUDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibAUDsAUDEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibCHF+sCHF
-		const	ibCHFsCHFStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibCHFsCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibCHFsCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibCHFsCHFExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibCHFsCHFExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFsCHFPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibCHFsCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibCHF + sCHF',
 			protocol: 'Convex',
@@ -448,22 +455,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibCHFsCHFStacked) * Number(ibCHFsCHFPrice),
 			unclaimedRewards: Number(ibCHFsCHFEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibCHFsCHFEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibCHFsCHFEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibCHFsCHFExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibCHFsCHFExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibCHFsCHFExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibCHFsCHFExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibCHFsCHFEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibCHFsCHFEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibEUR+sEUR
-		const	ibEURsEURStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibEURsEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibEURsEUREarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibEURsEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibEURsEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURsEURPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibEURsEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibEUR + sEUR',
 			protocol: 'Convex',
@@ -472,22 +479,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibEURsEURStacked) * Number(ibEURsEURPrice),
 			unclaimedRewards: Number(ibEURsEUREarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibEURsEUREarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibEURsEUREarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibEURsEURExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibEURsEURExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibEURsEURExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibEURsEURExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibEURsEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibEURsEUREarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibGBP+sGBP
-		const	ibGBPsGBPStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibGBPsGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibGBPsGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibGBPsGBPExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibGBPsGBPExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPsGBPPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibGBPsGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibGBP + sGBP',
 			protocol: 'Convex',
@@ -496,22 +503,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibGBPsGBPStacked) * Number(ibGBPsGBPPrice),
 			unclaimedRewards: Number(ibGBPsGBPEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibGBPsGBPEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibGBPsGBPEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibGBPsGBPExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibGBPsGBPExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibGBPsGBPExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibGBPsGBPExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibGBPsGBPEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibGBPsGBPEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibJPY+sJPY
-		const	ibJPYsJPYStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibJPYsJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibJPYsJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibJPYsJPYExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibJPYsJPYExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYsJPYPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibJPYsJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibJPY + sJPY',
 			protocol: 'Convex',
@@ -520,22 +527,22 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibJPYsJPYStacked) * Number(ibJPYsJPYPrice),
 			unclaimedRewards: Number(ibJPYsJPYEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibJPYsJPYEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibJPYsJPYEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibJPYsJPYExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibJPYsJPYExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibJPYsJPYExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibJPYsJPYExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibJPYsJPYEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibJPYsJPYEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// ibKRW+sKRW
-		const	ibKRWsKRWStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	ibKRWsKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	ibKRWsKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibKRWsKRWExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
 		const	ibKRWsKRWExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWsKRWPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	ibKRWsKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibKRW + sKRW',
 			protocol: 'Convex',
@@ -544,21 +551,21 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(ibKRWsKRWStacked) * Number(ibKRWsKRWPrice),
 			unclaimedRewards: Number(ibKRWsKRWEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(ibKRWsKRWEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(ibKRWsKRWEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(ibKRWsKRWExtra1Earned, 18)) * Number(kp3rPrice)
+				Number(formatUnits(ibKRWsKRWExtra1Earned, 18)) * Number(kp3rPrice)
 				+
-				Number(format.units(ibKRWsKRWExtra2Earned, 18)) * Number(cvxPrice)
+				Number(formatUnits(ibKRWsKRWExtra2Earned, 18)) * Number(cvxPrice)
 				+
-				Number(format.units(ibKRWsKRWEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(ibKRWsKRWEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// cvxCRV+CRV
-		const	cvxCRVCRVStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	cvxCRVCRVStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	cvxCRVCRVEarned = resultsJobsCall[rIndex++] as BigNumber;
 		const	cvxCRVCRVExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	cvxCRVCRVPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	cvxCRVCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'cvxCRV + CRV',
 			protocol: 'Convex',
@@ -567,19 +574,19 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStakedUSD: Number(cvxCRVCRVStacked) * Number(cvxCRVCRVPrice),
 			unclaimedRewards: Number(cvxCRVCRVEarned),
 			unclaimedRewardsUSD: (
-				Number(format.units(cvxCRVCRVEarned, 18)) * Number(crvPrice)
+				Number(formatUnits(cvxCRVCRVEarned, 18)) * Number(crvPrice)
 				+
-				Number(format.units(cvxCRVCRVExtra1Earned, 18)) * Number(threeCRVPrice)
+				Number(formatUnits(cvxCRVCRVExtra1Earned, 18)) * Number(threeCRVPrice)
 				+
-				Number(format.units(cvxCRVCRVEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
+				Number(formatUnits(cvxCRVCRVEarned.mul(reduction).div(cvxTotalCliffs), 18)) * Number(cvxPrice)
 			)
 		});
 
 		// yvEth //
-		const	yvEthStacked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
-		rIndex++; // const	pricePerShare = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
-		rIndex++; // const	ethPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	yvEthPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	yvEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		rIndex++; // const	pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		rIndex++; // const	ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	yvEthPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'yvEth',
 			protocol: 'Yearn',
@@ -594,26 +601,26 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		//Locked CRV
-		const	crvLocked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	crvLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	crvLockedExtraEarned = claimable;
-		// const	pricePerShare = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
-		// const	ethPrice = format.units(resultsJobsCall[rIndex++] as BigNumber, 6);
+		// const	pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		// const	ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'Locked CRV',
 			protocol: 'Curve',
 			rewards: '3CRV',
 			tokenStaked: Number(crvLocked),
 			tokenStakedUSD: Number(crvLocked) * Number(crvPrice),
-			unclaimedRewards: Number(format.units(crvLockedExtraEarned, 18)),
+			unclaimedRewards: Number(formatUnits(crvLockedExtraEarned, 18)),
 			unclaimedRewardsUSD: (
-				Number(format.units(crvLockedExtraEarned, 18)) * Number(threeCRVPrice)
+				Number(formatUnits(crvLockedExtraEarned, 18)) * Number(threeCRVPrice)
 			)
 			// unclaimedRewards: (Number(yvEthStacked) * Number(pricePerShare)) - Number(yvEthStacked),
 			// unclaimedRewardsUSD: (Number(yvEthStacked) * Number(yvEthPrice)) - (Number(yvEthStacked) * Number(ethPrice))
 		});
 
 		//Locked CVX
-		const	cvxLocked = format.units(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const	cvxLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	cvxLockedExtraEarned = claimable;
 		_treasury.push({
 			name: 'Locked CVX',
@@ -621,15 +628,15 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			rewards: 'CVX',
 			tokenStaked: Number(cvxLocked),
 			tokenStakedUSD: Number(cvxLocked) * Number(cvxPrice),
-			unclaimedRewards: Number(format.units(cvxLockedExtraEarned, 18)),
-			unclaimedRewardsUSD: (Number(format.units(cvxLockedExtraEarned, 18)) * Number(cvxPrice))
+			unclaimedRewards: Number(formatUnits(cvxLockedExtraEarned, 18)),
+			unclaimedRewardsUSD: (Number(formatUnits(cvxLockedExtraEarned, 18)) * Number(cvxPrice))
 		});
 
 		performBatchedUpdates((): void => {
 			set_treasury(_treasury);
 			set_nonce((n: number): number => n + 1);
 		});
-	}, [chainID]);
+	}, [safeChainID]);
 
 	useEffect((): void => {
 		getTreasury();

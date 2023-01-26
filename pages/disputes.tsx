@@ -5,9 +5,9 @@ import SectionDispute from 'components/sections/disputes/SectionDispute';
 import SectionSlash from 'components/sections/disputes/SectionSlash';
 import axios from 'axios';
 import useSWR from 'swr';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Copy} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard} from '@yearn-finance/web-lib/utils';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import Copy from '@yearn-finance/web-lib/icons/IconCopy';
+import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 

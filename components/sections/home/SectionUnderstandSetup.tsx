@@ -17,7 +17,7 @@ function	SectionUnderstandSetup(): ReactElement {
   
 						<p>
 							{'Each time keepers perform such a job, they are rewarded in either ETH, tokens, or systems native token KP3R. The maximum amount of KP3R to receive is '}
-							<code className={'text-grey-2 inline'}>{'gasUsed'}</code>
+							<code className={'inline text-grey-2'}>{'gasUsed'}</code>
 							{' + premium (configurable by governance).'}
 						</p>
 								
@@ -35,15 +35,15 @@ function	SectionUnderstandSetup(): ReactElement {
 					<div className={'mt-4 mb-8 space-y-6'}>  
 						<p>
 							{'To join as a keeper, you simply need to call '}
-							<code className={'text-grey-2 inline'}>{'bond(address,uint)'}</code>
+							<code className={'inline text-grey-2'}>{'bond(address,uint)'}</code>
 							{'. No funds are required to become a keeper, however, certain jobs might require a minimum amount of funds.'}
 						</p>
 
 						<p>
 							{'After waiting '}
-							<code className={'text-grey-2 inline'}>{'bondTime'}</code>
+							<code className={'inline text-grey-2'}>{'bondTime'}</code>
 							{' bonding delay (default 3 days) and you can '}
-							<code className={'text-grey-2 inline'}>{'activate'}</code>
+							<code className={'inline text-grey-2'}>{'activate'}</code>
 							{' as a keeper.'}
 						</p>
 

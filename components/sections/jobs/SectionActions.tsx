@@ -1,8 +1,8 @@
-import	React					from	'react';
-import	SectionActionsAddLiquidity				from	'components/sections/jobs/SectionActionsAddLiquidity';
-import	SectionActionsManageLiquidity			from	'components/sections/jobs/SectionActionsManageLiquidity';
-import	SectionActionsWithdrawLiquidity			from	'components/sections/jobs/SectionActionsWithdrawLiquidity';
-import	{Tab}									from	'@headlessui/react';
+import React from 'react';
+import SectionActionsAddLiquidity from 'components/sections/jobs/SectionActionsAddLiquidity';
+import SectionActionsManageLiquidity from 'components/sections/jobs/SectionActionsManageLiquidity';
+import SectionActionsWithdrawLiquidity from 'components/sections/jobs/SectionActionsWithdrawLiquidity';
+import {Tab} from '@headlessui/react';
 
 import type {ReactElement} from 'react';
 

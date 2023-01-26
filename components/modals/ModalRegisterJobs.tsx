@@ -2,11 +2,12 @@ import React, {useState} from 'react';
 import Input from 'components/Input';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {registerJob} from 'utils/actions/registerJob';
-import {Button, Modal} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {Cross} from '@yearn-finance/web-lib/icons';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {Modal} from '@yearn-finance/web-lib/components/Modal';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import Cross from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 

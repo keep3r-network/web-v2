@@ -8,10 +8,12 @@ import {addLiquidityToJob} from 'utils/actions/addLiquidityToJob';
 import {approveERC20} from 'utils/actions/approveToken';
 import {mint} from 'utils/actions/mint';
 import {getEnv} from 'utils/env';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {defaultTxStatus, format, performBatchedUpdates, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatBN, formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
@@ -75,8 +77,8 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 		const	allowance2 = ethers.utils.formatUnits(pair?.allowanceOfToken2 || 0, 18);
 		const	isAmountOverflow = (
 			!Number(amountToken1) || !Number(amountToken2)
-			|| Number(amountToken1) > Number(format.units(pair?.balanceOfToken1 || 0, 18))
-			|| Number(amountToken2) > Number(format.units(pair?.balanceOfToken2 || 0, 18))
+			|| Number(amountToken1) > Number(formatUnits(pair?.balanceOfToken1 || 0, 18))
+			|| Number(amountToken2) > Number(formatUnits(pair?.balanceOfToken2 || 0, 18))
 		);
 
 		if (Number(allowance1) < Number(amountToken1)) {
@@ -86,7 +88,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 						onApproveToken1(
 							pair.addressOfToken1,
 							pair.addressOfPair,
-							format.toSafeAmount(amountToken1, pair.balanceOfToken1)
+							toSafeAmount(amountToken1, pair.balanceOfToken1)
 						);
 					}}
 					isBusy={txStatusApproveToken1.pending}
@@ -94,14 +96,14 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 					{txStatusApproveToken1.error ? 'Transaction failed' : txStatusApproveToken1.success ? 'Transaction successful' : `Approve ${pair?.nameOfToken1 || ''}`}
 				</Button>
 			);
-		} else if (Number(allowance2) < Number(amountToken2)) {
+		} if (Number(allowance2) < Number(amountToken2)) {
 			return (
 				<Button
 					onClick={(): void => {
 						onApproveToken2(
 							pair.addressOfToken2,
 							pair.addressOfPair,
-							format.toSafeAmount(amountToken2, pair.balanceOfToken2)
+							toSafeAmount(amountToken2, pair.balanceOfToken2)
 						);
 					}}
 					isBusy={txStatusApproveToken2.pending}
@@ -115,8 +117,8 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 				onClick={(): void => {
 					onMint(
 						pair.addressOfPair,
-						format.toSafeAmount(amountToken1, pair.balanceOfToken1),
-						format.toSafeAmount(amountToken2, pair.balanceOfToken2)
+						toSafeAmount(amountToken1, pair.balanceOfToken1),
+						toSafeAmount(amountToken2, pair.balanceOfToken2)
 					);
 				}}
 				isBusy={txStatusMint.pending}
@@ -138,14 +140,14 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 							value={amountToken1}
 							onSetValue={(s: string): void => set_amountToken1(s)}
 							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken2(s === '' ? '' : (Number(s) * pair.priceOfToken2).toString())}
-							maxValue={format.BN(pair?.balanceOfToken1 || 0)}
+							maxValue={formatBN(pair?.balanceOfToken1 || 0)}
 							decimals={18} />
 						<Input.BigNumber
 							label={'WETH'}
 							value={amountToken2}
 							onSetValue={(s: string): void => set_amountToken2(s)}
 							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken1(s === '' ? '' : (Number(s) * pair.priceOfToken1).toString())}
-							maxValue={format.BN(pair?.balanceOfToken2 || 0)}
+							maxValue={formatBN(pair?.balanceOfToken2 || 0)}
 							decimals={18} />
 					</div>
 					<div>
@@ -199,7 +201,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 		const	isAmountOverflow = (
 			amountLpToken !== '' && (
 				!Number(amountLpToken)
-				|| Number(amountLpToken) > Number(format.units(pair?.balanceOfPair || 0, 18))
+				|| Number(amountLpToken) > Number(formatUnits(pair?.balanceOfPair || 0, 18))
 			)
 		);
 
@@ -210,7 +212,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						onApprove(
 							pair.addressOfPair,
 							getEnv(chainID).KEEP3R_V2_ADDR,
-							format.toSafeAmount(amountLpToken, pair.balanceOfPair)
+							toSafeAmount(amountLpToken, pair.balanceOfPair)
 						);
 					}}
 					isBusy={txStatusApprove.pending}
@@ -224,14 +226,14 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 				onClick={(): void => {
 					onAddLiquidityToJob(
 						pair.addressOfPair,
-						format.toSafeAmount(amountLpToken, pair.balanceOfPair)
+						toSafeAmount(amountLpToken, pair.balanceOfPair)
 					);
 				}}
 				isBusy={txStatusAddLiquidity.pending}
 				isDisabled={
 					!isActive
 					|| !Number(amountLpToken)
-					|| Number(amountLpToken) > Number(format.units(pair?.balanceOfPair || 0, 18))
+					|| Number(amountLpToken) > Number(formatUnits(pair?.balanceOfPair || 0, 18))
 				}>
 				{txStatusAddLiquidity.error ? 'Transaction failed' : txStatusAddLiquidity.success ? 'Transaction successful' : 'Add liquidity to job'}
 			</Button>
@@ -250,7 +252,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						<Input.BigNumber
 							value={amountLpToken}
 							onSetValue={(s: string): void => set_amountLpToken(s)}
-							maxValue={format.BN(pair?.balanceOfPair || 0)}
+							maxValue={formatBN(pair?.balanceOfPair || 0)}
 							decimals={18} />
 					</div>
 					<div>

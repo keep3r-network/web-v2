@@ -4,7 +4,8 @@ import Input from 'components/Input';
 import LogsStatsPerKeeper from 'components/logs/LogsStatsPerKeeper';
 import axios from 'axios';
 import useSWR from 'swr';
-import {format} from '@yearn-finance/web-lib/utils';
+import {formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
@@ -25,37 +26,37 @@ function	Stats(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'bg-grey-3 mb-4'}>
+			<section aria-label={'general statistics'} className={'mb-4 bg-grey-3'}>
 				<div className={'mx-auto grid w-full max-w-6xl grid-cols-2 gap-6 py-6 px-4 md:grid-cols-5 md:gap-4'}>
 					<div className={'space-y-2'}>
 						<p>{'Function calls'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(data?.stats?.workDone || 0, 0, 0)}</b>
+							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.workDone || 0, 0, 0)}</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Rewarded, KP3R'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(Number(format.units(data?.stats?.rewardedKp3r || 0, 18)), 2, 2)}</b>
+							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.rewardedKp3r || 0, 18)), 2, 2)}</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Keepers'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(data?.stats?.keepers || 0, 0, 0)}</b>
+							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.keepers || 0, 0, 0)}</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Bonded, KP3R'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : format.amount(Number(format.units(data?.stats?.bondedKp3r || 0, 18)), 2, 2)}</b>
+							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.bondedKp3r || 0, 18)), 2, 2)}</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Bonded, $'}</p>
 						<div>
 							<b className={'text-2xl'}>
-								{!data?.stats?.isSuccessful ? '-' : format.amount(Number(format.units(data?.stats?.bondedKp3r || 0, 18)) * Number(data?.prices?.keep3rv1 || 0), 2, 2)}
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.bondedKp3r || 0, 18)) * Number(data?.prices?.keep3rv1 || 0), 2, 2)}
 							</b>
 						</div>
 					</div>

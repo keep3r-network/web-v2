@@ -1,12 +1,15 @@
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Contract} from 'ethcall';
-import  {ethers} from 'ethers';
+import {ethers} from 'ethers';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
 import REGISTRY from 'utils/registry';
 import axios from 'axios';
-import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatBN, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatDate, formatDuration} from '@yearn-finance/web-lib/utils/format.time';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type * as TJobTypes from 'contexts/useJob.d';
 import type {BigNumber} from 'ethers';
@@ -74,9 +77,9 @@ export const JobContextApp = ({jobAddress, chainID, children}: {
 			return;
 		}
 		
-		const	_provider = providers.getProvider(chainID);
+		const	_provider = getProvider(chainID);
 		const	{timestamp} = await _provider.getBlock('latest');
-		const	ethcallProvider = await providers.newEthCallProvider(_provider);
+		const	ethcallProvider = await newEthCallProvider(_provider);
 		const	KEEP3R_V2_ADDR = toAddress(getEnv(chainID).KEEP3R_V2_ADDR);
 		const	KLP_KP3R_WETH_ADDR = toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR);
 		const	keep3rV2 = new Contract(KEEP3R_V2_ADDR, KEEP3RV2_ABI);
@@ -108,8 +111,8 @@ export const JobContextApp = ({jobAddress, chainID, children}: {
 
 		const	allWorks = works.data || [];
 		const	lastWork = allWorks?.[0]?.time;
-		const	totalFees = format.toNormalizedValue((allWorks || []).reduce((acc: BigNumber, work: {fees: string}): BigNumber => acc.add(format.BN(work?.fees)), ethers.constants.Zero));
-		const	totalEarned = format.toNormalizedValue((allWorks || []).reduce((acc: BigNumber, work: {earned: string}): BigNumber => acc.add(format.BN(work?.earned)), ethers.constants.Zero));
+		const	totalFees = formatToNormalizedValue((allWorks || []).reduce((acc: BigNumber, work: {fees: string}): BigNumber => acc.add(formatBN(work?.fees)), ethers.constants.Zero));
+		const	totalEarned = formatToNormalizedValue((allWorks || []).reduce((acc: BigNumber, work: {earned: string}): BigNumber => acc.add(formatBN(work?.earned)), ethers.constants.Zero));
 		const	uniqueKeepers = [...new Set((allWorks || []).map((e: {keeper: string}): string => e.keeper))];
 		const	perDay: {[v: string]: number} = {};
 		for (const work of allWorks) {
@@ -138,14 +141,14 @@ export const JobContextApp = ({jobAddress, chainID, children}: {
 				totalJobCredits,
 				pendingUnbonds,
 				canWithdrawAfter,
-				canWithdrawIn: format.duration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true),
+				canWithdrawIn: formatDuration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true),
 				canWithdraw: ((timestamp * 1000) - (Number(unbondTime) + Number(canWithdrawAfter) * 1000)) > 0,
 				hasDispute: disputes,
 				isVerified: chainRegistry[toAddress(jobAddress)]?.name ? true : false,
 				isLoaded: true,
 				workDone: allWorks.length,
 				averageWorkDonePerDay: averageWorkPerDay,
-				lastWork: lastWork ? format.date(Number(lastWork) * 1000, true) : 'Never', //date
+				lastWork: lastWork ? formatDate(Number(lastWork) * 1000, true) : 'Never', //date
 				totalFees: totalFees,
 				averageFees: totalFees / allWorks.length,
 				averageEarned: totalEarned / allWorks.length,

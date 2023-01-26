@@ -1,7 +1,7 @@
-import	React				from	'react';
-import	Head								from	'next/head';
-import	{DefaultSeo}						from	'next-seo';
-import	meta								from	'public/manifest.json';
+import React from 'react';
+import Head from 'next/head';
+import {DefaultSeo} from 'next-seo';
+import meta from 'public/manifest.json';
 
 import type {ReactElement} from 'react';
 

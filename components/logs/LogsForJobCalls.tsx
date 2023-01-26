@@ -5,12 +5,13 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import {Chevron, LinkOut} from '@yearn-finance/web-lib/icons';
-import {performBatchedUpdates} from '@yearn-finance/web-lib/utils';
+import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import IconLinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {formatToNormalizedAmount} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
@@ -95,7 +96,7 @@ function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 						href={`https://${selectedExplorer}/address/${value}`}
 						target={'_blank'}
 						rel={'noopener noreferrer'}>
-						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
+						<IconLinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
 			)

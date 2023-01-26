@@ -1,6 +1,6 @@
 import	{ethers} from	'ethers';
 import	UNI_V3_PAIR_ABI				from	'utils/abi/univ3Pair.abi';
-import	{providers}					from	'@yearn-finance/web-lib/utils';
+import {getProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type {ContractInterface} from 'ethers';
 
@@ -17,7 +17,7 @@ export async function	simulateBurn(
 		const	contract = new ethers.Contract(
 			pair,
 			UNI_V3_PAIR_ABI as ContractInterface,
-			providers.getProvider(chainID) as ethers.providers.Web3Provider
+			getProvider(chainID) as ethers.providers.Web3Provider
 		);
 		try {
 			const	simulation = await contract.callStatic.burn(

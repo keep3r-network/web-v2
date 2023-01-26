@@ -9,10 +9,12 @@ import {burn, simulateBurn} from 'utils/actions/burn';
 import {unbondLiquidityFromJob} from 'utils/actions/unbondLiquidityFromJob';
 import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
 import {getEnv} from 'utils/env';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {defaultTxStatus, format, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
@@ -42,14 +44,14 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 	}
 
 	function	renderUnbondButton(): ReactElement {
-		const	isAmountOverflow = (amountLpToken !== '' && (!Number(amountLpToken) || Number(amountLpToken) > Number(format.units(jobStatus?.liquidityAmount || 0, 18))));
+		const	isAmountOverflow = (amountLpToken !== '' && (!Number(amountLpToken) || Number(amountLpToken) > Number(formatUnits(jobStatus?.liquidityAmount || 0, 18))));
 
 		return (
 			<Button
 				onClick={(): void => {
 					onUnbondLiquidityFromJob(
 						pair.addressOfPair,
-						format.toSafeAmount(amountLpToken, jobStatus?.liquidityAmount)
+						toSafeAmount(amountLpToken, jobStatus?.liquidityAmount)
 					);
 				}}
 				isBusy={txStatusUnbond.pending}
@@ -86,14 +88,14 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 						</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'kLP-KP3R/WETH'}</dt>
+								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'kLP-KP3R/WETH'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
-											{format.toNormalizedAmount(jobStatus?.pendingUnbonds || 0, 18)}
+										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+											{formatToNormalizedAmount(jobStatus?.pendingUnbonds || 0, 18)}
 										</p>
 									</div>
 								</dd>
@@ -132,7 +134,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 				provider as ethers.providers.Web3Provider,
 				chainID,
 				pair.addressOfPair,
-				format.toSafeAmount(amountLpToken, pair.balanceOfPair)
+				toSafeAmount(amountLpToken, pair.balanceOfPair)
 			).then((result): void => {
 				set_expectedUnderlyingAmount({
 					token1: result[0],
@@ -188,13 +190,13 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 		return (
 			<Button
 				onClick={(): void => {
-					onBurn(pair.addressOfPair, format.toSafeAmount(amountLpToken, pair.balanceOfPair));
+					onBurn(pair.addressOfPair, toSafeAmount(amountLpToken, pair.balanceOfPair));
 				}}
 				isBusy={txStatusBurn.pending}
 				isDisabled={
 					!isActive
 					|| ethers.utils.parseUnits(amountLpToken || '0', 18).isZero()
-					|| Number(amountLpToken) > Number(format.units(pair?.balanceOfPair || 0, 18))
+					|| Number(amountLpToken) > Number(formatUnits(pair?.balanceOfPair || 0, 18))
 				}>
 				{txStatusBurn.error ? 'Transaction failed' : txStatusBurn.success ? 'Transaction successful' : 'Burn'}
 			</Button>
@@ -221,28 +223,28 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 						<b>{'You will receive'}</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'KP3R'}</dt>
+								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'KP3R'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
-											{format.toNormalizedAmount(expectedUnderlyingAmount?.token1 || 0, 18)}
+										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+											{formatToNormalizedAmount(expectedUnderlyingAmount?.token1 || 0, 18)}
 										</p>
 									</div>
 								</dd>
 							</div>
 
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-								<dt className={'text-black-1 whitespace-nowrap bg-white pr-2'}>{'wETH'}</dt>
+								<dt className={'whitespace-nowrap bg-white pr-2 text-black-1'}>{'wETH'}</dt>
 								<dd className={'w-full font-bold'}>
 									<div className={'absolute bottom-1.5 w-full'}>
 										<Line />
 									</div>
 									<div className={'flex justify-end'}>
-										<p className={'text-black-1 z-10 bg-white pl-1 text-right'}>
-											{format.toNormalizedAmount(expectedUnderlyingAmount?.token2 || 0, 18)}
+										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
+											{formatToNormalizedAmount(expectedUnderlyingAmount?.token2 || 0, 18)}
 										</p>
 									</div>
 								</dd>

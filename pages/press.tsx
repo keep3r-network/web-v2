@@ -230,23 +230,23 @@ function	Index(): ReactElement {
 							<div>
 								<div className={'mb-2 h-[120px] w-[120px] bg-black'} />
 								<p className={'text-black-2'}>{'Pure Black'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#000000'}</p>
+								<p className={'text-xs text-grey-2'}>{'#000000'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'bg-black-1 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-black-1'} />
 								<p className={'text-black-2'}>{'Black 1'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#131313'}</p>
+								<p className={'text-xs text-grey-2'}>{'#131313'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'bg-black-2 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-black-2'} />
 								<p className={'text-black-2'}>{'Black 2'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#2B2B2B'}</p>
+								<p className={'text-xs text-grey-2'}>{'#2B2B2B'}</p>
 							</div>
 						</div>
 						<div className={'invisible flex flex-col space-y-4'}>
@@ -254,7 +254,7 @@ function	Index(): ReactElement {
 							<div>
 								<div className={'mb-2 h-[120px] w-[120px] bg-black'} />
 								<p className={'text-black-2'}>{'skippy'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#000000'}</p>
+								<p className={'text-xs text-grey-2'}>{'#000000'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
@@ -262,7 +262,7 @@ function	Index(): ReactElement {
 							<div>
 								<div className={'mb-2 h-[120px] w-[120px] bg-white'} />
 								<p className={'text-black-2'}>{'Pure White'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#FFFFFF'}</p>
+								<p className={'text-xs text-grey-2'}>{'#FFFFFF'}</p>
 							</div>
 						</div>
 					</div>
@@ -270,41 +270,41 @@ function	Index(): ReactElement {
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>{'Grey'}</b>
 							<div>
-								<div className={'bg-grey-1 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-grey-1'} />
 								<p className={'text-black-2'}>{'Grey 1'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#4F4F4F'}</p>
+								<p className={'text-xs text-grey-2'}>{'#4F4F4F'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'bg-grey-2 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-grey-2'} />
 								<p className={'text-black-2'}>{'Grey 2'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#828282'}</p>
+								<p className={'text-xs text-grey-2'}>{'#828282'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'bg-grey-3 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-grey-3'} />
 								<p className={'text-black-2'}>{'Grey 3'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#E0E0E0'}</p>
+								<p className={'text-xs text-grey-2'}>{'#E0E0E0'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'bg-grey-4 mb-2 h-[120px] w-[120px]'} />
+								<div className={'mb-2 h-[120px] w-[120px] bg-grey-4'} />
 								<p className={'text-black-2'}>{'Grey 4'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#FBFBFB'}</p>
+								<p className={'text-xs text-grey-2'}>{'#FBFBFB'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col space-y-4'}>
 							<b className={'text-lg'}>&nbsp;</b>
 							<div>
-								<div className={'border-grey-3 bg-grey-5 mb-2 h-[120px] w-[120px] border'} />
+								<div className={'mb-2 h-[120px] w-[120px] border border-grey-3 bg-grey-5'} />
 								<p className={'text-black-2'}>{'Grey 5'}</p>
-								<p className={'text-grey-2 text-xs'}>{'#F1F1F1'}</p>
+								<p className={'text-xs text-grey-2'}>{'#F1F1F1'}</p>
 							</div>
 						</div>
 					</div>
@@ -324,9 +324,9 @@ function	Index(): ReactElement {
 						<div className={'flex flex-col'}>
 							<LogoFont />
 							<div style={{marginTop: 1}}>
-								<p className={'text-grey-2 mb-[-4px] text-xs'}>{'For logo'}</p>
+								<p className={'mb-[-4px] text-xs text-grey-2'}>{'For logo'}</p>
 								<a
-									className={'text-grey-2 text-xs underline'}
+									className={'text-xs text-grey-2 underline'}
 									href={'https://github.com/ctrlcctrlv/chomsky'}
 									target={'_blank'}
 									rel={'noreferrer'}>
@@ -337,22 +337,22 @@ function	Index(): ReactElement {
 						<div className={'flex flex-col'}>
 							<p className={'flex h-10 items-end text-3xl'}>{'Roboto Slab'}</p>
 							<div className={'mt-1'}>
-								<p className={'text-grey-2 text-xs'}>{'For texts'}</p>
-								<p className={'text-grey-2 mt-[-2px] text-xs'}>{'Free Google Font'}</p>
+								<p className={'text-xs text-grey-2'}>{'For texts'}</p>
+								<p className={'mt-[-2px] text-xs text-grey-2'}>{'Free Google Font'}</p>
 							</div>
 						</div>
 						<div className={'flex flex-col'}>
 							<p className={'flex h-10 items-end font-mono text-3xl'}>{'Roboto Mono'}</p>
 							<div className={'mt-1'}>
-								<p className={'text-grey-2 text-xs'}>{'For numbers and hashs'}</p>
-								<p className={'text-grey-2 mt-[-2px] text-xs'}>{'Free Google Font'}</p>
+								<p className={'text-xs text-grey-2'}>{'For numbers and hashs'}</p>
+								<p className={'mt-[-2px] text-xs text-grey-2'}>{'Free Google Font'}</p>
 							</div>
 						</div>
 						<div className={'col-span-2 flex flex-col pl-8'}>
-							<p className={'font-roboto-base flex h-10 items-end text-3xl'}>{'Roboto'}</p>
+							<p className={'flex h-10 items-end font-roboto-base text-3xl'}>{'Roboto'}</p>
 							<div className={'mt-1'}>
-								<p className={'text-grey-2 text-xs'}>{'For some captions'}</p>
-								<p className={'text-grey-2 mt-[-2px] text-xs'}>{'Free Google Font'}</p>
+								<p className={'text-xs text-grey-2'}>{'For some captions'}</p>
+								<p className={'mt-[-2px] text-xs text-grey-2'}>{'Free Google Font'}</p>
 							</div>
 						</div>
 					</div>

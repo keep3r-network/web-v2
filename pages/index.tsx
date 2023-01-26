@@ -2,7 +2,7 @@ import React from 'react';
 import SectionBestJobs from 'components/sections/home/SectionBestJobs';
 import SectionKeepersWanted from 'components/sections/home/SectionKeepersWanted';
 import SectionUnderstandSetup from 'components/sections/home/SectionUnderstandSetup';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 
 import type {ReactElement} from 'react';
 

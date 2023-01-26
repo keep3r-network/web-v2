@@ -3,10 +3,10 @@ import Input from 'components/Input';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {dispute} from 'utils/actions/dispute';
 import {resolve} from 'utils/actions/resolve';
-import {Button} from '@yearn-finance/web-lib/components';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
+import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 

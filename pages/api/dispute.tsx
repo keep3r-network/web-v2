@@ -2,8 +2,8 @@ import {Contract} from 'ethcall';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import {providers} from '@yearn-finance/web-lib/utils';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type {NextApiRequest, NextApiResponse} from 'next';
 import type {TDisputeData} from 'utils/types.d';
@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 
 	//Actual action
-	const	ethcallProvider = await providers.newEthCallProvider(providers.getProvider(1));
+	const	ethcallProvider = await newEthCallProvider(getProvider(1));
 	const	keep3rV2 = new Contract(
 		getEnv(currentChainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI

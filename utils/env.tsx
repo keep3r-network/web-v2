@@ -7,7 +7,7 @@ export function getEnv(chainID: number, canFallback = true): TEnvData {
 	const	envForChain = (process.env as TEnv).CHAINS[chainID];
 	if (!envForChain && canFallback) {
 		return (process.env as TEnv).CHAINS[1];
-	} else if (!envForChain && !canFallback) {
+	} if (!envForChain && !canFallback) {
 		return {
 			THE_KEEP3R: toAddress(ethers.constants.AddressZero),
 			KEEP3R_V1_ADDR: toAddress(ethers.constants.AddressZero),

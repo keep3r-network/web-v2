@@ -7,9 +7,13 @@ import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import REGISTRY from 'utils/registry';
 import axios from 'axios';
-import {Chevron, LinkOut} from '@yearn-finance/web-lib/icons';
-import {format, performBatchedUpdates} from '@yearn-finance/web-lib/utils';
+import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import IconLinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
+import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 import type {TRegistry} from 'utils/registry';
@@ -66,12 +70,12 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 				|| (chainRegistry[toAddress(log.job)]?.name || '').toLowerCase()?.includes(searchTerm.toLowerCase())
 			))
 			.map((log): unknown => ({
-				date: format.date(Number(log.time) * 1000, true),
+				date: formatDate(Number(log.time) * 1000, true),
 				jobName: chainRegistry[toAddress(log.job)]?.name || 'Unverified Job',
-				earnedKp3r: format.toNormalizedValue(log.earned, 18),
-				earnedUsd: format.toNormalizedValue(log.earned, 18),
-				fees: format.toNormalizedValue(log.fees, 18),
-				gweiPerCall: format.toNormalizedValue(log.gwei, 9),
+				earnedKp3r: formatToNormalizedValue(log.earned, 18),
+				earnedUsd: formatToNormalizedValue(log.earned, 18),
+				fees: formatToNormalizedValue(log.fees, 18),
+				gweiPerCall: formatToNormalizedValue(log.gwei, 9),
 				linkOut: log.job
 			}))
 	), [logs, searchTerm, chainRegistry]);
@@ -84,28 +88,28 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 			accessor: 'earnedKp3r',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 6)
 		},
 		{
 			Header: 'Earned, $',
 			accessor: 'earnedUsd',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'TX fees, ETH',
 			accessor: 'fees',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 6)
 		},
 		{
 			Header: 'GWEI per call',
 			accessor: 'gweiPerCall',
 			className: 'cell-end pr-6',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 6)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 6)
 		},
 		{
 			Header: '',
@@ -123,7 +127,7 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 						href={`https://${selectedExplorer}/address/${value}`}
 						target={'_blank'}
 						rel={'noopener noreferrer'}>
-						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
+						<IconLinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
 			)

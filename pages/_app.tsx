@@ -12,10 +12,11 @@ import {PairsContextApp} from 'contexts/usePairs';
 import {PricesContextApp, usePrices} from 'contexts/usePrices';
 import {TreasuryContextApp} from 'contexts/useTreasury';
 import NProgress from 'nprogress';
-import {ModalMobileMenu} from '@yearn-finance/web-lib/components';
-import {useWeb3, WithYearn} from '@yearn-finance/web-lib/contexts';
-import {format} from '@yearn-finance/web-lib/utils';
+import {ModalMobileMenu} from '@yearn-finance/web-lib/components/ModalMobileMenu';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {WithYearn} from '@yearn-finance/web-lib/contexts/WithYearn';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {AppProps} from 'next/app';
 import type {ReactElement} from 'react';
@@ -78,7 +79,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 	const	[walletIdentity, set_walletIdentity] = useState('Connect wallet');
 
 	useEffect((): void => {
-		set_tokenPrice(format.amount(Number(prices?.keep3rv1?.usd || 0), 2));
+		set_tokenPrice(formatAmount(Number(prices?.keep3rv1?.usd || 0), 2));
 	}, [prices]);
 
 	useEffect((): void => {
@@ -155,7 +156,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 					</nav>
 					<div className={'flex flex-row items-end'}>
 						<div className={'mr-5 flex flex-col space-y-3'}>
-							<p className={'text-grey-2 font-bold'}>
+							<p className={'font-bold text-grey-2'}>
 								{`KP3R: $${tokenPrice ? tokenPrice : '0.00'}`}
 							</p>
 							<div className={'h-1 w-full bg-transparent'} />
@@ -169,7 +170,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div className={'flex flex-col space-y-3'}>
 							<button
 								onClick={onLoginClick}
-								className={`text-intermediate h-auto truncate p-0 font-bold hover:bg-black ${walletIdentity !== 'Connect wallet' ? 'text-white' : 'text-grey-2'}`}>
+								className={`h-auto truncate p-0 text-intermediate font-bold hover:bg-black ${walletIdentity !== 'Connect wallet' ? 'text-white' : 'text-grey-2'}`}>
 								{walletIdentity}
 							</button>
 							<div className={'h-1 w-full bg-transparent'} />
@@ -192,7 +193,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname === '/'}
-							className={'bg-grey-4 flex flex-row items-center justify-between px-4 py-3 text-base font-bold'}>
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
 							<div className={'flex flex-row items-center space-x-3'}>
 								<svg
 									xmlns={'http://www.w3.org/2000/svg'}
@@ -204,7 +205,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							<svg
 								xmlns={'http://www.w3.org/2000/svg'}
 								viewBox={'0 0 512 512'}
-								className={'text-grey-2/50 h-4 w-4'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
+								className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
 							</svg>
 						</div>
 					</Link>
@@ -213,7 +214,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname.startsWith('/stats/')}
-							className={'bg-grey-4 flex flex-row items-center justify-between px-4 py-3 text-base font-bold'}>
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
 							<div className={'flex flex-row items-center space-x-3'}>
 								<svg
 									xmlns={'http://www.w3.org/2000/svg'}
@@ -225,7 +226,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							<svg
 								xmlns={'http://www.w3.org/2000/svg'}
 								viewBox={'0 0 512 512'}
-								className={'text-grey-2/50 h-4 w-4'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
+								className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
 							</svg>
 						</div>
 					</Link>
@@ -234,7 +235,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname === '/treasury'}
-							className={'bg-grey-4 flex flex-row items-center justify-between px-4 py-3 text-base font-bold'}>
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
 							<div className={'flex flex-row items-center space-x-3'}>
 								<svg
 									xmlns={'http://www.w3.org/2000/svg'}
@@ -246,7 +247,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							<svg
 								xmlns={'http://www.w3.org/2000/svg'}
 								viewBox={'0 0 512 512'}
-								className={'text-grey-2/50 h-4 w-4'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
+								className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
 							</svg>
 						</div>
 					</Link>
@@ -255,7 +256,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname === '/debt'}
-							className={'bg-grey-4 flex flex-row items-center justify-between px-4 py-3 text-base font-bold'}>
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
 							<div className={'flex flex-row items-center space-x-3'}>
 								<svg
 									xmlns={'http://www.w3.org/2000/svg'}
@@ -267,7 +268,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							<svg
 								xmlns={'http://www.w3.org/2000/svg'}
 								viewBox={'0 0 512 512'}
-								className={'text-grey-2/50 h-4 w-4'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
+								className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
 							</svg>
 						</div>
 					</Link>
@@ -276,7 +277,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 						<div
 							onClick={(): void => set_hasMobileMenu(false)}
 							aria-selected={pathname === '/disputes'}
-							className={'bg-grey-4 flex flex-row items-center justify-between px-4 py-3 text-base font-bold'}>
+							className={'flex flex-row items-center justify-between bg-grey-4 px-4 py-3 text-base font-bold'}>
 							<div className={'flex flex-row items-center space-x-3'}>
 								<svg
 									xmlns={'http://www.w3.org/2000/svg'}
@@ -288,7 +289,7 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							<svg
 								xmlns={'http://www.w3.org/2000/svg'}
 								viewBox={'0 0 512 512'}
-								className={'text-grey-2/50 h-4 w-4'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
+								className={'h-4 w-4 text-grey-2/50'}><path d={'M256 0C114.6 0 0 114.6 0 256c0 141.4 114.6 256 256 256s256-114.6 256-256C512 114.6 397.4 0 256 0zM358.6 278.6l-112 112c-12.5 12.5-32.75 12.5-45.25 0s-12.5-32.75 0-45.25L290.8 256L201.4 166.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l112 112C364.9 239.6 368 247.8 368 256S364.9 272.4 358.6 278.6z'} fill={'currentcolor'} />
 							</svg>
 						</div>
 					</Link>

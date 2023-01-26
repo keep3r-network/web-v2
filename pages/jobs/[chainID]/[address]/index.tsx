@@ -10,10 +10,12 @@ import {useJob} from 'contexts/useJob';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
-import {Button} from '@yearn-finance/web-lib/components';
-import {Copy, LinkOut, SocialGithub} from '@yearn-finance/web-lib/icons';
-import {copyToClipboard} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
+import Copy from '@yearn-finance/web-lib/icons/IconCopy';
+import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
+import SocialGithub from '@yearn-finance/web-lib/icons/IconSocialGithub';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 

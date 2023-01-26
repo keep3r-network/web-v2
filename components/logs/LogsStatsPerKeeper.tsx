@@ -6,9 +6,10 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import {Chevron} from '@yearn-finance/web-lib/icons';
-import {format, performBatchedUpdates} from '@yearn-finance/web-lib/utils';
+import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
@@ -59,49 +60,49 @@ function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 			accessor: 'earnedKp3r',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'Earned, $',
 			accessor: 'earnedUsd',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'TX fees, $',
 			accessor: 'fees',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'Net earned, $',
 			accessor: 'netEarned',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'Calls',
 			accessor: 'calls',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 0, 0)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 0, 0)
 		},
 		{
 			Header: 'KP3R per call ',
 			accessor: 'kp3rPerCall',
 			className: 'cell-end pr-8',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		},
 		{
 			Header: 'GWEI per call',
 			accessor: 'gweiPerCall',
 			className: 'cell-end',
 			sortType: 'basic',
-			Cell: ({value}: {value: number}): ReactNode => format.amount(value, 2, 2)
+			Cell: ({value}: {value: number}): ReactNode => formatAmount(value, 2, 2)
 		}
 	], []);
 

@@ -2,8 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {useDebt} from 'contexts/useDebt';
 import axios from 'axios';
 import useSWR from 'swr';
-import {format} from '@yearn-finance/web-lib/utils';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
@@ -22,13 +23,13 @@ function	Debt(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'bg-grey-3 mb-6'}>
+			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
 				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'Debt'}</p>
 						<div>
 							<b className={'text-2xl tabular-nums'}>
-								{`$ ${tvlUSD == 0 ? '0.00' : format.amount(tvlUSD, 2, 2)}`}
+								{`$ ${tvlUSD == 0 ? '0.00' : formatAmount(tvlUSD, 2, 2)}`}
 							</b>
 						</div>
 					</div>
@@ -47,15 +48,15 @@ function	Debt(): ReactElement {
 										<div className={'mt-2 flex flex-row items-center space-x-10 md:space-x-10'}>
 											<div className={'flex flex-col justify-center space-y-1'}>
 												<h3 className={'text-2xl font-bold tabular-nums md:text-3xl'}>
-													{format.amount(format.toNormalizedValue(debt.totalBorrowBalance, 18), 2, 2)}
+													{formatAmount(formatToNormalizedValue(debt.totalBorrowBalance, 18), 2, 2)}
 												</h3>
 												<p className={'text-sm md:text-base'}>
-													{`$ ${format.amount(debt.totalBorrowValue, 2, 2)}`}
+													{`$ ${formatAmount(debt.totalBorrowValue, 2, 2)}`}
 												</p>
 											</div>
 											<div className={'flex flex-col justify-center space-y-1'}>
 												<h3 className={'text-2xl font-bold tabular-nums md:text-3xl'}>
-													{`${format.amount((data?.borrow_apy?.value * 100) || 0, 2, 2)} %`}
+													{`${formatAmount((data?.borrow_apy?.value * 100) || 0, 2, 2)} %`}
 												</h3>
 												<p className={'text-sm md:text-base'}>
 													{'Borrow APY'}
@@ -78,11 +79,11 @@ function	Debt(): ReactElement {
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{`Debt, ${debt.name}`}</span>
-														{format.amount(balance.normalized, 2, 2)}
+														{formatAmount(balance.normalized, 2, 2)}
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{'Debt, $'}</span>
-														{format.amount(balance.normalizedValue, 2, 2)}
+														{formatAmount(balance.normalizedValue, 2, 2)}
 													</p>
 												</div>
 											))}

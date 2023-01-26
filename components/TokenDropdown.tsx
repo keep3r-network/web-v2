@@ -5,7 +5,7 @@ import LogoConvex from 'components/icons/LogoConvex';
 import LogoLido from 'components/icons/LogoLido';
 import {getEnv} from 'utils/env';
 import {Listbox, Transition} from '@headlessui/react';
-import {Chevron} from '@yearn-finance/web-lib/icons';
+import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 
 import type {ReactElement} from 'react';
@@ -59,7 +59,7 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 			}}>
 			{({open}): ReactElement => (
 				<div className={'relative'}>
-					<Listbox.Button className={'!bg-grey-3 hover:!bg-grey-4 flex w-full flex-row items-center justify-between p-2'}>
+					<Listbox.Button className={'flex w-full flex-row items-center justify-between !bg-grey-3 p-2 hover:!bg-grey-4'}>
 						<div className={'flex flex-row items-center space-x-2'}>
 							{toAddress(selected.address) === toAddress(getEnv(chainID).KEEP3R_V1_ADDR) ? (
 								<div className={'flex h-8 w-12 flex-row -space-x-4'}>
@@ -82,11 +82,11 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 						leave={'transition ease-in duration-100'}
 						leaveFrom={'opacity-100'}
 						leaveTo={'opacity-0'}>
-						<Listbox.Options className={'bg-grey-3 absolute z-10 mt-1 max-h-60 w-full overflow-auto'}>
+						<Listbox.Options className={'absolute z-10 mt-1 max-h-60 w-full overflow-auto bg-grey-3'}>
 							{(withKeeper ? [keeperToken, ...tokenList] : tokenList).map((token, tokenIdx): ReactElement => (
 								<Listbox.Option
 									key={tokenIdx}
-									className={'bg-grey-3 hover:bg-grey-4 relative cursor-pointer select-none p-2 transition-colors'}
+									className={'relative cursor-pointer select-none bg-grey-3 p-2 transition-colors hover:bg-grey-4'}
 									value={token}>
 									<div className={'flex flex-row items-center space-x-2'}>
 										{toAddress(token.address) === toAddress(getEnv(chainID).KEEP3R_V1_ADDR) ? (
@@ -115,7 +115,7 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 type		TTokenDropdownFake = {name: string}
 function	TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
 	return (
-		<div className={'bg-grey-3 flex flex-row items-center justify-between p-2'}>
+		<div className={'flex flex-row items-center justify-between bg-grey-3 p-2'}>
 			<div className={'flex flex-row items-center space-x-2'}>
 				<div className={'h-8 w-8 rounded-full bg-black'}>
 					<IconKeep3r className={'h-8 w-8'} />

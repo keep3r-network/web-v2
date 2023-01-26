@@ -1,8 +1,8 @@
-import	React, {useMemo, useState}			from	'react';
-import	Link							from	'next/link';
+import React, {useMemo, useState} from 'react';
+import Link from 'next/link';
 import {useRouter} from 'next/router';
-import	Input							from	'components/Input';
-import	LogsForJobCalls					from	'components/logs/LogsForJobCalls';
+import Input from 'components/Input';
+import LogsForJobCalls from 'components/logs/LogsForJobCalls';
 import axios from 'axios';
 import useSWR from 'swr';
 

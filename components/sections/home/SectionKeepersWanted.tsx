@@ -5,9 +5,9 @@ import {ModalUnbond} from 'components/modals/ModalUnbond';
 import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {getEnv} from 'utils/env';
-import {Button} from '@yearn-finance/web-lib/components';
-import {format} from '@yearn-finance/web-lib/utils';
+import {Button} from '@yearn-finance/web-lib/components/Button';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatBN, formatToNormalizedAmount} from '@yearn-finance/web-lib/utils/format.bigNumber';
 
 import type {ReactElement} from 'react';
 
@@ -29,35 +29,35 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 			<div className={'my-4'}>
 				<dl className={'w-full space-y-4'}>
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Balance'}</dt>
+						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Balance'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${format.BN(keeperStatus?.balanceOf).isZero() ? '0.000000' : format.toNormalizedAmount(keeperStatus?.balanceOf, 18)} KP3R`}
+									{`${formatBN(keeperStatus?.balanceOf).isZero() ? '0.000000' : formatToNormalizedAmount(keeperStatus?.balanceOf, 18)} KP3R`}
 								</p>
 							</div>
 						</dd>
 					</div>
 
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Bonds'}</dt>
+						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Bonds'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${format.BN(keeperStatus?.bonds).isZero() ? '0.000000' : format.toNormalizedAmount(keeperStatus.bonds, 18)} KP3R`}
+									{`${formatBN(keeperStatus?.bonds).isZero() ? '0.000000' : formatToNormalizedAmount(keeperStatus.bonds, 18)} KP3R`}
 								</p>
 							</div>
 						</dd>
 					</div>
 
 					<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>
-						<dt className={'bg-grey-5 whitespace-nowrap pr-2'}>{'Work Completed'}</dt>
+						<dt className={'whitespace-nowrap bg-grey-5 pr-2'}>{'Work Completed'}</dt>
 						<dd className={'w-full font-bold'}>
 							<div className={'absolute bottom-1.5 -z-10 w-full'}>
 								<Line />

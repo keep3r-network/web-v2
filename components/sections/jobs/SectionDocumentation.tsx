@@ -1,4 +1,4 @@
-import	React					from	'react';
+import React from 'react';
 
 import type {ReactElement} from 'react';
 
@@ -27,7 +27,7 @@ function	SectionDocumentation(): ReactElement {
 				</div>
 
 				<div aria-label={'Add liquidity'} className={'mb-10 space-y-4'}>
-					<b className={'text-intermediate mb-4'}>{'Add liquidity'}</b>
+					<b className={'mb-4 text-intermediate'}>{'Add liquidity'}</b>
 
 					<p>{'As a job owner, you have to ensure your job has enough liquidity credits. Take your time to calculate necessary amount of governance approved kLPs. Only then, mint and add kLP tokens to your job.'}</p>
 

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import LogoConvex from 'components/icons/LogoConvex';
 import LogoYearn from 'components/icons/LogoYearn';
 import {useTreasury} from 'contexts/useTreasury';
-import {format} from '@yearn-finance/web-lib/utils';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
@@ -18,13 +18,13 @@ function	Treasury(): ReactElement {
 
 	return (
 		<>
-			<section aria-label={'general statistics'} className={'bg-grey-3 mb-6'}>
+			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
 				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'TVL'}</p>
 						<div>
 							<b className={'text-2xl'}>
-								{`$ ${tvlUSD === 0 ? '0.00' : format.amount(tvlUSD, 2, 2)}`}
+								{`$ ${tvlUSD === 0 ? '0.00' : formatAmount(tvlUSD, 2, 2)}`}
 							</b>
 						</div>
 					</div>
@@ -58,7 +58,7 @@ function	Treasury(): ReactElement {
 										<div>
 											<p>{'Token staked'}</p>
 											<div className={'py-0 md:pt-2 md:pb-1'}>
-												<b className={'text-2xl'}>{format.amount(treasure.tokenStaked, 2, 2)}</b>
+												<b className={'text-2xl'}>{formatAmount(treasure.tokenStaked, 2, 2)}</b>
 											</div>
 											<p className={'text-xs'}>{treasure.name}</p>
 										</div>
@@ -67,7 +67,7 @@ function	Treasury(): ReactElement {
 											<p>{'Token staked, $'}</p>
 											<div className={'py-0 md:pt-2 md:pb-1'}>
 												<b className={'text-2xl'}>
-													{format.amount(treasure.tokenStakedUSD, 2, 2)}
+													{formatAmount(treasure.tokenStakedUSD, 2, 2)}
 												</b>
 											</div>
 										</div>
@@ -79,7 +79,7 @@ function	Treasury(): ReactElement {
 													<p>{'Unclaimed rewards, $'}</p>
 													<div className={'py-0 md:pt-2 md:pb-1'}>
 														<b className={'text-2xl'}>
-															{format.amount(treasure.unclaimedRewardsUSD, 2, 2)}
+															{formatAmount(treasure.unclaimedRewardsUSD, 2, 2)}
 														</b>
 													</div>
 												</div>

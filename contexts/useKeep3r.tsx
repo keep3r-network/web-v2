@@ -1,13 +1,16 @@
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {Contract} from 'ethcall';
-import  {ethers} from 'ethers';
+import {ethers} from 'ethers';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
 import REGISTRY from 'utils/registry';
-import {useWeb3} from '@yearn-finance/web-lib/contexts';
-import {format, performBatchedUpdates, providers} from '@yearn-finance/web-lib/utils';
+import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {formatBN, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatDuration} from '@yearn-finance/web-lib/utils/format.time';
+import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type * as TKeep3rTypes from 'contexts/useKeep3r.d';
 import type {ReactElement} from 'react';
@@ -30,8 +33,8 @@ const	defaultProps = {
 		isDisputer: false,
 		isSlasher: false,
 		isGovernance: false,
-		bondTime: format.BN(259200),
-		unbondTime: format.BN(1209600),
+		bondTime: formatBN(259200),
+		unbondTime: formatBN(1209600),
 		hasPendingActivation: false,
 		canActivate: false,
 		canActivateIn: 'Now',
@@ -90,8 +93,8 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	const getJobs = useCallback(async (): Promise<void> => {
 		set_hasLoadedJobs(false);
 		const	jobData = [] as TKeep3rTypes.TJobData[];
-		const	currentProvider = provider || providers.getProvider(chainID);
-		const	ethcallProvider = await providers.newEthCallProvider(currentProvider);
+		const	currentProvider = provider || getProvider(chainID);
+		const	ethcallProvider = await newEthCallProvider(currentProvider);
 		const	keep3rV2 = new Contract(
 			getEnv(chainID).KEEP3R_V2_ADDR,
 			KEEP3RV2_ABI
@@ -109,8 +112,8 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			jobData[i] = {
 				name: chainRegistry[toAddress(resultsJobsCall[0][i])]?.name || '',
 				address: toAddress(resultsJobsCall[0][i]),
-				totalCredits: format.BN(results[i]),
-				totalCreditsNormalized: Number(format.units(results[i], 18))
+				totalCredits: formatBN(results[i]),
+				totalCreditsNormalized: Number(formatUnits(results[i], 18))
 			};
 		}
 
@@ -135,7 +138,7 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 		const	KP3R_TOKEN_ADDR = toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
 
 		const	{timestamp} = await provider.getBlock('latest');
-		const	ethcallProvider = await providers.newEthCallProvider(provider);
+		const	ethcallProvider = await newEthCallProvider(provider);
 		const	keep3rV1 = new Contract(KEEP3R_V1_ADDR, KEEP3RV1_ABI);
 		const	keep3rV2 = new Contract(KEEP3R_V2_ADDR, KEEP3RV2_ABI);
 
@@ -165,11 +168,11 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			] = results;
 
 			set_keeperStatus({
-				balanceOf: format.BN(kp3rBalance),
-				allowance: format.BN(kp3rAllowance),
-				bonds: format.BN(bonds),
-				pendingBonds: format.BN(pendingBonds),
-				pendingUnbonds: format.BN(pendingUnbonds),
+				balanceOf: formatBN(kp3rBalance),
+				allowance: formatBN(kp3rAllowance),
+				bonds: formatBN(bonds),
+				pendingBonds: formatBN(pendingBonds),
+				pendingUnbonds: formatBN(pendingUnbonds),
 				canActivateAfter: canActivateAfter,
 				canWithdrawAfter: canWithdrawAfter,
 				isDisputer: disputers,
@@ -179,11 +182,11 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 				hasBonded: hasBonded,
 				bondTime: bondTime,
 				unbondTime: unbondTime,
-				hasPendingActivation: !format.BN(canActivateAfter).isZero(),
-				canActivate: !format.BN(canActivateAfter).isZero() && ((timestamp * 1000) - (Number(bondTime) + Number(canActivateAfter) * 1000)) > 0,
-				canActivateIn: format.duration((Number(bondTime) + Number(canActivateAfter) * 1000) - (timestamp * 1000), true),
+				hasPendingActivation: !formatBN(canActivateAfter).isZero(),
+				canActivate: !formatBN(canActivateAfter).isZero() && ((timestamp * 1000) - (Number(bondTime) + Number(canActivateAfter) * 1000)) > 0,
+				canActivateIn: formatDuration((Number(bondTime) + Number(canActivateAfter) * 1000) - (timestamp * 1000), true),
 				canWithdraw: ((timestamp * 1000) - (Number(unbondTime) + Number(canWithdrawAfter) * 1000)) > 0,
-				canWithdrawIn: format.duration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true)
+				canWithdrawIn: formatDuration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true)
 			});
 			set_nonce((n: number): number => n + 1);
 		});
