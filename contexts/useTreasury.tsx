@@ -4,16 +4,19 @@ import {ethers} from 'ethers';
 import CONVEX_REWARDS_ABI from 'utils/abi/convexRewards.abi';
 import CVX_ABI from 'utils/abi/cvx.abi';
 import LENS_PRICE_ABI from 'utils/abi/lens.abi';
+import LOCKED_CVX_ABI from 'utils/abi/lockedCVX.abi';
 import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
+import type {TAddress} from '@yearn-finance/web-lib/utils/address';
 
 export type	TTreasury = {
 	name: string;
@@ -49,7 +52,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	ibjpyUsdcContract = new Contract('0x58563C872c791196d0eA17c4E53e77fa1d381D4c', CONVEX_REWARDS_ABI);
 		const	ibkrwUsdcContract = new Contract('0x1900249c7a90D27b246032792004FF0E092Ac2cE', CONVEX_REWARDS_ABI);
 
-		const	vlCVXContract = new Contract('0x72a19342e8F1838460eBFCCEf09F6585e32db86E', CONVEX_REWARDS_ABI);
+		const	vlCVXContract = new Contract('0x72a19342e8F1838460eBFCCEf09F6585e32db86E', LOCKED_CVX_ABI);
 
 		const	ibeurAgeurContract = new Contract('0x769499A7B4093b2AA35E3F3C00B1ab5dc8EF7146', CONVEX_REWARDS_ABI); // ibeur-ageur
 		const	ibeurAgeurExtraRewards1Contract = new Contract('0x92dFd397b6d0B878126F5a5f6F446ae9Fc8A8356', CONVEX_REWARDS_ABI); // ANGLE
@@ -102,6 +105,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			cvxContract.reductionPerCliff(),
 			cvxContract.totalCliffs(),
 			lensPriceContract.getPriceUsdcRecommended('0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B'), //CVX
+			lensPriceContract.getPriceUsdcRecommended('0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7'), //cvxCRV
+			lensPriceContract.getPriceUsdcRecommended('0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0'), //cvxFXS
 			lensPriceContract.getPriceUsdcRecommended('0xd533a949740bb3306d119cc777fa900ba034cd52'), //CRV
 			lensPriceContract.getPriceUsdcRecommended('0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'), //KP3R
 			lensPriceContract.getPriceUsdcRecommended('0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490'), //3CRV
@@ -197,7 +202,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			yvEthContract.pricePerShare(),
 			lensPriceContract.getPriceUsdcRecommended('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
 			veCRVContract.balanceOf(THE_KEEP3R),
-			vlCVXContract.balanceOf(THE_KEEP3R)
+			vlCVXContract.balanceOf(THE_KEEP3R),
+			vlCVXContract.claimableRewards(THE_KEEP3R)
 		];
 		const	promise = await Promise.allSettled([
 			ethcallProvider.tryAll(jobsCalls),
@@ -221,6 +227,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		const	cvxTotalCliffs = resultsJobsCall[rIndex++] as BigNumber;
 		const	reduction = cvxTotalCliffs.sub(cvxTotalSupply.div(cvxReductionPerCliff));
 		const	cvxPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	cvxCrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const	cvxFXSPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		const	crvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		const	kp3rPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		const	threeCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
@@ -622,6 +630,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		//Locked CVX
 		const	cvxLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
 		const	cvxLockedExtraEarned = claimable;
+		const	cvxClaimableRewards = resultsJobsCall[rIndex++] as {token: TAddress, amount: BigNumber}[];
+		const	isToken1CvxCrv = toAddress(cvxClaimableRewards?.[0].token) === toAddress('0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7');
+		const	isToken2CvxFXs = toAddress(cvxClaimableRewards?.[1].token) === toAddress('0xFEEf77d3f69374f66429C91d732A244f074bdf74');
 		_treasury.push({
 			name: 'Locked CVX',
 			protocol: 'Convex',
@@ -629,7 +640,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			tokenStaked: Number(cvxLocked),
 			tokenStakedUSD: Number(cvxLocked) * Number(cvxPrice),
 			unclaimedRewards: Number(formatUnits(cvxLockedExtraEarned, 18)),
-			unclaimedRewardsUSD: (Number(formatUnits(cvxLockedExtraEarned, 18)) * Number(cvxPrice))
+			unclaimedRewardsUSD: (
+				(isToken1CvxCrv ? Number(formatUnits(cvxClaimableRewards[0].amount, 18)) * Number(cvxCrvPrice) : 0)
+				+
+				(isToken2CvxFXs ? Number(formatUnits(cvxClaimableRewards[1].amount, 18)) * Number(cvxFXSPrice) : 0)
+			)
 		});
 
 		performBatchedUpdates((): void => {
