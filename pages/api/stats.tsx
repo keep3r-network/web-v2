@@ -44,6 +44,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	};
 	return res.status(200).json({
 		stats: statData,
-		prices: {keep3rv1: prices.keep3r, ethereum: prices.ethereum}
+		prices: {keep3rv1: prices?.keep3r || 0, ethereum: prices.ethereum}
 	});
 }

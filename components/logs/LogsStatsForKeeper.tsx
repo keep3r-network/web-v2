@@ -216,7 +216,10 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 					{page.map((row: any): ReactElement => {
 						prepareRow(row);
 						return (
-							<Link key={row.getRowProps().key} href={`/jobs/${chainID}/${row.values.linkOut}`}>
+							<Link
+								legacyBehavior
+								key={row.getRowProps().key}
+								href={`/jobs/${chainID}/${row.values.linkOut}`}>
 								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (

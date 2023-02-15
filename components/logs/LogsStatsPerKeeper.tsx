@@ -187,7 +187,10 @@ function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 					{page.map((row: any): ReactElement => {
 						prepareRow(row);
 						return (
-							<Link key={row.getRowProps().key} href={`/stats/${chainID}/${row.values.address}`}>
+							<Link
+								legacyBehavior
+								key={row.getRowProps().key}
+								href={`/stats/${chainID}/${row.values.address}`}>
 								<tr {...row.getRowProps()} className={'cursor-pointer transition-colors hover:bg-white'}>
 									{row.cells.map((cell: any): ReactElement => {
 										return (
