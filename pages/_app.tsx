@@ -124,8 +124,8 @@ function	AppWithLayout(props: AppProps): ReactElement {
 							</div>
 						</Link>
 						<Link
-							href={'https://dune.com/wei3erHase/keep3rv2-analytics'}
-							// href={`/stats/${chainID || 1}`}
+							// href={'https://dune.com/wei3erHase/keep3rv2-analytics'}
+							href={`/stats/${chainID || 1}`}
 						>
 							<div aria-selected={pathname.startsWith('/stats/')} className={'menu_item px-5'}>
 								<b>{'Stats'}</b>
