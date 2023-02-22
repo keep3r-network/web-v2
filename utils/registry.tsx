@@ -37,6 +37,12 @@ const	REGISTRY: TRegistry = {
 		name: 'YearnHarvestV2',
 		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
 	},
+	'0xf4F748D45E03a70a9473394B28c3C7b5572DfA82': {
+		chainID: 1,
+		address: '0xf4F748D45E03a70a9473394B28c3C7b5572DfA82',
+		name: 'YearnFactoryHarvestV1',
+		repository: 'https://github.com/defi-wonderland/yearn-keeper-scripts'
+	},
 	'0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa': {
 		chainID: 1,
 		address: '0xdeE991cbF8527A33E84a2aAb8a65d68D5D591bAa',
