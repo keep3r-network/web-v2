@@ -85,6 +85,12 @@ const	REGISTRY: TRegistry = {
 		name: 'GrizzlyHarvest',
 		repository: 'https://github.com/borus-dev/grizzly-keeper-scripts'
 	},
+	'0x220d6F53444FB9205083E810344a3a3989527a34': {
+		chainID: 1,
+		address: '0x220d6F53444FB9205083E810344a3a3989527a34',
+		name: 'ChessOlympiads',
+		repository: 'https://github.com/wei3erHase/buttplug-wars-upkeep'
+	},
 	'0xE787B1C26190644b03d6100368728BfD6b55DD97': {
 		chainID: 10,
 		address: '0xE787B1C26190644b03d6100368728BfD6b55DD97',
