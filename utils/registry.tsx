@@ -73,9 +73,9 @@ const	REGISTRY: TRegistry = {
 		name: 'PhutureHarvesting',
 		repository: 'https://github.com/Phuture-Finance/keep3r-cli-job-phuture-savings-vault'
 	},
-	'0x553591d6eac7A127dE36063a1b6cD31D2FB9E42d': {
+	'0x1f5f0DA9391AB08c7F0150d45B41F6900fb4Fd0C': {
 		chainID: 1,
-		address: '0x553591d6eac7A127dE36063a1b6cD31D2FB9E42d',
+		address: '0x1f5f0DA9391AB08c7F0150d45B41F6900fb4Fd0C',
 		name: 'SidechainOracles Job',
 		repository: 'https://github.com/defi-wonderland/sidechain-oracles-keeper-scripts'
 	},
@@ -84,6 +84,12 @@ const	REGISTRY: TRegistry = {
 		address: '0xe74379Ed6e94C85dA90d27B92DF670DB282995af',
 		name: 'GrizzlyHarvest',
 		repository: 'https://github.com/borus-dev/grizzly-keeper-scripts'
+	},
+	'0xE787B1C26190644b03d6100368728BfD6b55DD97': {
+		chainID: 10,
+		address: '0xE787B1C26190644b03d6100368728BfD6b55DD97',
+		name: 'RevertCompoundor',
+		repository: 'https://github.com/defi-wonderland/revert-keeper-scripts-private/'
 	},
 	'0xa2c7A15FFc02e00cdeedBba56c41dAaed84f8734': {
 		chainID: 5,
