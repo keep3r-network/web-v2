@@ -22,11 +22,13 @@ module.exports = (phase) => withPWA({
 		**********************************************************************/
 		WEB_SOCKET_URL: {
 			1: process.env.WS_URL_MAINNET,
+			137: process.env.WS_URL_POLYGON,
 			250: process.env.WS_URL_FANTOM,
 			42161: process.env.WS_URL_ARBITRUM
 		},
 		JSON_RPC_URL: {
 			1: 'https://1rpc.io/eth' || process.env.RPC_URL_MAINNET,
+			137: process.env.RPC_URL_FANTOM,
 			250: process.env.RPC_URL_FANTOM,
 			42161: process.env.RPC_URL_ARBITRUM
 		},
@@ -89,6 +91,19 @@ module.exports = (phase) => withPWA({
 
 				//Offchain
 				EXPLORER: 'goerli.etherscan.io',
+				BACKEND_URI: 'https://api.keep3r.network'
+			},
+			137: {
+				THE_KEEP3R_GOVERNANCE: '',
+				KEEP3R_V1_ADDR: '',
+				KEEP3R_V2_ADDR: '',
+				KP3R_TOKEN_ADDR: '',
+				WETH_TOKEN_ADDR: '',
+				KLP_KP3R_WETH_ADDR: '',
+				UNI_KP3R_WETH_ADDR: '',
+
+				//Offchain
+				EXPLORER: 'polygonscan.com',
 				BACKEND_URI: 'https://api.keep3r.network'
 			},
 			420: {
