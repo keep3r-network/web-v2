@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import Input from 'components/Input';
 import TokenPairDropdown from 'components/TokenPairDropdown';
 import {useJob} from 'contexts/useJob';
@@ -10,6 +10,7 @@ import {mint} from 'utils/actions/mint';
 import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN, formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
@@ -17,6 +18,42 @@ import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/tr
 
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
+
+
+function	PanelBridgeTokens(): ReactElement {
+	const	{chainID} = useChainID();
+	const	chainName = useMemo((): string => {
+		if (chainID === 5) {
+			return 'Goerli';
+		} if (chainID === 10) {
+			return 'Optimism';
+		} if (chainID === 420) {
+			return 'Goerli Optimism';
+		} if (chainID === 1337) {
+			return 'Mainnet fork';
+		}
+		return 'Unknown';
+	}, [chainID]);
+
+	return (
+		<div aria-label={'Bridge tokens'} className={'flex flex-col'}>
+			<b className={'text-lg'}>{'Bridge tokens'}</b>
+			<p className={'mt-4'}>
+				{`You are on ${chainName} right now. To use Keep3r Network and automate your job, you’ll have to bridge kLP-KP3R/WETH from Ethereum to ${chainName}. Once you click “Bridge tokens” you’ll be redirected to Connext. Follow instructions on their website and come back after that.`}
+			</p>
+			<div className={'mt-8 mb-10'}>
+				<a
+					href={'https://bridge.connext.network/'}
+					target={'_blank'}
+					rel={'noreferrer'}>
+					<Button>
+						{'Bridge tokens'}
+					</Button>
+				</a>
+			</div>
+		</div>
+	);
+}
 
 function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
@@ -49,7 +86,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 			return;
 		}
 		new Transaction(provider, approveERC20, set_txStatusApproveToken2)
-			.populate(chainID, token, spender, amount)
+			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
 				await getPairs();
 			})
@@ -265,10 +302,20 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 }
 
 function	Wrapper({chainID}: {chainID: number}): ReactElement {
+	if ([1, 1337, 5].includes(chainID)) {
+		return (
+			<div className={'flex flex-col p-6'}>
+				<section aria-label={'ADD LIQUIDITY'}>
+					<PanelMintTokens chainID={chainID}/>
+					<SectionActionsAddLiquidity chainID={chainID}/>
+				</section>
+			</div>
+		);	
+	}
 	return (
 		<div className={'flex flex-col p-6'}>
 			<section aria-label={'ADD LIQUIDITY'}>
-				<PanelMintTokens chainID={chainID}/>
+				<PanelBridgeTokens />
 				<SectionActionsAddLiquidity chainID={chainID}/>
 			</section>
 		</div>

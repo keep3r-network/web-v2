@@ -72,16 +72,17 @@ export type	TDispute = {
 
 
 export type TEnvData = {
-	THE_KEEP3R: TAddress,
+	THE_KEEP3R_GOVERNANCE: TAddress,
 	KEEP3R_V1_ADDR: TAddress,
 	KEEP3R_V2_ADDR: TAddress,
 	KP3R_TOKEN_ADDR: TAddress,
-	WETH_TOKEN_ADDR: TAddress,
 	KLP_KP3R_WETH_ADDR: TAddress,
 	UNI_KP3R_WETH_ADDR: TAddress,
 
-	CVX_TOKEN_ADDR: TAddress,
-	LIDO_TOKEN_ADDR: TAddress,
+	//Optional for mainnet
+	WETH_TOKEN_ADDR?: TAddress,
+	CVX_TOKEN_ADDR?: TAddress,
+	LIDO_TOKEN_ADDR?: TAddress,
 
 	IB_AMM_ADDR: TAddress,
 	IB_AMM_2_ADDR: TAddress,

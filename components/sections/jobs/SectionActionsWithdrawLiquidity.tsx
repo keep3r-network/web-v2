@@ -8,9 +8,10 @@ import {ethers} from 'ethers';
 import {burn, simulateBurn} from 'utils/actions/burn';
 import {unbondLiquidityFromJob} from 'utils/actions/unbondLiquidityFromJob';
 import {withdrawLiquidityFromJob} from 'utils/actions/withdrawLiquidityFromJob';
-import {getEnv} from 'utils/env';
+import {getBridgeURI, getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
+import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
 import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
@@ -115,6 +116,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	const	{provider, isActive} = useWeb3();
 	const	{pairs, getPairs} = usePairs();
 	const	{jobStatus, getJobStatus} = useJob();
+	const	{safeChainID} = useChainID();
 	const	[amountLpToken, set_amountLpToken] = useState('');
 	const	[expectedUnderlyingAmount, set_expectedUnderlyingAmount] = useState({
 		token1: ethers.constants.Zero,
@@ -187,6 +189,18 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}
 
 	function	renderBurnButton(): ReactElement {
+		if (safeChainID !== 1) {
+			return (
+				<a
+					href={getBridgeURI(safeChainID)}
+					target={'_blank'}
+					rel={'noreferrer'}>
+					<Button>
+						{'Bridge tokens'}
+					</Button>
+				</a>
+			);
+		}
 		return (
 			<Button
 				onClick={(): void => {
@@ -204,8 +218,10 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	}
 
 	return (
-		<div aria-label={'Withdraw and Burn'} className={'flex flex-col'}>
-			<b className={'text-lg'}>{'Withdraw and Burn'}</b>
+		<div aria-label={'Withdraw'} className={'flex flex-col'}>
+			<b className={'text-lg'}>
+				{[1, 1337, 5].includes(safeChainID) ? 'Withdraw and Burn' : 'Withdraw'}
+			</b>
 			<div className={'mt-8 space-y-6'}>
 				<div>
 					<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
@@ -219,7 +235,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 							maxValue={pair?.balanceOfPair || 0}
 							decimals={18} />
 					</div>
-					<div className={'mb-6 space-y-2'}>
+					<div className={`mb-6 space-y-2 ${[1, 1337, 5].includes(safeChainID) ? '' : 'hidden'}`}>
 						<b>{'You will receive'}</b>
 						<dl className={'w-full space-y-2'}>
 							<div className={'relative flex w-full flex-row items-center justify-between overflow-hidden'}>

@@ -49,7 +49,7 @@ function	StatsKeeper(): ReactElement {
 		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
 				<p>
-					<Link href={`/stats/${chainID}`}>{'Keepers / '}</Link>
+					<Link suppressHydrationWarning href={`/stats/${chainID}`}>{'Keepers / '}</Link>
 					<b>{`Keeper ${truncateHex(data?.stats?.keeper || '-', 5)}`}</b>
 				</p>
 				<div><Copy onClick={(): void => copyToClipboard(data?.stats?.keeper || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
