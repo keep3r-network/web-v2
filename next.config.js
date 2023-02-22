@@ -94,6 +94,7 @@ module.exports = (phase) => withPWA({
 				BACKEND_URI: 'https://api.keep3r.network'
 			},
 			137: {
+<<<<<<< HEAD
 				THE_KEEP3R_GOVERNANCE: '0x9A040a31bc38919D50FD740973dBB6F8fdee1426',
 				KEEP3R_V1_ADDR: '0x4a2bE2075588BcE6A7E072574698a7DbbAc39b08',
 				KEEP3R_V2_ADDR: '0x745a50320b6eb8ff281f1664fc6713991661b129',
@@ -101,6 +102,15 @@ module.exports = (phase) => withPWA({
 				WETH_TOKEN_ADDR: '0x7ceb23fd6bc0add59e62ac25578270cff1b9f619',
 				KLP_KP3R_WETH_ADDR: '0x7cf93c434260519537184631a347ee8ad0bc68cb',
 				UNI_KP3R_WETH_ADDR: '0x6a060bf6579318c15138160ee1f1d225fcc9d409',
+=======
+				THE_KEEP3R_GOVERNANCE: '',
+				KEEP3R_V1_ADDR: '',
+				KEEP3R_V2_ADDR: '',
+				KP3R_TOKEN_ADDR: '',
+				WETH_TOKEN_ADDR: '',
+				KLP_KP3R_WETH_ADDR: '',
+				UNI_KP3R_WETH_ADDR: '',
+>>>>>>> 74f57ed (feat: init polygon)
 
 				//Offchain
 				EXPLORER: 'polygonscan.com',
