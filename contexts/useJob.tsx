@@ -58,10 +58,8 @@ export const JobContextApp = ({jobAddress, chainID, children}: {
 
 	const	chainRegistry = useMemo((): TRegistry => {
 		const	_registry: TRegistry = {};
-		for (const r of Object.values(REGISTRY)) {
-			if (r.chainID === chainID) {
-				_registry[r.address] = r;
-			}
+		for (const r of Object.values(REGISTRY[chainID] || {})) {
+			_registry[r.address] = r;
 		}
 		return _registry;
 	}, [chainID]);
