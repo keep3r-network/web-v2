@@ -28,7 +28,7 @@ module.exports = (phase) => withPWA({
 		},
 		JSON_RPC_URL: {
 			1: 'https://1rpc.io/eth' || process.env.RPC_URL_MAINNET,
-			137: process.env.RPC_URL_FANTOM,
+			137: process.env.RPC_URL_POLYGON,
 			250: process.env.RPC_URL_FANTOM,
 			42161: process.env.RPC_URL_ARBITRUM
 		},
