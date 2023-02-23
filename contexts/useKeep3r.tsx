@@ -50,9 +50,9 @@ const	Keep3rContext = createContext<TKeep3rTypes.TKeep3rContext>(defaultProps);
 export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactElement => {
 	const	{provider, isActive, isDisconnected, address} = useWeb3();
 	const	{chainID} = useChainID();
-	const	[jobs, set_jobs] = useState<TKeep3rTypes.TJobData[]>(defaultProps.jobs);
+	const	[jobs, set_jobs] = useState<{[key: number]: TKeep3rTypes.TJobData[]}>(defaultProps.jobs);
 	const	[hasLoadedJobs, set_hasLoadedJobs] = useState(false);
-	const	[keeperStatus, set_keeperStatus] = useState<TKeep3rTypes.TKeeperStatus>(defaultProps.keeperStatus);
+	const	[keeperStatus, set_keeperStatus] = useState<{[key: number]: TKeep3rTypes.TKeeperStatus}>({});
 	const	[, set_nonce] = useState(0);
 
 	const	chainRegistry = useMemo((): TRegistry => {
@@ -70,7 +70,7 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	***************************************************************************/
 	useEffect((): void => {
 		if (isDisconnected) {
-			set_keeperStatus(defaultProps.keeperStatus);
+			set_keeperStatus({});
 			set_hasLoadedJobs(false);
 		}
 	}, [isDisconnected]);
@@ -81,17 +81,6 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	**	need to fetch the list of jobs, then we need to find, for each one,
 	**	the associated credits.
 	***************************************************************************/
-	const saveJobs = useCallback(async (jobData: TKeep3rTypes.TJobData[], forChainID: number): Promise<void> => {
-		if (forChainID !== chainID) {
-			return;
-		}
-		performBatchedUpdates((): void => {
-			set_jobs(jobData);
-			set_hasLoadedJobs(true);
-			set_nonce((n: number): number => n + 1);
-		});
-	}, [chainID]);
-
 	const getJobs = useCallback(async (): Promise<void> => {
 		set_hasLoadedJobs(false);
 		const	jobData = [] as TKeep3rTypes.TJobData[];
@@ -119,8 +108,17 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 			};
 		}
 
-		saveJobs(jobData, (currentProvider as any)?.network?.chainId || chainID);
-	}, [provider, chainID, chainRegistry, saveJobs]);
+		performBatchedUpdates((): void => {
+			set_jobs((prev): {[key: number]: TKeep3rTypes.TJobData[]} => ({
+				...prev,
+				[chainID]: jobData
+			}));
+			set_hasLoadedJobs(true);
+			set_nonce((n: number): number => n + 1);
+		});
+
+
+	}, [provider, chainID, chainRegistry]);
 
 	useEffect((): void => {
 		getJobs();
@@ -169,7 +167,7 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 				hasBonded, bondTime, unbondTime
 			] = results;
 
-			set_keeperStatus({
+			const	updatedStatus = {
 				balanceOf: formatBN(kp3rBalance),
 				allowance: formatBN(kp3rAllowance),
 				bonds: formatBN(bonds),
@@ -189,7 +187,12 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 				canActivateIn: formatDuration((Number(bondTime) + Number(canActivateAfter) * 1000) - (timestamp * 1000), true),
 				canWithdraw: ((timestamp * 1000) - (Number(unbondTime) + Number(canWithdrawAfter) * 1000)) > 0,
 				canWithdrawIn: formatDuration((Number(unbondTime) + Number(canWithdrawAfter) * 1000) - (timestamp * 1000), true)
-			});
+			};
+
+			set_keeperStatus((prev): {[key: number]: TKeep3rTypes.TKeeperStatus} => ({
+				...prev,
+				[chainID]: updatedStatus
+			}));
 			set_nonce((n: number): number => n + 1);
 		});
 	}, [address, provider, isActive, chainID]);
@@ -203,8 +206,8 @@ export const Keep3rContextApp = ({children}: {children: ReactElement}): ReactEle
 	return (
 		<Keep3rContext.Provider
 			value={{
-				jobs,
-				keeperStatus,
+				jobs: jobs[chainID] || [],
+				keeperStatus: keeperStatus[chainID] || defaultProps.keeperStatus,
 				getJobs,
 				getKeeperStatus,
 				hasLoadedJobs
