@@ -39,7 +39,7 @@ export function getBridgeURI(chainID: number): string {
 		return ('https://amarok-testnet.coinhippo.io/TKN-from-goerli-to-optimism');
 	}
 	if (chainID === 137) {
-		return ('https://bridge.connext.network/'); //SHOULD IT BE OVERWRITTEN?
+		return ('https://bridge.connext.network/KP3R-from-ethereum-to-polygon');
 	}
 	if (chainID === 10) {
 		return ('https://amarok.bridge.connext.network/KP3R-from-ethereum-to-optimism');
