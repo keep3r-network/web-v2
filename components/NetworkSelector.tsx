@@ -12,7 +12,7 @@ const	options: TOptions[] = [
 	{label: 'Ethereum Mainnet', value: 1},
 	{label: 'Optimistic Ethereum', value: 10},
 	{label: 'Polygon', value: 137},
-	{label: 'Fantom Opera', value: 250},
+	// {label: 'Fantom Opera', value: 250},
 	{label: 'Goerli Testnet', value: 5},
 	{label: 'Optimistic Goerli', value: 420},
 	{label: 'Forknet', value: 1337}
