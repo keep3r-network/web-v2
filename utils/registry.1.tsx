@@ -84,6 +84,12 @@ const	REGISTRY: TRegistry = {
 		address: '0x220d6F53444FB9205083E810344a3a3989527a34',
 		name: 'ChessOlympiads',
 		repository: 'https://github.com/wei3erHase/buttplug-wars-upkeep'
+	},
+	'0x1f5f0DA9391AB08c7F0150d45B41F6900fb4Fd0C': {
+		chainID: 1,
+		address: '0x1f5f0DA9391AB08c7F0150d45B41F6900fb4Fd0C',
+		name: 'SidechainOracles',
+		repository: 'https://github.com/defi-wonderland/sidechain-oracles-keeper-scripts'
 	}
 };
 
