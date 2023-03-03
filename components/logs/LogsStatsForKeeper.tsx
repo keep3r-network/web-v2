@@ -40,10 +40,8 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 	const	[logs, set_logs] = useState<TLogs[]>([]);
 	const	chainRegistry = useMemo((): TRegistry => {
 		const	_registry: TRegistry = {};
-		for (const r of Object.values(REGISTRY)) {
-			if (r.chainID === chainID) {
-				_registry[r.address] = r;
-			}
+		for (const r of Object.values(REGISTRY[chainID] || {})) {
+			_registry[r.address] = r;
 		}
 		return _registry;
 	}, [chainID]);

@@ -15,10 +15,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 	
 	const	_registry: TRegistry = {};
-	for (const r of Object.values(REGISTRY)) {
-		if (r.chainID === currentChainID) {
-			_registry[r.address] = r;
-		}
+	for (const r of Object.values(REGISTRY[currentChainID] || {})) {
+		_registry[r.address] = r;
 	}
 
 	const	jobStats: TJobCallsData = {

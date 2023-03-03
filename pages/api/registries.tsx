@@ -1,4 +1,4 @@
-import REGISTRY from 'utils/registry.1';
+import REGISTRY from 'utils/registry';
 
 import type {NextApiRequest, NextApiResponse} from 'next';
 import type {TRegistry} from 'utils/registry';
