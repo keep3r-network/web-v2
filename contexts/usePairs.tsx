@@ -117,7 +117,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 		_address: TAddress = toAddress(address),
 		_provider: ethers.providers.JsonRpcProvider = provider
 	): Promise<void> => {
-		if (!_address || !provider) {
+		if (!_address || !provider || isZeroAddress(toAddress(address))) {
 			return;
 		}
 		const	currentProvider = _provider;
