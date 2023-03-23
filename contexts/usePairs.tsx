@@ -8,7 +8,7 @@ import {getEnv} from 'utils/env';
 import {useUpdateEffect} from '@react-hookz/web';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
-import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
@@ -172,7 +172,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 		<Pairs.Provider
 			value={{
 				pairs: pairs[safeChainID],
-				userPairsPosition: isActive ? userPairsPosition[safeChainID] : {},
+				userPairsPosition: isActive && !isZeroAddress(toAddress(address)) ? userPairsPosition[safeChainID] : {},
 				getPairs,
 				getPairsBalance
 			}}>
