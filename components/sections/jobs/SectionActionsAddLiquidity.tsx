@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import React, {useEffect, useMemo, useState} from 'react';
 import Input from 'components/Input';
 import TokenPairDropdown from 'components/TokenPairDropdown';
@@ -16,6 +17,7 @@ import {formatBN, formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
+import type {TUserPairsPosition} from 'contexts/usePairs.d';
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
 
@@ -57,17 +59,20 @@ function	PanelBridgeTokens(): ReactElement {
 
 function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
-	const	{pairs, getPairs} = usePairs();
+	const	{pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
+	const	{safeChainID} = useChainID();
 	const	[amountToken1, set_amountToken1] = useState('');
 	const	[amountToken2, set_amountToken2] = useState('');
 	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const	[userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
 	const	[txStatusApproveToken1, set_txStatusApproveToken1] = useState(defaultTxStatus);
 	const	[txStatusApproveToken2, set_txStatusApproveToken2] = useState(defaultTxStatus);
 	const	[txStatusMint, set_txStatusMint] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	}, [pairs, chainID]);
+		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || {});
+	}, [pairs, userPairsPosition, chainID]);
 
 	async function	onApproveToken1(token: string, spender: string, amount: BigNumber): Promise<void> {
 		if (!isActive || txStatusApproveToken1.pending) {
@@ -76,7 +81,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 		new Transaction(provider, approveERC20, set_txStatusApproveToken1)
 			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
-				await getPairs();
+				await Promise.all([getPairs(), getPairsBalance()]);
 			})
 			.perform();
 	}
@@ -88,7 +93,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 		new Transaction(provider, approveERC20, set_txStatusApproveToken2)
 			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
-				await getPairs();
+				await Promise.all([getPairs(), getPairsBalance()]);
 			})
 			.perform();
 	}
@@ -100,7 +105,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 		new Transaction(provider, mint, set_txStatusMint)
 			.populate(pairAddress, amount1, amount2)
 			.onSuccess(async (): Promise<void> => {
-				await getPairs();
+				await Promise.all([getPairs(), getPairsBalance()]);
 				performBatchedUpdates((): void => {
 					set_amountToken1('');
 					set_amountToken2('');
@@ -110,12 +115,12 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	}
 
 	function	renderApproveOrMintButton(): ReactElement {
-		const	allowance1 = ethers.utils.formatUnits(pair?.allowanceOfToken1 || 0, 18);
-		const	allowance2 = ethers.utils.formatUnits(pair?.allowanceOfToken2 || 0, 18);
+		const	allowance1 = ethers.utils.formatUnits(userPairPosition?.allowanceOfToken1 || 0, 18);
+		const	allowance2 = ethers.utils.formatUnits(userPairPosition?.allowanceOfToken2 || 0, 18);
 		const	isAmountOverflow = (
 			!Number(amountToken1) || !Number(amountToken2)
-			|| Number(amountToken1) > Number(formatUnits(pair?.balanceOfToken1 || 0, 18))
-			|| Number(amountToken2) > Number(formatUnits(pair?.balanceOfToken2 || 0, 18))
+			|| Number(amountToken1) > Number(formatUnits(userPairPosition?.balanceOfToken1 || 0, 18))
+			|| Number(amountToken2) > Number(formatUnits(userPairPosition?.balanceOfToken2 || 0, 18))
 		);
 
 		if (Number(allowance1) < Number(amountToken1)) {
@@ -125,7 +130,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 						onApproveToken1(
 							pair.addressOfToken1,
 							pair.addressOfPair,
-							toSafeAmount(amountToken1, pair.balanceOfToken1)
+							toSafeAmount(amountToken1, userPairPosition?.balanceOfToken1 || 0)
 						);
 					}}
 					isBusy={txStatusApproveToken1.pending}
@@ -140,7 +145,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 						onApproveToken2(
 							pair.addressOfToken2,
 							pair.addressOfPair,
-							toSafeAmount(amountToken2, pair.balanceOfToken2)
+							toSafeAmount(amountToken2, userPairPosition?.balanceOfToken2 || 0)
 						);
 					}}
 					isBusy={txStatusApproveToken2.pending}
@@ -154,8 +159,8 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 				onClick={(): void => {
 					onMint(
 						pair.addressOfPair,
-						toSafeAmount(amountToken1, pair.balanceOfToken1),
-						toSafeAmount(amountToken2, pair.balanceOfToken2)
+						toSafeAmount(amountToken1, userPairPosition?.balanceOfToken1 || 0),
+						toSafeAmount(amountToken2, userPairPosition?.balanceOfToken2 || 0)
 					);
 				}}
 				isBusy={txStatusMint.pending}
@@ -164,27 +169,27 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 			</Button>
 		);
 	}
-
+	
 	return (
 		<div aria-label={'Mint tokens (Optional)'} className={'flex flex-col'}>
 			<b className={'text-lg'}>{'Mint tokens (Optional)'}</b>
 			<div className={'mt-8 mb-10 space-y-6'}>
 				<TokenPairDropdown name={'kLP-KP3R/WETH'} />
 				<div>
-					<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
+					<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'} key={`numbers_${safeChainID}`}>
 						<Input.BigNumber
 							label={'KP3R'}
 							value={amountToken1}
 							onSetValue={(s: string): void => set_amountToken1(s)}
 							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken2(s === '' ? '' : (Number(s) * pair.priceOfToken2).toString())}
-							maxValue={formatBN(pair?.balanceOfToken1 || 0)}
+							maxValue={formatBN(userPairPosition?.balanceOfToken1 || 0)}
 							decimals={18} />
 						<Input.BigNumber
 							label={'WETH'}
 							value={amountToken2}
 							onSetValue={(s: string): void => set_amountToken2(s)}
 							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken1(s === '' ? '' : (Number(s) * pair.priceOfToken1).toString())}
-							maxValue={formatBN(pair?.balanceOfToken2 || 0)}
+							maxValue={formatBN(userPairPosition?.balanceOfToken2 || 0)}
 							decimals={18} />
 					</div>
 					<div>
@@ -198,16 +203,18 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 
 function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement {
 	const	{provider, isActive} = useWeb3();
-	const	{pairs, getPairs} = usePairs();
+	const	{pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
 	const	{jobStatus, getJobStatus} = useJob();
 	const	[amountLpToken, set_amountLpToken] = useState('');
 	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const	[userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
 	const	[txStatusAddLiquidity, set_txStatusAddLiquidity] = useState(defaultTxStatus);
 	const	[txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	}, [pairs, chainID]);
+		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || {});
+	}, [pairs, userPairsPosition, chainID]);
 
 	async function	onApprove(token: string, spender: string, amount: BigNumber): Promise<void> {
 		if (!isActive || txStatusApprove.pending) {
@@ -216,7 +223,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 		new Transaction(provider, approveERC20, set_txStatusApprove)
 			.populate(token, spender, amount)
 			.onSuccess(async (): Promise<void> => {
-				await getPairs();
+				await Promise.all([getPairs(), getPairsBalance()]);
 			})
 			.perform();
 	}
@@ -228,17 +235,17 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 		new Transaction(provider, addLiquidityToJob, set_txStatusAddLiquidity)
 			.populate(chainID, jobStatus.address, pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getPairs()]);
+				await Promise.all([getJobStatus(), getPairs(), getPairsBalance()]);
 			})
 			.perform();
 	}
 
 	function	renderApproveOrAddLiquidityButton(): ReactElement {
-		const	allowancePair = ethers.utils.formatUnits(pair?.allowanceOfPair || 0, 18);
+		const	allowancePair = ethers.utils.formatUnits(userPairPosition?.allowanceOfPair || 0, 18);
 		const	isAmountOverflow = (
 			amountLpToken !== '' && (
 				!Number(amountLpToken)
-				|| Number(amountLpToken) > Number(formatUnits(pair?.balanceOfPair || 0, 18))
+				|| Number(amountLpToken) > Number(formatUnits(userPairPosition?.balanceOfPair || 0, 18))
 			)
 		);
 
@@ -249,7 +256,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						onApprove(
 							pair.addressOfPair,
 							getEnv(chainID).KEEP3R_V2_ADDR,
-							toSafeAmount(amountLpToken, pair.balanceOfPair)
+							toSafeAmount(amountLpToken, userPairPosition?.balanceOfPair || 0)
 						);
 					}}
 					isBusy={txStatusApprove.pending}
@@ -263,14 +270,14 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 				onClick={(): void => {
 					onAddLiquidityToJob(
 						pair.addressOfPair,
-						toSafeAmount(amountLpToken, pair.balanceOfPair)
+						toSafeAmount(amountLpToken, userPairPosition?.balanceOfPair || 0)
 					);
 				}}
 				isBusy={txStatusAddLiquidity.pending}
 				isDisabled={
 					!isActive
 					|| !Number(amountLpToken)
-					|| Number(amountLpToken) > Number(formatUnits(pair?.balanceOfPair || 0, 18))
+					|| Number(amountLpToken) > Number(formatUnits(userPairPosition?.balanceOfPair || 0, 18))
 				}>
 				{txStatusAddLiquidity.error ? 'Transaction failed' : txStatusAddLiquidity.success ? 'Transaction successful' : 'Add liquidity to job'}
 			</Button>
@@ -289,7 +296,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						<Input.BigNumber
 							value={amountLpToken}
 							onSetValue={(s: string): void => set_amountLpToken(s)}
-							maxValue={formatBN(pair?.balanceOfPair || 0)}
+							maxValue={formatBN(userPairPosition?.balanceOfPair || 0)}
 							decimals={18} />
 					</div>
 					<div>
@@ -302,9 +309,12 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 }
 
 function	Wrapper({chainID}: {chainID: number}): ReactElement {
+	const	{address} = useWeb3();
 	if ([1, 1337, 5].includes(chainID)) {
 		return (
-			<div className={'flex flex-col p-6'}>
+			<div
+				className={'flex flex-col p-6'}
+				key={`${chainID}_${address}`}>
 				<section aria-label={'ADD LIQUIDITY'}>
 					<PanelMintTokens chainID={chainID}/>
 					<SectionActionsAddLiquidity chainID={chainID}/>
@@ -313,7 +323,9 @@ function	Wrapper({chainID}: {chainID: number}): ReactElement {
 		);	
 	}
 	return (
-		<div className={'flex flex-col p-6'}>
+		<div
+			className={'flex flex-col p-6'}
+			key={`${chainID}_${address}`}>
 			<section aria-label={'ADD LIQUIDITY'}>
 				<PanelBridgeTokens />
 				<SectionActionsAddLiquidity chainID={chainID}/>

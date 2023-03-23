@@ -1,19 +1,14 @@
 import type 	{BigNumber}		from	'ethers';
+import type {TDict, VoidPromiseFunction} from '@yearn-finance/web-lib/types';
 
 export type	TKeeperPair = {
 	addressOfUni: string,
 	addressOfPair: string,
 	nameOfPair: string,
-	balanceOfPair: BigNumber,
-	allowanceOfPair: BigNumber,
 	nameOfToken1: string,
 	addressOfToken1: string,
-	balanceOfToken1: BigNumber,
-	allowanceOfToken1: BigNumber,
 	nameOfToken2: string,
 	addressOfToken2: string
-	balanceOfToken2: BigNumber,
-	allowanceOfToken2: BigNumber,
 	priceOfToken1: number,
 	priceOfToken2: number,
 	hasPrice: boolean,
@@ -23,11 +18,18 @@ export type	TKeeperPair = {
 		tokensOwed1: BigNumber
 	}
 }
-export type	TKeeperPairs = {
-	[key: string]: TKeeperPair
+export type	TUserPairsPosition = {
+	balanceOfPair: BigNumber,
+	allowanceOfPair: BigNumber,
+	balanceOfToken1: BigNumber,
+	allowanceOfToken1: BigNumber,
+	balanceOfToken2: BigNumber,
+	allowanceOfToken2: BigNumber,
 }
 
 export type	TPairsContext = {
-	pairs: TKeeperPairs,
-	getPairs: () => Promise<void>,
+	userPairsPosition: TDict<TUserPairsPosition>
+	pairs: TDict<TKeeperPair>,
+	getPairs: VoidPromiseFunction,
+	getPairsBalance: VoidPromiseFunction
 }

@@ -1,13 +1,14 @@
-import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import React, {createContext, useCallback, useContext, useState} from 'react';
 import {Contract} from 'ethcall';
 import {ethers} from 'ethers';
 import {request} from 'graphql-request';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
 import {getEnv} from 'utils/env';
+import {useUpdateEffect} from '@react-hookz/web';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
-import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
@@ -15,24 +16,18 @@ import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3
 import type * as TPairsTypes from 'contexts/usePairs.d';
 import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
-import type {TEnv} from 'utils/types.d';
+import type {TAddress, TDict, TNDict} from '@yearn-finance/web-lib/types';
 
-function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
+function	getPairsForChain(chainID: number): TDict<TPairsTypes.TKeeperPair> {
 	return ({
 		[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]: {
 			addressOfUni: toAddress(getEnv(chainID).UNI_KP3R_WETH_ADDR),
 			addressOfPair: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
 			nameOfPair: 'kLP-KP3R/WETH',
-			balanceOfPair: ethers.constants.Zero,
-			allowanceOfPair: ethers.constants.Zero,
 			addressOfToken1: toAddress(getEnv(chainID).KP3R_TOKEN_ADDR),
 			nameOfToken1: 'KP3R',
-			balanceOfToken1: ethers.constants.Zero,
-			allowanceOfToken1: ethers.constants.Zero,
 			addressOfToken2: toAddress(getEnv(chainID)?.WETH_TOKEN_ADDR || ethers.constants.AddressZero),
 			nameOfToken2: 'WETH',
-			balanceOfToken2: ethers.constants.Zero,
-			allowanceOfToken2: ethers.constants.Zero,
 			priceOfToken1: 0,
 			priceOfToken2: 0,
 			hasPrice: true,
@@ -45,41 +40,13 @@ function	getPairsForChain(chainID: number): TPairsTypes.TKeeperPairs {
 	});	
 }
 
-// eslint-disable-next-line prefer-destructuring
-const	defaultChain = (process.env as TEnv).CHAINS[1];
-const	defaultProps = {
-	pairs: {
-		[toAddress(defaultChain.KLP_KP3R_WETH_ADDR)]: {
-			addressOfUni: toAddress(defaultChain.UNI_KP3R_WETH_ADDR),
-			addressOfPair: toAddress(defaultChain.KLP_KP3R_WETH_ADDR),
-			nameOfPair: 'kLP-KP3R/WETH',
-			balanceOfPair: ethers.constants.Zero,
-			allowanceOfPair: ethers.constants.Zero,
-			addressOfToken1: toAddress(defaultChain.KP3R_TOKEN_ADDR),
-			nameOfToken1: 'KP3R',
-			balanceOfToken1: ethers.constants.Zero,
-			allowanceOfToken1: ethers.constants.Zero,
-			addressOfToken2: toAddress(defaultChain?.WETH_TOKEN_ADDR || ethers.constants.AddressZero),
-			nameOfToken2: 'WETH',
-			balanceOfToken2: ethers.constants.Zero,
-			allowanceOfToken2: ethers.constants.Zero,
-			priceOfToken1: 0,
-			priceOfToken2: 0,
-			hasPrice: true,
-			position: {
-				liquidity: ethers.constants.Zero,
-				tokensOwed0: ethers.constants.Zero,
-				tokensOwed1: ethers.constants.Zero
-			}
-		}
-	},
-	getPairs: async (): Promise<void> => undefined
-};
-const	Pairs = createContext<TPairsTypes.TPairsContext>(defaultProps);
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+const	Pairs = createContext<TPairsTypes.TPairsContext>({} as TPairsTypes.TPairsContext);
 export const PairsContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{address, provider} = useWeb3();
-	const	{chainID} = useChainID();
-	const	[pairs, set_pairs] = useState<TPairsTypes.TKeeperPairs>(getPairsForChain(chainID));
+	const	{isActive, address, provider} = useWeb3();
+	const	{chainID, safeChainID} = useChainID();
+	const	[pairs, set_pairs] = useState<TNDict<TDict<TPairsTypes.TKeeperPair>>>({[chainID]: getPairsForChain(chainID)});
+	const	[userPairsPosition, set_userPairsPosition] = useState<TNDict<TDict<TPairsTypes.TUserPairsPosition>>>({});
 	const	[, set_nonce] = useState(0);
 
 	/* 📰 - Keep3r *************************************************************
@@ -87,26 +54,17 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 	**	pair is activated, the KEEP3R - WETH pair. We need to get a bunch of
 	**	data to correctly display and enable the actions for the user.
 	***************************************************************************/
-	const getPairs = useCallback(async (): Promise<void> => {
-		const	currentProvider = provider || getProvider(chainID);
-		const	currentAddress = address || ethers.constants.AddressZero;
-		const	{KEEP3R_V2_ADDR} = getEnv(chainID);
+	const getPairs = useCallback(async (
+		_chainID: number = chainID,
+		_provider: ethers.providers.JsonRpcProvider = provider
+	): Promise<void> => {
+		const	currentProvider = _provider || getProvider(_chainID);
 		const	ethcallProvider = await newEthCallProvider(currentProvider);
-		const	_chainPairs = getPairsForChain(chainID);
+		const	_chainPairs = getPairsForChain(_chainID);
 
 		for (const pair of Object.values(_chainPairs)) {
-			const	token1Contract = new Contract(pair.addressOfToken1, KEEP3RV1_ABI);
-			const	token2Contract = new Contract(pair.addressOfToken2, KEEP3RV1_ABI);
 			const	pairContract = new Contract(pair.addressOfPair, UNI_V3_PAIR_ABI);	
-			const	calls = [
-				token2Contract.balanceOf(currentAddress),
-				token2Contract.allowance(currentAddress, pair.addressOfPair),
-				token1Contract.balanceOf(currentAddress),
-				token1Contract.allowance(currentAddress, pair.addressOfPair),
-				pairContract.balanceOf(currentAddress),
-				pairContract.allowance(currentAddress, KEEP3R_V2_ADDR),
-				pairContract.position()
-			];
+			const	calls = [pairContract.position()];
 			const	[results, {pool}] = await Promise.all([
 				ethcallProvider.tryAll(calls),
 				request('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3', `{
@@ -118,12 +76,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 			]) as [any, any];
 
 			performBatchedUpdates((): void => {
-				const	[
-					balanceOfToken2, allowanceOfToken2,
-					balanceOfToken1, allowanceOfToken1,
-					balanceOfPair, allowanceOfPair,
-					position 
-				] = results;
+				const	[position] = results;
 				const	liquidity = formatBN(position?.liquidity);
 				const	tokensOwed0 = formatBN(position?.tokensOwed0);
 				const	tokensOwed1 = formatBN(position?.tokensOwed1);
@@ -131,16 +84,10 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 					addressOfUni: toAddress(pair.addressOfUni),
 					addressOfPair: toAddress(pair.addressOfPair),
 					nameOfPair: 'kLP-KP3R/WETH',
-					balanceOfPair: formatBN(balanceOfPair as BigNumber),
-					allowanceOfPair: formatBN(allowanceOfPair as BigNumber),
 					addressOfToken1: toAddress(pair.addressOfToken1),
 					nameOfToken1: 'KP3R',
-					balanceOfToken1: formatBN(balanceOfToken1 as BigNumber),
-					allowanceOfToken1: formatBN(allowanceOfToken1 as BigNumber),
 					addressOfToken2: toAddress(pair.addressOfToken2),
 					nameOfToken2: 'WETH',
-					balanceOfToken2: formatBN(balanceOfToken2 as BigNumber),
-					allowanceOfToken2: formatBN(allowanceOfToken2 as BigNumber),
 					priceOfToken1: pool?.token0Price || 0,
 					priceOfToken2: pool?.token1Price || 0,
 					hasPrice: pool?.token0Price && pool?.token1Price,
@@ -150,23 +97,85 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 						tokensOwed1: formatBN(tokensOwed1 as BigNumber)
 					}
 				};
-				set_pairs((o: TPairsTypes.TKeeperPairs): TPairsTypes.TKeeperPairs => ({
+				set_pairs((o: TNDict<TDict<TPairsTypes.TKeeperPair>>): TNDict<TDict<TPairsTypes.TKeeperPair>> => ({
 					...o,
-					[pair.addressOfPair]: _pair
+					[_chainID]: {
+						...o[_chainID],
+						[pair.addressOfPair]: _pair
+					}
 				}));
 				set_nonce((n: number): number => n + 1);
 			});
 		}
-	}, [chainID, address, provider]);
-	useEffect((): void => {
-		getPairs();
-	}, [getPairs]);
+	}, [chainID, provider]);
+	useUpdateEffect((): void => {
+		getPairs(chainID, provider);
+	}, [getPairs, chainID, provider]);
+
+	const getPairsBalance = useCallback(async (
+		_chainID: number = chainID,
+		_address: TAddress = toAddress(address),
+		_provider: ethers.providers.JsonRpcProvider = provider
+	): Promise<void> => {
+		if (!_address || !provider || isZeroAddress(toAddress(address))) {
+			return;
+		}
+		const	currentProvider = _provider;
+		const	currentAddress = _address;
+		const	{KEEP3R_V2_ADDR} = getEnv(_chainID);
+		const	ethcallProvider = await newEthCallProvider(currentProvider);
+		const	_chainPairs = getPairsForChain(_chainID);
+
+		for (const pair of Object.values(_chainPairs)) {
+			const	token1Contract = new Contract(pair.addressOfToken1, KEEP3RV1_ABI);
+			const	token2Contract = new Contract(pair.addressOfToken2, KEEP3RV1_ABI);
+			const	pairContract = new Contract(pair.addressOfPair, UNI_V3_PAIR_ABI);	
+			const	calls = [
+				token2Contract.balanceOf(currentAddress),
+				token2Contract.allowance(currentAddress, pair.addressOfPair),
+				token1Contract.balanceOf(currentAddress),
+				token1Contract.allowance(currentAddress, pair.addressOfPair),
+				pairContract.balanceOf(currentAddress),
+				pairContract.allowance(currentAddress, KEEP3R_V2_ADDR)
+			];
+			const	results = await ethcallProvider.tryAll(calls);
+			performBatchedUpdates((): void => {
+				const	[balanceOfToken2, allowanceOfToken2, balanceOfToken1, allowanceOfToken1, balanceOfPair, allowanceOfPair] = results;
+				const	_pair = {
+					balanceOfPair: formatBN(balanceOfPair as BigNumber),
+					allowanceOfPair: formatBN(allowanceOfPair as BigNumber),
+					balanceOfToken1: formatBN(balanceOfToken1 as BigNumber),
+					allowanceOfToken1: formatBN(allowanceOfToken1 as BigNumber),
+					balanceOfToken2: formatBN(balanceOfToken2 as BigNumber),
+					allowanceOfToken2: formatBN(allowanceOfToken2 as BigNumber)
+				};
+				set_userPairsPosition((o: TNDict<TDict<TPairsTypes.TUserPairsPosition>>): TNDict<TDict<TPairsTypes.TUserPairsPosition>> => ({
+					...o,
+					[_chainID]: {
+						...o[_chainID],
+						[pair.addressOfPair]: _pair
+					}
+				}));
+				set_nonce((n: number): number => n + 1);
+			});
+		}
+	}, [address, chainID, provider]);
+	useUpdateEffect((): void => {
+		getPairsBalance(chainID, toAddress(address), provider);
+	}, [getPairsBalance, chainID, address, provider]);
+
 
 	/* 📰 - Keep3r *************************************************************
 	**	Setup and render the Context provider to use in the app.
 	***************************************************************************/
 	return (
-		<Pairs.Provider value={{pairs, getPairs}}>
+		<Pairs.Provider
+			value={{
+				pairs: pairs[safeChainID],
+				userPairsPosition: isActive && !isZeroAddress(toAddress(address)) ? userPairsPosition[safeChainID] : {},
+				getPairs,
+				getPairsBalance
+			}}>
 			{children}
 		</Pairs.Provider>
 	);

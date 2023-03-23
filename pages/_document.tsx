@@ -18,7 +18,7 @@ class MyDocument extends Document {
 					<link
 						rel={'preconnect'}
 						href={'https://fonts.gstatic.com'}
-						crossOrigin={'true'} />
+						crossOrigin={'anonymous'} />
 				</Head>
 				<body className={'bg-grey-5 transition-colors duration-150'} data-theme={'light'}>
 					<Main />

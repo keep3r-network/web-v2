@@ -1,7 +1,7 @@
 import MainnetRegistry from './registry.1';
+import GoerliRegistry from './registry.5';
 import OptimismRegistry from './registry.10';
 import PolygonRegistry from './registry.137';
-import GoerliRegistry from './registry.5';
 import GoerliOptimismRegistry from './registry.420';
 
 export type	TRegistry = {
