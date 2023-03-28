@@ -90,6 +90,12 @@ const	REGISTRY: TRegistry = {
 		address: '0x1f5f0DA9391AB08c7F0150d45B41F6900fb4Fd0C',
 		name: 'SidechainOracles',
 		repository: 'https://github.com/defi-wonderland/sidechain-oracles-keeper-scripts'
+	},
+	'0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863': {
+		chainID: 1,
+		address: '0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863',
+		name: 'ConnextRelayerProxy',
+		repository: 'https://github.com/connext/connext-keeper-scripts'
 	}
 };
 
