@@ -7,16 +7,16 @@ const	REGISTRY: TRegistry = {
 		name: 'BasicJob',
 		repository: 'https://github.com/keep3r-network/keep3r-network-v2'
 	},
-	'0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863': {
+	'0xe55162a662Abaf066D0fa6FFb720Dbe8Bc16342a': {
 		chainID: 5,
-		address: '0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863',
-		name: 'ConnextRelayerProxy',
+		address: '0xe55162a662Abaf066D0fa6FFb720Dbe8Bc16342a',
+		name: 'ConnextRelayerProxyHub',
 		repository: 'https://github.com/connext/connext-keeper-scripts'
 	},
 	'0x8AcA83F46d57a1d2C7E0a72E44687c75aF6cbe21': {
 		chainID: 5,
-		address: '0x8AcA83F46d57a1d2C7E0a72E44687c75aF6cbe21',
-		name: 'ConnextRelayerProxy',
+		address: '0x811Aecd063da20717E885862Bcb7Dd9383F207a9',
+		name: 'ConnextRelayerProxyHubStaging',
 		repository: 'https://github.com/connext/connext-keeper-scripts'
 	}
 };

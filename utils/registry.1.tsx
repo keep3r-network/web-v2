@@ -91,10 +91,10 @@ const	REGISTRY: TRegistry = {
 		name: 'SidechainOracles',
 		repository: 'https://github.com/defi-wonderland/sidechain-oracles-keeper-scripts'
 	},
-	'0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863': {
+	'0xcDbF9D438670D19d1Fb3954Abc8a13666b302b28': {
 		chainID: 1,
-		address: '0x81Bf17fB3b129dE1Fd3C58D6A1785061d763B863',
-		name: 'ConnextRelayerProxy',
+		address: '0xcDbF9D438670D19d1Fb3954Abc8a13666b302b28',
+		name: 'ConnextRelayerProxyHub',
 		repository: 'https://github.com/connext/connext-keeper-scripts'
 	}
 };
