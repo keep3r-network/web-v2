@@ -13,9 +13,9 @@ const	REGISTRY: TRegistry = {
 		name: 'ConnextRelayerProxyHub',
 		repository: 'https://github.com/connext/connext-keeper-scripts'
 	},
-	'0x8AcA83F46d57a1d2C7E0a72E44687c75aF6cbe21': {
+	'0x811Aecd063da20717E885862Bcb7Dd9383F207a9': {
 		chainID: 5,
-		address: '0x8AcA83F46d57a1d2C7E0a72E44687c75aF6cbe21',
+		address: '0x811Aecd063da20717E885862Bcb7Dd9383F207a9',
 		name: 'ConnextRelayerProxyHubStaging',
 		repository: 'https://github.com/connext/connext-keeper-scripts'
 	}
