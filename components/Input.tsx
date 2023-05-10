@@ -1,6 +1,6 @@
 import React from 'react';
 import {ethers} from 'ethers';
-import {formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {BN, formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {BigNumber} from 'ethers';
@@ -109,7 +109,7 @@ function	InputBigNumber({
 				placeholder={'0.00000000'}
 				max={formatToNormalizedValue(maxValue, decimals)}
 				onMaxClick={(): void => {
-					if (!maxValue.isZero()) {
+					if (!(maxValue || BN(0)).isZero()) {
 						const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 						if (valueAsString.includes('e')) {
 							return;
@@ -123,7 +123,7 @@ function	InputBigNumber({
 				<p
 					className={'cursor-pointer text-xs'}
 					onClick={(): void => {
-						if (!maxValue.isZero()) {
+						if (!(maxValue || BN(0)).isZero()) {
 							const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 							if (valueAsString.includes('e')) {
 								return;
@@ -131,7 +131,7 @@ function	InputBigNumber({
 							onChange(valueAsString);
 						}
 					}}>
-					{`Balance: ${maxValue.isZero() ? '0.000000' : formatToNormalizedAmount(maxValue, decimals)}`}
+					{`Balance: ${(maxValue || BN(0)).isZero() ? '0.000000' : formatToNormalizedAmount(maxValue, decimals)}`}
 				</p>
 			)}
 		</label>
