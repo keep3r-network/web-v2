@@ -24,8 +24,8 @@ export async function	mint(
 	return await handleTx(contract.mint(
 		amountToken1, //amount0Desired
 		amountToken2, //amount1Desired
-		ethers.utils.parseUnits((amountToken1String * 0.95).toFixed(18), 18),
-		ethers.utils.parseUnits((amountToken2String * 0.95).toFixed(18), 18),
+		ethers.utils.parseUnits((amountToken1String * 0.995).toFixed(18), 18),
+		ethers.utils.parseUnits((amountToken2String * 0.995).toFixed(18), 18),
 		address //to
 	));
 }
