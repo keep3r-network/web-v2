@@ -32,8 +32,8 @@ export async function	simulateBurn(
 			const	amount0Min = Number(ethers.utils.formatUnits(simulation.amount0, 18));
 			const	amount1Min = Number(ethers.utils.formatUnits(simulation.amount1, 18));
 			return ([
-				ethers.utils.parseUnits((amount0Min * 0.95).toFixed(18), 18),
-				ethers.utils.parseUnits((amount1Min * 0.95).toFixed(18), 18)
+				ethers.utils.parseUnits((amount0Min * 0.995).toFixed(18), 18),
+				ethers.utils.parseUnits((amount1Min * 0.995).toFixed(18), 18)
 
 			]);
 		} catch (error) {
@@ -68,8 +68,8 @@ export async function	burn(
 	const	amount1Min = Number(ethers.utils.formatUnits(simulation.amount1, 18));
 	return await handleTx(contract.burn(
 		liquidity, //liquidity
-		ethers.utils.parseUnits((amount0Min * 0.95).toFixed(18), 18),
-		ethers.utils.parseUnits((amount1Min * 0.95).toFixed(18), 18),
+		ethers.utils.parseUnits((amount0Min * 0.995).toFixed(18), 18),
+		ethers.utils.parseUnits((amount1Min * 0.995).toFixed(18), 18),
 		address //to
 	));
 }
