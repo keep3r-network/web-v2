@@ -2,18 +2,17 @@ import React from 'react';
 import {useJob} from 'contexts/useJob';
 import {usePrices} from 'contexts/usePrices';
 import {getEnv} from 'utils/env';
-import Copy from '@yearn-finance/web-lib/icons/IconCopy';
-import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
+import {IconCopy} from '@yearn-finance/web-lib/icons/IconCopy';
+import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 
 function	SectionStatus({chainID}: {chainID: number}): ReactElement {
-	const	{jobStatus} = useJob();
-	const	{prices} = usePrices();
+	const {jobStatus} = useJob();
+	const {prices} = usePrices();
 
 	return (
 		<div className={'flex flex-col space-y-6 bg-white p-6'}>
@@ -24,13 +23,13 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Current credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.jobLiquidityCredits || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.jobLiquidityCredits.normalized, 2, 2)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Pending credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.totalJobCredits || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.totalJobCredits.normalized, 2, 2)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
@@ -42,7 +41,7 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Refill schedule, KP3R/Days'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatAmount(Number(formatUnits(jobStatus?.jobPeriodCredits || 0, 18)) / 5, 6, 6)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(Number(jobStatus?.jobPeriodCredits.normalized) / 5, 6, 6)}
 						</dd>
 					</div>
 				</dl>
@@ -54,7 +53,7 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Total, kLP-KP3R/WETH'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatToNormalizedAmount(jobStatus?.liquidityAmount || 0, 18)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.liquidityAmount.normalized, 2, 2)}
 						</dd>
 					</div>
 				</dl>
@@ -126,13 +125,13 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 						<dt className={'w-1/2'}>{'Owner'}</dt>
 						<dd className={'flex flex-row items-center space-x-2'}>
 							<b>{jobStatus?.jobOwner ? truncateHex(jobStatus?.jobOwner, 5) : '-'}</b>
-							<div><Copy onClick={(): void => copyToClipboard(jobStatus?.jobOwner || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
+							<div><IconCopy onClick={(): void => copyToClipboard(jobStatus?.jobOwner || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
 							<div>
 								<a
 									href={`https://${getEnv(chainID).EXPLORER}/address/${jobStatus.jobOwner}`}
 									target={'_blank'}
 									rel={'noopener noreferrer'}>
-									<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
+									<IconLinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 								</a>
 							</div>
 						</dd>

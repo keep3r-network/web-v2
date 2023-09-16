@@ -5,7 +5,7 @@ import {registerJob} from 'utils/actions/registerJob';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import Cross from '@yearn-finance/web-lib/icons/IconCross';
+import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
@@ -17,16 +17,16 @@ type		TModalRegisterJobs = {
 	onClose: () => void,
 }
 function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{getJobs} = useKeep3r();
-	const	[address, set_address] = useState('');
-	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
+	const {provider, isActive} = useWeb3();
+	const {getJobs} = useKeep3r();
+	const [address, set_address] = useState('');
+	const [txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRegisterJob(): Promise<void> {
 		if (!isActive || txStatus.pending || isZeroAddress(address)) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, registerJob, set_txStatus)
 				.populate(chainID, address)
 				.onSuccess(async (): Promise<void> => {
@@ -34,7 +34,7 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 				})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			set_address('');
 			onClose();
@@ -48,7 +48,7 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 			<div className={'space-y-4 p-6'}>
 				<div className={'mb-4 flex items-center justify-between'}>
 					<h2 className={'text-xl font-bold'}>{'Register job'}</h2>
-					<Cross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
+					<IconCross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
 				</div>
 				
 				<div className={'pb-6'}>

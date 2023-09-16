@@ -10,10 +10,10 @@ export async function	bond(
 	provider: ethers.providers.Web3Provider,
 	chainID: number,
 	tokenBondedAddress: string,
-	amountBonded: ethers.BigNumber
+	amountBonded: bigint
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
-	const	contract = new ethers.Contract(
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
 		getEnv(chainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI as ContractInterface,
 		signer

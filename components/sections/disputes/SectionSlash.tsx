@@ -2,68 +2,69 @@ import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {Contract} from 'ethcall';
 import {ethers} from 'ethers';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {slash} from 'utils/actions/slash';
 import {slashLiquidityFromJob} from 'utils/actions/slashLiquidityFromJob';
 import {slashTokenFromJob} from 'utils/actions/slashTokenFromJob';
 import {getEnv} from 'utils/env';
+import {readContracts} from '@wagmi/core';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {decodeAsBigInt, decodeAsBoolean} from '@yearn-finance/web-lib/utils/decoder';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
-import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
+import type {TAddress} from '@yearn-finance/web-lib/types';
 
 function	SectionSlash({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{jobs, keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[slashTokenAddress, set_slashTokenAddress] = useState('');
-	const	[slashAddress, set_slashAddress] = useState('');
-	const	[amountOfTokenBonded, set_amountOfTokenBonded] = useState('');
-	const	[amountOfTokenUnbonded, set_amountOfTokenUnbonded] = useState('');
-	const	[isKeeper, set_isKeeper] = useState(false);
-	const	[txStatusSlash, set_txStatusSlash] = useState(defaultTxStatus);
-	const	[slashed, set_slashed] = useState({
-		bonds: ethers.constants.Zero,
-		pendingUnbonds: ethers.constants.Zero,
+	const {provider, isActive} = useWeb3();
+	const {jobs, keeperStatus, getKeeperStatus} = useKeep3r();
+	const [slashTokenAddress, set_slashTokenAddress] = useState('');
+	const [slashAddress, set_slashAddress] = useState('');
+	const [amountOfTokenBonded, set_amountOfTokenBonded] = useState('');
+	const [amountOfTokenUnbonded, set_amountOfTokenUnbonded] = useState('');
+	const [isKeeper, set_isKeeper] = useState(false);
+	const [txStatusSlash, set_txStatusSlash] = useState(defaultTxStatus);
+	const [slashed, set_slashed] = useState({
+		bonds: 0n,
+		pendingUnbonds: 0n,
 		hasDispute: false
 	});
 
-	async function	getSlashed(_slashAddress: string, _slashTokenAddress: string, _isKeeper: boolean): Promise<void> {
-		const	_provider = provider || getProvider(1);
-		const	ethcallProvider = await newEthCallProvider(_provider);
-		const	keep3rV2 = new Contract(
-			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
-			KEEP3RV2_ABI
-		);
-		const	isKLPKP3RWETH = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR);
-		let		isKP3R = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
+	async function	getSlashed(_slashAddress: TAddress, _slashTokenAddress: TAddress, _isKeeper: boolean): Promise<void> {
+		const isKLPKP3RWETH = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR);
+		let	isKP3R = toAddress(slashTokenAddress) === toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
 		if (_isKeeper) {
 			_slashTokenAddress = toAddress(getEnv(chainID).KP3R_TOKEN_ADDR);
 			isKP3R = true;
 		}
 
-		const	calls = [
-			keep3rV2.bonds(_slashAddress, _slashTokenAddress),
-			keep3rV2.pendingUnbonds(_slashAddress, _slashTokenAddress),
-			keep3rV2.jobTokenCredits(_slashAddress, _slashTokenAddress),
-			keep3rV2.liquidityAmount(_slashAddress, toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)),
-			keep3rV2.disputes(_slashAddress)
-		];
-		const	results = await ethcallProvider.tryAll(calls) as unknown[];
-		const	[bonds, pendingUnbonds, tokenCredits, liquidityAmount, disputes] = results;
+		const results = await readContracts({
+			contracts: [
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'bonds', args: [_slashAddress, _slashTokenAddress]},
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'pendingUnbonds', args: [_slashAddress, _slashTokenAddress]},
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'jobTokenCredits', args: [_slashAddress, _slashTokenAddress]},
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'liquidityAmount', args: [_slashAddress, toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]},
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'disputes', args: [_slashAddress]}
+			]
+		});
+		const bonds = decodeAsBigInt(results[0]);
+		const pendingUnbonds = decodeAsBigInt(results[1]);
+		const tokenCredits = decodeAsBigInt(results[2]);
+		const liquidityAmount = decodeAsBigInt(results[3]);
+		const hasDisputes = decodeAsBoolean(results[4]);
 
 		if (_isKeeper && isKP3R) {
 			performBatchedUpdates((): void => {
 				set_slashed({
-					bonds: bonds as ethers.BigNumber,
-					pendingUnbonds: pendingUnbonds as ethers.BigNumber,
-					hasDispute: disputes as boolean
+					bonds: bonds,
+					pendingUnbonds: pendingUnbonds,
+					hasDispute: hasDisputes
 				});
 				set_amountOfTokenBonded('');
 				set_amountOfTokenUnbonded('');
@@ -71,9 +72,9 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 		} else if (_isKeeper) {
 			performBatchedUpdates((): void => {
 				set_slashed({
-					bonds: tokenCredits as ethers.BigNumber,
-					pendingUnbonds: ethers.constants.Zero,
-					hasDispute: disputes as boolean
+					bonds: tokenCredits,
+					pendingUnbonds: 0n,
+					hasDispute: hasDisputes
 				});
 				set_amountOfTokenBonded('');
 				set_amountOfTokenUnbonded('');
@@ -81,9 +82,9 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 		} else if (isKLPKP3RWETH) {
 			performBatchedUpdates((): void => {
 				set_slashed({
-					bonds: liquidityAmount as ethers.BigNumber,
-					pendingUnbonds: ethers.constants.Zero,
-					hasDispute: disputes as boolean
+					bonds: liquidityAmount,
+					pendingUnbonds: 0n,
+					hasDispute: hasDisputes
 				});
 				set_amountOfTokenBonded('');
 				set_amountOfTokenUnbonded('');
@@ -91,9 +92,9 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 		} else {
 			performBatchedUpdates((): void => {
 				set_slashed({
-					bonds: tokenCredits as ethers.BigNumber,
-					pendingUnbonds: ethers.constants.Zero,
-					hasDispute: disputes as boolean
+					bonds: tokenCredits,
+					pendingUnbonds: 0n,
+					hasDispute: hasDisputes
 				});
 				set_amountOfTokenBonded('');
 				set_amountOfTokenUnbonded('');
@@ -152,12 +153,12 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 	}
 
 	useEffect((): void => {
-		const	isAddrKeeper = jobs.findIndex((job): boolean => toAddress(job.address) === toAddress(slashAddress)) === -1;
+		const isAddrKeeper = jobs.findIndex((job): boolean => toAddress(job.address) === toAddress(slashAddress)) === -1;
 		set_isKeeper(isAddrKeeper);
 		if (!isZeroAddress(slashAddress) && !isZeroAddress(slashTokenAddress)) {
-			getSlashed(slashAddress, slashTokenAddress, isAddrKeeper);
+			getSlashed(toAddress(slashAddress), toAddress(slashTokenAddress), isAddrKeeper);
 		}
-	}, [slashAddress, slashTokenAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [slashAddress, slashTokenAddress]);
 
 	return (
 		<div className={'flex flex-col'}>
@@ -195,18 +196,18 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 					</div>
 				</div>
 
-				<div className={'mt-2 mb-8 grid grid-cols-2 gap-4'}>
+				<div className={'mb-8 mt-2 grid grid-cols-2 gap-4'}>
 					<label
 						aria-invalid={ethers.utils.parseUnits(amountOfTokenBonded || '0', 18).gt(slashed?.bonds || 0)}
 						className={'space-y-2'}>
 						<b className={'text-black-1'}>{'Amount of bonded tokens'}</b>
 						<div>
-							<Input.BigNumber
+							<Input.Bigint
 								value={amountOfTokenBonded}
 								onSetValue={(s: unknown): void => set_amountOfTokenBonded(s as string)}
 								decimals={18}
 								placeholder={'0.00000000'}
-								maxValue={slashed?.bonds || 0}
+								maxValue={toBigInt(slashed?.bonds)}
 								shouldHideBalance />
 						</div>
 					</label>
@@ -215,11 +216,11 @@ function	SectionSlash({chainID}: {chainID: number}): ReactElement {
 						className={`space-y-2 ${!isKeeper ? 'cursor-not-allowed opacity-40' : ''}`}>
 						<b className={'text-black-1'}>{'Amount of unbonded tokens'}</b>
 						<div className={!isKeeper ? 'pointer-events-none cursor-not-allowed' : ''}>
-							<Input.BigNumber
+							<Input.Bigint
 								disabled={!isKeeper}
 								value={amountOfTokenUnbonded}
 								onSetValue={(s: unknown): void => set_amountOfTokenUnbonded(s as string)}
-								maxValue={slashed?.pendingUnbonds || 0}
+								maxValue={toBigInt(slashed?.pendingUnbonds)}
 								decimals={18}
 								placeholder={'0.00000000'}
 								shouldHideBalance />

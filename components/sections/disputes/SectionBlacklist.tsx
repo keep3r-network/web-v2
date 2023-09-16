@@ -10,10 +10,10 @@ import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/tr
 import type {ReactElement} from 'react';
 
 function	SectionBlacklist({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[blackListAddress, set_blackListAddress] = useState('');
-	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
+	const {provider, isActive} = useWeb3();
+	const {keeperStatus, getKeeperStatus} = useKeep3r();
+	const [blackListAddress, set_blackListAddress] = useState('');
+	const [txStatus, set_txStatus] = useState(defaultTxStatus);
 
 	async function	onRevoke(): Promise<void> {
 		if (!isActive || txStatus.pending) {

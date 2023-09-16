@@ -8,10 +8,10 @@ import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
 import {Button} from '@yearn-finance/web-lib/components/Button';
-import Copy from '@yearn-finance/web-lib/icons/IconCopy';
-import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
+import {IconCopy} from '@yearn-finance/web-lib/icons/IconCopy';
+import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
@@ -20,13 +20,13 @@ import type {ReactElement} from 'react';
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
 function	StatsKeeper(): ReactElement {
-	const	router = useRouter();
-	const	{data} = useSWR(
+	const router = useRouter();
+	const {data} = useSWR(
 		router?.query?.address && router?.query?.chainID ? `/api/statsForAddress?chainID=${router?.query?.chainID}&address=${router?.query?.address}` : null,
 		fetcher,
 		{shouldRetryOnError: false}
 	);
-	const	chainID = useMemo((): number => {
+	const chainID = useMemo((): number => {
 		let	currentChainID = parseInt(router?.query?.chainID as string, 10);
 		if (currentChainID === undefined || currentChainID === null || isNaN(Number(currentChainID))) {
 			currentChainID = 1;
@@ -34,31 +34,31 @@ function	StatsKeeper(): ReactElement {
 		return currentChainID;
 	}, [router?.query?.chainID]);
 
-	const	[selectedToken, set_selectedToken] = useState(toAddress(getEnv(chainID).KP3R_TOKEN_ADDR));
-	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
-	const	[searchTerm, set_searchTerm] = useState('');
-	const	[isModalBondOpen, set_isModalBondOpen] = useState(false);
+	const [selectedToken, set_selectedToken] = useState(toAddress(getEnv(chainID).KP3R_TOKEN_ADDR));
+	const [selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const [searchTerm, set_searchTerm] = useState('');
+	const [isModalBondOpen, set_isModalBondOpen] = useState(false);
 
 	useEffect((): void => {
 		set_selectedToken(toAddress(getEnv(chainID).KP3R_TOKEN_ADDR));
 		set_selectedExplorer(getEnv(chainID).EXPLORER);
 	}, [chainID]);
 
-	const	Keep3rButton = Button as any;
+	const Keep3rButton = Button as any;
 	return (
-		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto mb-10 mt-6 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
 				<p>
 					<Link suppressHydrationWarning href={`/stats/${chainID}`}>{'Keepers / '}</Link>
 					<b>{`Keeper ${truncateHex(data?.stats?.keeper || '-', 5)}`}</b>
 				</p>
-				<div><Copy onClick={(): void => copyToClipboard(data?.stats?.keeper || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
+				<div><IconCopy onClick={(): void => copyToClipboard(data?.stats?.keeper || '-')} className={'h-6 w-6 cursor-pointer text-black'} /></div>
 				<div>
 					<a
 						href={`https://${selectedExplorer}/address/${data?.stats?.keeper || '-'}`}
 						target={'_blank'}
 						rel={'noopener noreferrer'}>
-						<LinkOut className={'h-6 w-6 cursor-pointer text-black'} />
+						<IconLinkOut className={'h-6 w-6 cursor-pointer text-black'} />
 					</a>
 				</div>
 			</div>
@@ -97,14 +97,16 @@ function	StatsKeeper(): ReactElement {
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Bonded, KP3R'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatToNormalizedAmount(data?.stats?.bonds || 0, 18)}</b></div>
-					<p className={'text-xs'}>{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(formatToNormalizedValue(data?.stats?.bonds || 0, 18) * data?.prices?.keep3rv1 || 0, 2, 2)}`}</p>
+					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(data?.stats?.bonds || 0n).normalized, 2, 2)}</b></div>
+					<p className={'text-xs'}>
+						{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(data?.stats?.bonds || 0n).normalized) * data?.prices?.keep3rv1 || 0, 2, 2)}`}
+					</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Balance, KP3R'}</p>
 					<div>
-						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatToNormalizedAmount(data?.stats?.balanceOf || 0, 18)}</b>
+						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(data?.stats?.balanceOf || 0n).normalized, 2, 2)}</b>
 					</div>
 				</div>
 

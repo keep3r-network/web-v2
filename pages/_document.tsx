@@ -20,7 +20,7 @@ class MyDocument extends Document {
 						href={'https://fonts.gstatic.com'}
 						crossOrigin={'anonymous'} />
 				</Head>
-				<body className={'bg-grey-5 transition-colors duration-150'} data-theme={'light'}>
+				<body className={'bg-grey-5 transition-colors duration-150'}>
 					<Main />
 					<NextScript />
 				</body>

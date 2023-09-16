@@ -11,8 +11,8 @@ export async function	registerJob(
 	chainID: number,
 	newJobAddress: string
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
-	const	contract = new ethers.Contract(
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
 		getEnv(chainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI as ContractInterface,
 		signer

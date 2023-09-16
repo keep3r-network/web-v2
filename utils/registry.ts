@@ -4,16 +4,18 @@ import OptimismRegistry from './registry.10';
 import PolygonRegistry from './registry.137';
 import GoerliOptimismRegistry from './registry.420';
 
+import type {TAddress} from '@yearn-finance/web-lib/types';
+
 export type	TRegistry = {
-	[key: string]: {
+	[key: TAddress]: {
 		chainID: number,
-		address: string,
+		address: TAddress,
 		name: string,
 		repository: string
 	};
 }
 
-const	registries: {[key: number]: TRegistry} = {
+const registries: {[key: number]: TRegistry} = {
 	1: MainnetRegistry,
 	5: GoerliRegistry,
 	10: OptimismRegistry,

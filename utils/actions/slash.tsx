@@ -11,12 +11,12 @@ export async function	slash(
 	chainID: number,
 	toSlashAddress: string,
 	toSlashToken: string,
-	toSlashBondAmount: ethers.BigNumber,
-	toSlashUnbondAmount: ethers.BigNumber
+	toSlashBondAmount: bigint,
+	toSlashUnbondAmount: bigint
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
+	const signer = provider.getSigner();
 
-	const	contract = new ethers.Contract(
+	const contract = new ethers.Contract(
 		getEnv(chainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI as ContractInterface,
 		signer

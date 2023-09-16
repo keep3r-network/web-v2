@@ -1,19 +1,19 @@
 import {getEnv} from 'utils/env';
 
 import type {NextApiRequest, NextApiResponse} from 'next';
-import type {TStatsIndexData} from 'utils/types.d';
+import type {TStatsIndexData} from 'utils/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {
-	const	{chainID} = req.query;
+	const {chainID} = req.query;
 
 	let	currentChainID = parseInt(chainID as string, 10);
 	if (currentChainID === undefined || currentChainID === null || isNaN(Number(currentChainID))) {
 		currentChainID = 1;
 	}
 
-	const	[data] = await Promise.allSettled([fetch(`${getEnv(currentChainID, false).BACKEND_URI}/stats`)]);
+	const [data] = await Promise.allSettled([fetch(`${getEnv(currentChainID, false).BACKEND_URI}/stats`)]);
 	if (data.status === 'rejected') {
-		const	statData: TStatsIndexData = {
+		const statData: TStatsIndexData = {
 			bondedKp3r: '',
 			jobs: 0,
 			keepers: 0,
@@ -28,9 +28,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 			prices: {keep3rv1: 0, ethereum: 0}
 		});
 	}
-	const	dataValue = await data.value.json();
-	const	{stats, prices} = dataValue;
-	const	statData: TStatsIndexData = {
+	const dataValue = await data.value.json();
+	const {stats, prices} = dataValue;
+	const statData: TStatsIndexData = {
 		bondedKp3r: stats?.bondedKp3r || '0',
 		jobs: stats?.jobs || 0,
 		keepers: stats?.keepers || 0,

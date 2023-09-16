@@ -11,11 +11,11 @@ export async function	withdrawTokenCreditsFromJob(
 	chainID: number,
 	jobAddress: string,
 	tokenAddress: string,
-	tokenAmount: ethers.BigNumber,
+	tokenAmount: bigint,
 	receiver: string
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
-	const	contract = new ethers.Contract(
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
 		getEnv(chainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI as ContractInterface,
 		signer

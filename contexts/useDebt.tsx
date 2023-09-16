@@ -1,21 +1,20 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {Contract} from 'ethcall';
 import CY_TOKEN_ABI from 'utils/abi/cy.abi';
 import LENS_PRICE_ABI from 'utils/abi/lens.abi';
 import {getEnv} from 'utils/env';
-import {formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
-import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {readContracts} from 'wagmi';
+import {decodeAsBigInt} from '@yearn-finance/web-lib/utils/decoder';
+import {formatToNormalizedValue, toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
-import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
 
 export type	TDebt = {
 	name: string;
-	totalBorrowBalance: BigNumber;
+	totalBorrowBalance: bigint;
 	totalBorrowValue: number;
 	borrowBalance: {[key: string]: {
-		raw: BigNumber;
+		raw: bigint;
 		normalized: number;
 		normalizedValue: number;
 	}};
@@ -24,63 +23,180 @@ type	TDebtContext = {
 	debt: TDebt[],
 }
 
-const	DebtContext = createContext<TDebtContext>({debt: []});
+const DebtContext = createContext<TDebtContext>({debt: []});
 export const DebtContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	[debt, set_debt] = useState<TDebt[]>([]);
-	const	[, set_nonce] = useState(0);
+	const [debt, set_debt] = useState<TDebt[]>([]);
+	const [, set_nonce] = useState(0);
 
 	const getDebt = useCallback(async (): Promise<void> => {
-		const	currentProvider = getProvider(1);
-		const	ethcallProvider = await newEthCallProvider(currentProvider);
-		const	lensPriceContract = new Contract('0x83d95e0D5f402511dB06817Aff3f9eA88224B030', LENS_PRICE_ABI);
-		const	cyAUDContract = new Contract(getEnv(1).CY_AUD_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyCHFContract = new Contract(getEnv(1).CY_CHF_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyGBPContract = new Contract(getEnv(1).CY_GBP_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyJPYContract = new Contract(getEnv(1).CY_JPY_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyEURContract = new Contract(getEnv(1).CY_EUR_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyKRWContract = new Contract(getEnv(1).CY_KRW_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	cyZARContract = new Contract(getEnv(1).CY_ZAR_TOKEN_ADDR, CY_TOKEN_ABI);
-		const	debtCalls = [
-			cyAUDContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyAUDContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_AUD_TOKEN_ADDR),
-
-			cyCHFContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyCHFContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_CHF_TOKEN_ADDR),
-
-			cyGBPContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyGBPContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_GBP_TOKEN_ADDR),
-
-			cyJPYContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyJPYContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_JPY_TOKEN_ADDR),
-
-			cyEURContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyEURContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_EUR_TOKEN_ADDR),
-
-			cyKRWContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyKRWContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_KRW_TOKEN_ADDR),
-
-			cyZARContract.borrowBalanceStored(getEnv(1).IB_AMM_ADDR),
-			cyZARContract.borrowBalanceStored(getEnv(1).IB_AMM_2_ADDR),
-			lensPriceContract.getPriceUsdcRecommended(getEnv(1).CY_ZAR_TOKEN_ADDR)
-		];
-		const	debts = await ethcallProvider.tryAll(debtCalls) as BigNumber[];
-		const	_debt: TDebt[] = [];
-
-		const	ibs = ['ibAUD', 'ibCHF', 'ibGBP', 'ibJPY', 'ibEUR', 'ibKRW', 'ibZAR'];
+		const debts = await readContracts({
+			contracts: [
+				// Calls for cyAUDContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_AUD_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_AUD_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_AUD_TOKEN_ADDR]
+				},
+				// Calls for cyCHFContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_CHF_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_CHF_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_CHF_TOKEN_ADDR]
+				},
+				// Calls for cyGBPContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_GBP_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_GBP_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_GBP_TOKEN_ADDR]
+				},
+				// Calls for cyJPYContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_JPY_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_JPY_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_JPY_TOKEN_ADDR]
+				},
+				// Calls for cyEURContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_EUR_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_EUR_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_EUR_TOKEN_ADDR]
+				},
+				// Calls for cyKRWContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_KRW_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_KRW_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_KRW_TOKEN_ADDR]
+				},
+				// Calls for cyZARContract | Borrow balance stored for ibAMM and ibAMM2 then price
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_ZAR_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: CY_TOKEN_ABI,
+					address: getEnv(1).CY_ZAR_TOKEN_ADDR,
+					functionName: 'borrowBalanceStored',
+					args: [getEnv(1).IB_AMM_2_ADDR]
+				},
+				{
+					chainId: 1,
+					abi: LENS_PRICE_ABI,
+					address: '0x83d95e0D5f402511dB06817Aff3f9eA88224B030',
+					functionName: 'getPriceUsdcRecommended',
+					args: [getEnv(1).CY_ZAR_TOKEN_ADDR]
+				}
+			]
+		});
+		const _debt: TDebt[] = [];
+		const ibs = ['ibAUD', 'ibCHF', 'ibGBP', 'ibJPY', 'ibEUR', 'ibKRW', 'ibZAR'];
 		let	rIndex = 0;
 		for (const ib of ibs) {
-			const	ibAMMDebt = debts[rIndex++];
-			const	ibAMM2Debt = debts[rIndex++];
-			const	rawPrice = debts[rIndex++];
+			const ibAMMDebt = decodeAsBigInt(debts[rIndex++]);
+			const ibAMM2Debt = decodeAsBigInt(debts[rIndex++]);
+			const rawPrice = decodeAsBigInt(debts[rIndex++]);
 
-			const	totalBorrowBalance = ibAMMDebt.add(ibAMM2Debt);
-			const	normalizedPrice = formatToNormalizedValue(rawPrice, 4);
+			const totalBorrowBalance = toBigInt(ibAMMDebt) + toBigInt(ibAMM2Debt);
+			const normalizedPrice = formatToNormalizedValue(rawPrice, 4);
 			_debt.push({
 				name: ib,
 				totalBorrowBalance: totalBorrowBalance,

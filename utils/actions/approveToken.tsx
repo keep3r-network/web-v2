@@ -9,11 +9,11 @@ export async function	isApprovedERC20(
 	spender: string,
 	amount = ethers.constants.MaxUint256
 ): Promise<boolean> {
-	const	signer = provider.getSigner();
-	const	address = await signer.getAddress();
+	const signer = provider.getSigner();
+	const address = await signer.getAddress();
 
 	try {
-		const	contract = new ethers.Contract(
+		const contract = new ethers.Contract(
 			tokenAddress,
 			['function allowance(address _owner, address _spender) public view returns (uint256)'],
 			provider
@@ -28,19 +28,19 @@ export async function	approvedERC20Amount(
 	provider: ethers.providers.Web3Provider,
 	tokenAddress: string,
 	spender: string
-): Promise<ethers.BigNumber> {
-	const	signer = provider.getSigner();
-	const	address = await signer.getAddress();
+): Promise<bigint> {
+	const signer = provider.getSigner();
+	const address = await signer.getAddress();
 
 	try {
-		const	contract = new ethers.Contract(
+		const contract = new ethers.Contract(
 			tokenAddress,
 			['function allowance(address _owner, address _spender) public view returns (uint256)'],
 			provider
 		);
 		return await contract.allowance(address, spender);
 	} catch (error) {
-		return ethers.constants.Zero;
+		return 0n;
 	}
 }
 
@@ -50,7 +50,7 @@ export async function	approveERC20(
 	spender: string,
 	amount = ethers.constants.MaxUint256
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
-	const	contract = new ethers.Contract(tokenAddress, ['function approve(address _spender, uint256 _value) external'], signer);
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(tokenAddress, ['function approve(address _spender, uint256 _value) external'], signer);
 	return await handleTx(contract.approve(spender, amount));
 }

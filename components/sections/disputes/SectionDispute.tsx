@@ -11,12 +11,12 @@ import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/tr
 import type {ReactElement} from 'react';
 
 function	SectionDispute({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[disputeAddress, set_disputeAddress] = useState('');
-	const	[resolveAddress, set_resolveAddress] = useState('');
-	const	[txStatusDispute, set_txStatusDispute] = useState(defaultTxStatus);
-	const	[txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
+	const {provider, isActive} = useWeb3();
+	const {keeperStatus, getKeeperStatus} = useKeep3r();
+	const [disputeAddress, set_disputeAddress] = useState('');
+	const [resolveAddress, set_resolveAddress] = useState('');
+	const [txStatusDispute, set_txStatusDispute] = useState(defaultTxStatus);
+	const [txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
 
 	async function	onDispute(): Promise<void> {
 		if (!isActive || txStatusDispute.pending) {

@@ -8,18 +8,18 @@ import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import type {ReactElement} from 'react';
 
 function	Treasury(): ReactElement {
-	const	{treasury} = useTreasury();
-	const	[tvlUSD, set_tvlUSD] = useState<number>(0);
+	const {treasury} = useTreasury();
+	const [tvlUSD, set_tvlUSD] = useState<number>(0);
 
 	useEffect((): void => {
-		const	totalUSD = treasury.reduce((acc, curr): number => acc + (curr.name.startsWith('ib') ? 0 : curr.tokenStakedUSD), 0);
+		const totalUSD = treasury.reduce((acc, curr): number => acc + (curr.name.startsWith('ib') ? 0 : curr.tokenStakedUSD), 0);
 		set_tvlUSD(totalUSD);
 	}, [treasury]);
 
 	return (
 		<>
 			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
-				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
+				<div className={'flex items-center justify-center px-4 py-6 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'TVL'}</p>
 						<div>
@@ -57,7 +57,7 @@ function	Treasury(): ReactElement {
 									<div className={'mt-6 grid grid-cols-1 gap-4 md:mt-10 md:grid-cols-3'}>
 										<div>
 											<p>{'Token staked'}</p>
-											<div className={'py-0 md:pt-2 md:pb-1'}>
+											<div className={'py-0 md:pb-1 md:pt-2'}>
 												<b className={'text-2xl'}>{formatAmount(treasure.tokenStaked, 2, 2)}</b>
 											</div>
 											<p className={'text-xs'}>{treasure.name}</p>
@@ -65,7 +65,7 @@ function	Treasury(): ReactElement {
 
 										<div>
 											<p>{'Token staked, $'}</p>
-											<div className={'py-0 md:pt-2 md:pb-1'}>
+											<div className={'py-0 md:pb-1 md:pt-2'}>
 												<b className={'text-2xl'}>
 													{formatAmount(treasure.tokenStakedUSD, 2, 2)}
 												</b>
@@ -77,7 +77,7 @@ function	Treasury(): ReactElement {
 											<>
 												<div>
 													<p>{'Unclaimed rewards, $'}</p>
-													<div className={'py-0 md:pt-2 md:pb-1'}>
+													<div className={'py-0 md:pb-1 md:pt-2'}>
 														<b className={'text-2xl'}>
 															{formatAmount(treasure.unclaimedRewardsUSD, 2, 2)}
 														</b>

@@ -9,7 +9,7 @@ type		TModal = {
 	children: ReactElement,
 }
 function	Modal({isOpen, onClose, children}: TModal): ReactElement {
-	const	ref = useRef() as React.MutableRefObject<HTMLDivElement>;
+	const ref = useRef() as React.MutableRefObject<HTMLDivElement>;
 
 	return (
 		<Transition.Root show={isOpen} as={Fragment}>
@@ -19,7 +19,7 @@ function	Modal({isOpen, onClose, children}: TModal): ReactElement {
 				style={{zIndex: 9999}}
 				initialFocus={ref}
 				onClose={onClose}>
-				<div className={'flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0'}>
+				<div className={'flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0'}>
 					<Transition.Child
 						as={Fragment}
 						enter={'ease-out duration-300'}

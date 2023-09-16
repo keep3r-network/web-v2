@@ -97,6 +97,3 @@ export type TEnvData = {
 	EXPLORER: string,
 	BACKEND_URI: string,
 }
-export type TEnv = {
-	CHAINS: {[key: number]: TEnvData}
-} & any

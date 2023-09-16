@@ -5,10 +5,10 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import IconChevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
@@ -20,8 +20,8 @@ type		TDisputeLogs = {
 	txHash: string,
 }
 function	LogsDispute({chainID}: {chainID: number}): ReactElement {
-	const	[isInit, set_isInit] = useState(false);
-	const	[logs, set_logs] = useState<TDisputeLogs[]>([]);
+	const [isInit, set_isInit] = useState(false);
+	const [logs, set_logs] = useState<TDisputeLogs[]>([]);
 
 	useEffect((): void => {
 		axios.get(`${getEnv(chainID).BACKEND_URI}/disputes`)

@@ -12,7 +12,7 @@ import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import Cross from '@yearn-finance/web-lib/icons/IconCross';
+import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
 import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
@@ -27,17 +27,17 @@ type	TModalMigrate = {
 	onClose: () => void,
 }
 
-const		defaultJobToStatus = {hasDispute: false, owner: ethers.constants.AddressZero};
+const defaultJobToStatus = {hasDispute: false, owner: ethers.constants.AddressZero};
 function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate): ReactElement {
-	const	router = useRouter();
-	const	{provider, address, isActive} = useWeb3();
-	const	{jobStatus, getJobStatus} = useJob();
-	const	{getJobs, getKeeperStatus} = useKeep3r();
-	const	[newAddress, set_newAddress] = useState('');
-	const	[jobToStatus, set_jobToStatus] = useState<TJobToStatus>(defaultJobToStatus);
-	const	[txStatusMigrate, set_txStatusMigrate] = useState(defaultTxStatus);
-	const	[txStatusAccept, set_txStatusAccept] = useState(defaultTxStatus);
-	const	[time, set_time] = useState(0);
+	const router = useRouter();
+	const {provider, address, isActive} = useWeb3();
+	const {jobStatus, getJobStatus} = useJob();
+	const {getJobs, getKeeperStatus} = useKeep3r();
+	const [newAddress, set_newAddress] = useState('');
+	const [jobToStatus, set_jobToStatus] = useState<TJobToStatus>(defaultJobToStatus);
+	const [txStatusMigrate, set_txStatusMigrate] = useState(defaultTxStatus);
+	const [txStatusAccept, set_txStatusAccept] = useState(defaultTxStatus);
+	const [time, set_time] = useState(0);
 
 	const goDown = useCallback(async (): Promise<void> => {
 		if (time > 0) {
@@ -52,18 +52,18 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 	}, [goDown]);
 
 	async function getMigrationDestination(migrationAddress: string): Promise<void> {
-		const	_provider = provider || getProvider(chainID);
-		const	ethcallProvider = await newEthCallProvider(_provider);
-		const	keep3rV2 = new Contract(
+		const _provider = provider || getProvider(chainID);
+		const ethcallProvider = await newEthCallProvider(_provider);
+		const keep3rV2 = new Contract(
 			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
 			KEEP3RV2_ABI
 		);
-		const	calls = [
+		const calls = [
 			keep3rV2.disputes(migrationAddress),
 			keep3rV2.jobOwner(migrationAddress)
 		];
-		const	results = await ethcallProvider.tryAll(calls) as unknown[]; 
-		const	[hasDispute, owner] = results;
+		const results = await ethcallProvider.tryAll(calls) as unknown[]; 
+		const [hasDispute, owner] = results;
 		set_jobToStatus({hasDispute: hasDispute as boolean, owner: owner as string});
 	}
 	
@@ -78,7 +78,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 		if (!isActive || txStatusMigrate.pending) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, migrateJob, set_txStatusMigrate).populate(
 				chainID,
 				currentAddress,
@@ -96,7 +96,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 		if (!isActive || txStatusAccept.pending) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, acceptJobMigration, set_txStatusAccept).populate(
 				chainID,
 				currentAddress,
@@ -106,7 +106,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 			})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			set_newAddress('');
 			onClose();
@@ -121,7 +121,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 			<div className={'space-y-4 p-6'}>
 				<div className={'mb-4 flex items-center justify-between'}>
 					<h2 className={'text-xl font-bold'}>{'Migrate job'}</h2>
-					<Cross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
+					<IconCross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
 				</div>
 
 				<div className={'flex flex-col'}>
@@ -141,7 +141,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 					</div>
 					<div className={'mb-6 space-y-2'}>
 						<b className={'text-black-1'}>{'Current address'}</b>
-						<div className={'overflow-hidden border border-grey-1 py-3 px-4'}>
+						<div className={'overflow-hidden border border-grey-1 px-4 py-3'}>
 							<p className={'overflow-hidden text-ellipsis text-grey-1'}>{currentAddress}</p>
 						</div>
 					</div>

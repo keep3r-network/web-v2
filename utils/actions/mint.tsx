@@ -8,18 +8,18 @@ import type {TTxResponse} from '@yearn-finance/web-lib/utils/web3/transaction';
 export async function	mint(
 	provider: ethers.providers.Web3Provider,
 	pair: string,
-	amountToken1: ethers.BigNumber,
-	amountToken2: ethers.BigNumber
+	amountToken1: bigint,
+	amountToken2: bigint
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
-	const	address = await signer.getAddress();
-	const	contract = new ethers.Contract(
+	const signer = provider.getSigner();
+	const address = await signer.getAddress();
+	const contract = new ethers.Contract(
 		pair,
 		UNI_V3_PAIR_ABI as ContractInterface,
 		signer
 	);
-	const	amountToken1String = Number(ethers.utils.formatUnits(amountToken1, 18));
-	const	amountToken2String = Number(ethers.utils.formatUnits(amountToken2, 18));
+	const amountToken1String = Number(ethers.utils.formatUnits(amountToken1, 18));
+	const amountToken2String = Number(ethers.utils.formatUnits(amountToken2, 18));
 	
 	return await handleTx(contract.mint(
 		amountToken1, //amount0Desired

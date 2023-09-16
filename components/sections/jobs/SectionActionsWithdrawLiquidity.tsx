@@ -15,39 +15,39 @@ import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
-import type {TUserPairsPosition} from 'contexts/usePairs.d';
-import type {BigNumber} from 'ethers';
+import type {TUserPairsPosition} from 'contexts/types';
 import type {ReactElement} from 'react';
 
 function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
-	const	{provider, address, isActive} = useWeb3();
-	const	{pairs, getPairs, getPairsBalance} = usePairs();
-	const	{jobStatus, getJobStatus} = useJob();
-	const	[amountLpToken, set_amountLpToken] = useState('');
-	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	const	[txStatusUnbond, set_txStatusUnbond] = useState(defaultTxStatus);
+	const {provider, address, isActive} = useWeb3();
+	const {pairs, getPairs, getPairsBalance} = usePairs();
+	const {jobStatus, getJobStatus} = useJob();
+	const [amountLpToken, set_amountLpToken] = useState('');
+	const [pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const [txStatusUnbond, set_txStatusUnbond] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
 	}, [pairs, chainID]);
 
-	async function	onUnbondLiquidityFromJob(pairAddress: string, amount: BigNumber): Promise<void> {
+	async function	onUnbondLiquidityFromJob(pairAddress: string, amount: bigint): Promise<void> {
 		if (!isActive || txStatusUnbond.pending) {
 			return;
 		}
 		new Transaction(provider, unbondLiquidityFromJob, set_txStatusUnbond)
 			.populate(chainID, jobStatus.address, pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getPairs(), getPairsBalance()]);
+				await Promise.all([getJobStatus(), getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
 			})
 			.perform();
 	}
 
 	function	renderUnbondButton(): ReactElement {
-		const	isAmountOverflow = (amountLpToken !== '' && (!Number(amountLpToken) || Number(amountLpToken) > Number(formatUnits(jobStatus?.liquidityAmount || 0, 18))));
+		const isAmountOverflow = (amountLpToken !== '' && (!Number(amountLpToken) || Number(amountLpToken) > Number(jobStatus?.liquidityAmount.normalized)));
 
 		return (
 			<Button
@@ -78,11 +78,11 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 						<div className={'space-y-2'}>
 							<TokenPairDropdown name={'kLP-KP3R/WETH'} />
 						</div>
-						<Input.BigNumber
+						<Input.Bigint
 							label={''}
 							value={amountLpToken}
 							onSetValue={(s: string): void => set_amountLpToken(s)}
-							maxValue={jobStatus.jobOwner === address ? jobStatus?.liquidityAmount || ethers.constants.Zero : ethers.constants.Zero}
+							maxValue={jobStatus.jobOwner === address ? toBigInt(jobStatus?.liquidityAmount.raw) : 0n}
 							decimals={18} />
 					</div>
 					<div className={'mb-6 space-y-2'}>
@@ -98,7 +98,7 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 									</div>
 									<div className={'flex justify-end'}>
 										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
-											{formatToNormalizedAmount(jobStatus?.pendingUnbonds || 0, 18)}
+											{formatAmount(jobStatus?.pendingUnbonds.normalized, 2, 2)}
 										</p>
 									</div>
 								</dd>
@@ -115,19 +115,19 @@ function	PanelUnbondTokens({chainID}: {chainID: number}): ReactElement {
 }
 
 function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
-	const	{jobStatus, getJobStatus} = useJob();
-	const	{safeChainID} = useChainID();
-	const	[amountLpToken, set_amountLpToken] = useState('');
-	const	[expectedUnderlyingAmount, set_expectedUnderlyingAmount] = useState({
-		token1: ethers.constants.Zero,
-		token2: ethers.constants.Zero
+	const {address, provider, isActive} = useWeb3();
+	const {pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
+	const {jobStatus, getJobStatus} = useJob();
+	const {safeChainID} = useChainID();
+	const [amountLpToken, set_amountLpToken] = useState('');
+	const [expectedUnderlyingAmount, set_expectedUnderlyingAmount] = useState({
+		token1: 0n,
+		token2: 0n
 	});
-	const	[pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	const	[userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
-	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
-	const	[txStatusBurn, set_txStatusBurn] = useState(defaultTxStatus);
+	const [pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
+	const [userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
+	const [txStatus, set_txStatus] = useState(defaultTxStatus);
+	const [txStatusBurn, set_txStatusBurn] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
@@ -137,7 +137,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 	useEffect((): void => {
 		if (provider) {
 			simulateBurn(
-				provider as ethers.providers.Web3Provider,
+				provider,
 				chainID,
 				pair.addressOfPair,
 				toSafeAmount(amountLpToken, userPairPosition?.balanceOfPair || 0)
@@ -157,7 +157,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 		new Transaction(provider, withdrawLiquidityFromJob, set_txStatus)
 			.populate(chainID, jobStatus.address, pairAddress)
 			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getPairs(), getPairsBalance()]);
+				await Promise.all([getJobStatus(), getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
 			})
 			.perform();
 	}
@@ -172,21 +172,21 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 				isDisabled={
 					!isActive
 					|| !jobStatus.canWithdraw
-					|| jobStatus.pendingUnbonds.isZero()
+					|| toBigInt(jobStatus.pendingUnbonds.raw) === 0n
 				}>
 				{txStatus.error ? 'Transaction failed' : txStatus.success ? 'Transaction successful' : jobStatus.canWithdraw ? 'Withdraw' : `Withdraw (${jobStatus.canWithdrawIn})`}
 			</Button>
 		);
 	}
 
-	async function	onBurn(pairAddress: string, amount: BigNumber): Promise<void> {
+	async function	onBurn(pairAddress: string, amount: bigint): Promise<void> {
 		if (!isActive || txStatusBurn.pending) {
 			return;
 		}
 		new Transaction(provider, burn, set_txStatusBurn)
 			.populate(pairAddress, amount)
 			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getPairs(), getPairsBalance()]);
+				await Promise.all([getJobStatus(), getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
 				set_amountLpToken('');
 			})
 			.perform();
@@ -214,7 +214,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 				isDisabled={
 					!isActive
 					|| ethers.utils.parseUnits(amountLpToken || '0', 18).isZero()
-					|| Number(amountLpToken) > Number(formatUnits(userPairPosition?.balanceOfPair || 0, 18))
+					|| Number(amountLpToken) > Number(userPairPosition?.balanceOfPair.normalized)
 				}>
 				{txStatusBurn.error ? 'Transaction failed' : txStatusBurn.success ? 'Transaction successful' : 'Burn'}
 			</Button>
@@ -232,11 +232,11 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 						<div className={'space-y-2'}>
 							<TokenPairDropdown name={'kLP-KP3R/WETH'} />
 						</div>
-						<Input.BigNumber
+						<Input.Bigint
 							label={''}
 							value={amountLpToken}
 							onSetValue={(s: string): void => set_amountLpToken(s)}
-							maxValue={userPairPosition?.balanceOfPair || 0}
+							maxValue={toBigInt(userPairPosition?.balanceOfPair.raw)}
 							decimals={18} />
 					</div>
 					<div className={`mb-6 space-y-2 ${[1, 1337, 5].includes(safeChainID) ? '' : 'hidden'}`}>
@@ -250,7 +250,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 									</div>
 									<div className={'flex justify-end'}>
 										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
-											{formatToNormalizedAmount(expectedUnderlyingAmount?.token1 || 0, 18)}
+											{formatAmount(expectedUnderlyingAmount?.token1.normalized, 2, 2)}
 										</p>
 									</div>
 								</dd>
@@ -264,7 +264,7 @@ function	SectionActionsWithdrawLiquidity({chainID}: {chainID: number}): ReactEle
 									</div>
 									<div className={'flex justify-end'}>
 										<p className={'z-10 bg-white pl-1 text-right text-black-1'}>
-											{formatToNormalizedAmount(expectedUnderlyingAmount?.token2 || 0, 18)}
+											{formatAmount(expectedUnderlyingAmount?.token2.normalized, 2, 2)}
 										</p>
 									</div>
 								</dd>

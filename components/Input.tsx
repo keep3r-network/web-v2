@@ -1,9 +1,8 @@
 import React from 'react';
-import {ethers} from 'ethers';
-import {BN, formatToNormalizedAmount, formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {formatToNormalizedValue, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
-import type {BigNumber} from 'ethers';
 import type {ReactElement} from 'react';
 
 type 		TInput = {
@@ -35,7 +34,7 @@ function	InputBase({
 			}}>
 			<div
 				aria-label={ariaLabel}
-				className={`flex h-12 w-full flex-row items-center border-2 border-grey-3 bg-grey-3 py-2 px-4 text-black transition-colors focus-within:border-black ${className}`}>
+				className={`flex h-12 w-full flex-row items-center border-2 border-grey-3 bg-grey-3 px-4 py-2 text-black transition-colors focus-within:border-black ${className}`}>
 				<span className={'sr-only'}>{ariaLabel}</span>
 				<input
 					value={value}
@@ -60,28 +59,28 @@ function	InputBase({
 }
 
 
-type		TInputBigNumber = {
+type TInputBigInt = {
 	label?: string
 	value: string,
 	onSetValue: (s: string) => void,
-	maxValue?: BigNumber,
+	maxValue?: bigint,
 	decimals?: number,
 	onValueChange?: (s: string) => void,
 	shouldHideBalance?: boolean
 	canBeZero?: boolean
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
-function	InputBigNumber({
+function InputBigInt({
 	label,
 	value,
 	onSetValue,
-	maxValue = ethers.constants.Zero,
+	maxValue = 0n,
 	decimals = 18,
 	onValueChange,
 	shouldHideBalance,
 	canBeZero = false,
 	...props
-}: TInputBigNumber): ReactElement {
+}: TInputBigInt): ReactElement {
 	function	onChange(s: string): void {
 		performBatchedUpdates((): void => {
 			onSetValue(s);
@@ -109,8 +108,8 @@ function	InputBigNumber({
 				placeholder={'0.00000000'}
 				max={formatToNormalizedValue(maxValue, decimals)}
 				onMaxClick={(): void => {
-					if (!(maxValue || BN(0)).isZero()) {
-						const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
+					if (maxValue || 0n !== 0n) {
+						const valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 						if (valueAsString.includes('e')) {
 							return;
 						}
@@ -123,20 +122,20 @@ function	InputBigNumber({
 				<p
 					className={'cursor-pointer text-xs'}
 					onClick={(): void => {
-						if (!(maxValue || BN(0)).isZero()) {
-							const	valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
+						if (maxValue || 0n !== 0n) {
+							const valueAsString = formatToNormalizedValue(maxValue, decimals).toString();
 							if (valueAsString.includes('e')) {
 								return;
 							}
 							onChange(valueAsString);
 						}
 					}}>
-					{`Balance: ${(maxValue || BN(0)).isZero() ? '0.000000' : formatToNormalizedAmount(maxValue, decimals)}`}
+					{`Balance: ${(maxValue || 0n) === 0n ? '0.000000' : formatAmount(toNormalizedBN(maxValue, decimals).normalized, 2, 2)}`}
 				</p>
 			)}
 		</label>
 	);
 }
 
-const Input = Object.assign(InputBase, {BigNumber: InputBigNumber});
+const Input = Object.assign(InputBase, {Bigint: InputBigInt});
 export default Input;

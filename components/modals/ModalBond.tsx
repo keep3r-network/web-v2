@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {ethers} from 'ethers';
 import {activate} from 'utils/actions/activate';
 import {approveERC20} from 'utils/actions/approveToken';
 import {bond} from 'utils/actions/bond';
@@ -10,8 +9,10 @@ import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import Cross from '@yearn-finance/web-lib/icons/IconCross';
-import {formatToNormalizedAmount, formatToNormalizedValue, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
+import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
@@ -23,18 +24,18 @@ type		TModalBond = {
 	onClose: () => void
 }
 function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[amount, set_amount] = useState('');
-	const	[txStatusBond, set_txStatusBond] = useState(defaultTxStatus);
-	const	[txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
-	const	[txStatusActivate, set_txStatusActivate] = useState(defaultTxStatus);
+	const {provider, isActive} = useWeb3();
+	const {keeperStatus, getKeeperStatus} = useKeep3r();
+	const [amount, set_amount] = useState('');
+	const [txStatusBond, set_txStatusBond] = useState(defaultTxStatus);
+	const [txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
+	const [txStatusActivate, set_txStatusActivate] = useState(defaultTxStatus);
 
 	async function	onBond(): Promise<void> {
 		if (!isActive || txStatusBond.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, bond, set_txStatusBond).populate(
 				chainID,
 				tokenBonded,
@@ -44,7 +45,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			set_amount('');
 		}
@@ -54,7 +55,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 		if (!isActive || txStatusApprove.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
 				tokenBonded,
 				getEnv(chainID).KEEP3R_V2_ADDR,
@@ -71,7 +72,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 		if (!isActive || txStatusActivate.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, activate, set_txStatusActivate).populate(
 				chainID,
 				tokenBonded
@@ -80,14 +81,14 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			set_amount('');
 		}
 	}
 
 	function		bondButton(): ReactElement {
-		const	allowance = ethers.utils.formatUnits(keeperStatus.allowance, 18);
+		const allowance = keeperStatus.allowance.normalized;
 		if (Number(allowance) < Number(amount)) {
 			return (
 				<Button
@@ -96,7 +97,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					isDisabled={
 						!isActive ||
 						keeperStatus.hasDispute ||
-						Number(amount) > formatToNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+						Number(amount) > Number(keeperStatus?.balanceOf.normalized)
 					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
@@ -110,7 +111,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 				isDisabled={
 					!isActive ||
 					keeperStatus.hasDispute ||
-					Number(amount) > formatToNormalizedValue(keeperStatus?.balanceOf || ethers.constants.Zero, 18)
+					Number(amount) > Number(keeperStatus?.balanceOf.normalized)
 				}>
 				{txStatusBond.error ? 'Transaction failed' : txStatusBond.success ? 'Transaction successful' : 'Bond'}
 			</Button>
@@ -124,7 +125,7 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 			<div className={'space-y-4 p-6'}>
 				<div className={'mb-4 flex items-center justify-between'}>
 					<h2 className={'text-xl font-bold'}>{'Bond'}</h2>
-					<Cross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
+					<IconCross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
 				</div>
 				
 				<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
@@ -143,15 +144,15 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					<div className={'space-y-10 bg-white p-6'}>
 						<div>
 							<p className={'mb-2'}>{'Balance, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.balanceOf.normalized, 2, 2)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Pending, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.pendingBonds, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.pendingBonds.normalized, 2, 2)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Bonded, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.bonds, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.bonds.normalized, 2, 2)}</b>
 						</div>
 					</div>
 				</div>
@@ -164,10 +165,10 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 					<div className={'space-y-2'}>
 						<b>{'Amount'}</b>
 						<div>
-							<Input.BigNumber
+							<Input.Bigint
 								value={amount}
 								onSetValue={(s: string): void => set_amount(s)}
-								maxValue={keeperStatus?.balanceOf || ethers.constants.Zero}
+								maxValue={toBigInt(keeperStatus?.balanceOf.raw)}
 								decimals={18}
 								canBeZero
 								shouldHideBalance/>

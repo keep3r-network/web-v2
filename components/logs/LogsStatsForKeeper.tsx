@@ -7,13 +7,13 @@ import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import REGISTRY from 'utils/registry';
 import axios from 'axios';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
-import IconLinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 import type {TRegistry} from 'utils/registry';
@@ -35,11 +35,11 @@ type		TWorkLogs = {
 }
 
 function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): ReactElement {
-	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
-	const	[isInit, set_isInit] = useState(false);
-	const	[logs, set_logs] = useState<TLogs[]>([]);
-	const	chainRegistry = useMemo((): TRegistry => {
-		const	_registry: TRegistry = {};
+	const [selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const [isInit, set_isInit] = useState(false);
+	const [logs, set_logs] = useState<TLogs[]>([]);
+	const chainRegistry = useMemo((): TRegistry => {
+		const _registry: TRegistry = {};
 		for (const r of Object.values(REGISTRY[chainID] || {})) {
 			_registry[r.address] = r;
 		}
@@ -148,10 +148,10 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 	
 	function	renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
-			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
@@ -159,10 +159,10 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 
 	function	renderNextChevron(): ReactElement {
 		if (!canNextPage) {
-			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);

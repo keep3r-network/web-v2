@@ -7,9 +7,10 @@ import {withdraw} from 'utils/actions/withdraw';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import Cross from '@yearn-finance/web-lib/icons/IconCross';
+import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import {formatToNormalizedAmount, formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
@@ -21,17 +22,17 @@ type		TModalUnbond = {
 	onClose: () => void,
 }
 function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[amount, set_amount] = useState('');
-	const	[txStatusUnbond, set_txStatusUnbond] = useState(defaultTxStatus);
-	const	[txStatusWithdraw, set_txStatusWithdraw] = useState(defaultTxStatus);
+	const {provider, isActive} = useWeb3();
+	const {keeperStatus, getKeeperStatus} = useKeep3r();
+	const [amount, set_amount] = useState(''); //TODO: Move to TNormalizedBN
+	const [txStatusUnbond, set_txStatusUnbond] = useState(defaultTxStatus);
+	const [txStatusWithdraw, set_txStatusWithdraw] = useState(defaultTxStatus);
 
 	async function	onUnbond(): Promise<void> {
 		if (!isActive || txStatusUnbond.pending) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, unbond, set_txStatusUnbond).populate(
 				chainID,
 				tokenBonded,
@@ -41,7 +42,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 			})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			set_amount('');
 		}
@@ -51,7 +52,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 		if (!isActive || txStatusWithdraw.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const	transaction = (
+		const transaction = (
 			new Transaction(provider, withdraw, set_txStatusWithdraw)
 				.populate(chainID, tokenBonded)
 				.onSuccess(async (): Promise<void> => {
@@ -59,7 +60,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 				})
 		);
 
-		const	isSuccessful = await transaction.perform();
+		const isSuccessful = await transaction.perform();
 		if (isSuccessful) {
 			onClose();
 		}
@@ -72,7 +73,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 			<div className={'space-y-4 p-6'}>
 				<div className={'mb-4 flex items-center justify-between'}>
 					<h2 className={'text-xl font-bold'}>{'Unbond'}</h2>
-					<Cross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
+					<IconCross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
 				</div>
 				
 				<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
@@ -91,15 +92,15 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 					<div className={'space-y-10 bg-white p-6'}>
 						<div>
 							<p className={'mb-2'}>{'Balance, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.balanceOf, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.balanceOf.normalized, 2, 2)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Pending, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.pendingUnbonds, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.pendingUnbonds.normalized, 2, 2)}</b>
 						</div>
 						<div>
 							<p className={'mb-2'}>{'Bonded, KP3R'}</p>
-							<b className={'text-xl'}>{formatToNormalizedAmount(keeperStatus.bonds, 18)}</b>
+							<b className={'text-xl'}>{formatAmount(keeperStatus.bonds.normalized, 2, 2)}</b>
 						</div>
 					</div>
 				</div>
@@ -119,7 +120,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 							onSearch={(s: unknown): void => set_amount(s as string)}
 							aria-label={'amount'}
 							placeholder={'0.00000000'}
-							onMaxClick={(): void => set_amount(formatUnits(keeperStatus.bonds, 18))}
+							onMaxClick={(): void => set_amount(keeperStatus.bonds.normalized.toString())}
 							withMax />
 					</div>
 				</div>
@@ -137,7 +138,7 @@ function	ModalUnbond({isOpen, onClose, tokenBonded, chainID}: TModalUnbond): Rea
 						<Button
 							onClick={onWithdraw}
 							isBusy={txStatusWithdraw.pending}
-							isDisabled={!keeperStatus.canWithdraw || keeperStatus.pendingUnbonds.eq(0)}>
+							isDisabled={!keeperStatus.canWithdraw || toBigInt(keeperStatus.pendingUnbonds.raw) === 0n}>
 							{txStatusWithdraw.error ? 'Transaction failed' : txStatusWithdraw.success ? 'Transaction successful' : keeperStatus.canWithdraw ? 'Withdraw' : `Withdraw (${keeperStatus.canWithdrawIn})`}
 						</Button>
 					</div>

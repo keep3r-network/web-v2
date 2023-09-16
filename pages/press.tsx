@@ -33,7 +33,7 @@ function	LogoFont(): ReactElement {
 
 function	Index(): ReactElement {
 	return (
-		<main className={'col-span-12 my-10 mx-auto flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto my-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<section aria-label={'Press Kit'} className={'pl-8'}>
 				<div className={'mb-8'}>
 					<h2 className={'mb-2 text-6xl font-bold'}>{'Press Kit'}</h2>
@@ -49,7 +49,7 @@ function	Index(): ReactElement {
 
 				<section aria-label={'Assets'} className={'mb-20'}>
 					<div className={'mb-10'}>
-						<div className={'relative mb-6 -ml-8 flex flex-row items-center'}>
+						<div className={'relative -ml-8 mb-6 flex flex-row items-center'}>
 							<div className={'mr-4 flex h-10 w-4 min-w-[16px] items-center'}>
 								<IconGem />
 							</div>
@@ -215,7 +215,7 @@ function	Index(): ReactElement {
 
 				<section aria-label={'Colors'} className={'mb-20'}>
 					<div className={'mb-10'}>
-						<div className={'relative mb-6 -ml-8 flex flex-row items-center'}>
+						<div className={'relative -ml-8 mb-6 flex flex-row items-center'}>
 							<div className={'mr-4 flex h-10 w-4 min-w-[16px] items-center'}>
 								<IconGem />
 							</div>
@@ -312,7 +312,7 @@ function	Index(): ReactElement {
 
 				<section aria-label={'Fonts'} className={'mb-20'}>
 					<div className={'mb-10'}>
-						<div className={'relative mb-6 -ml-8 flex flex-row items-center'}>
+						<div className={'relative -ml-8 mb-6 flex flex-row items-center'}>
 							<div className={'mr-4 flex h-10 w-4 min-w-[16px] items-center'}>
 								<IconGem />
 							</div>

@@ -11,11 +11,11 @@ export async function	slashLiquidityFromJob(
 	chainID: number,
 	toSlashAddress: string,
 	toSlashToken: string,
-	toSlashAmount: ethers.BigNumber
+	toSlashAmount: bigint
 ): Promise<TTxResponse> {
-	const	signer = provider.getSigner();
+	const signer = provider.getSigner();
 
-	const	contract = new ethers.Contract(
+	const contract = new ethers.Contract(
 		getEnv(chainID).KEEP3R_V2_ADDR,
 		KEEP3RV2_ABI as ContractInterface,
 		signer

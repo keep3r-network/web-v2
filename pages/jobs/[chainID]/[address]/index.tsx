@@ -22,15 +22,15 @@ import type {ReactElement} from 'react';
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
 function	StatsJob(): ReactElement {
-	const	router = useRouter();
-	const	{jobStatus} = useJob();
-	const	{data: stats} = useSWR(
+	const router = useRouter();
+	const {jobStatus} = useJob();
+	const {data: stats} = useSWR(
 		router?.query?.address && router.query.chainID ? `/api/jobs?&address=${router?.query?.address}&chainID=${router.query.chainID}` : null,
 		fetcher,
 		{shouldRetryOnError: false}
 	);
 
-	const	chainID = useMemo((): number => {
+	const chainID = useMemo((): number => {
 		let	currentChainID = parseInt(router?.query?.chainID as string, 10);
 		if (currentChainID === undefined || currentChainID === null || isNaN(Number(currentChainID))) {
 			currentChainID = 1;
@@ -38,14 +38,14 @@ function	StatsJob(): ReactElement {
 		return currentChainID;
 	}, [router?.query?.chainID]);
 
-	const	[isModalMigrateOpen, set_isModalMigrateOpen] = useState(false);
-	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const [isModalMigrateOpen, set_isModalMigrateOpen] = useState(false);
+	const [selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
 
 	useEffect((): void => {
 		set_selectedExplorer(getEnv(chainID).EXPLORER);
 	}, [chainID]);
 
-	const	Keep3rButton = Button as any;
+	const Keep3rButton = Button as any;
 	return (
 		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>

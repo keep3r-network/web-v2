@@ -1,7 +1,7 @@
 import React from 'react';
 import IconKeep3r from 'components/icons/IconKeep3r';
 import IconWEth from 'components/icons/IconWEth';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 
 import type {ReactElement} from 'react';
 
@@ -18,7 +18,7 @@ function	TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
 				</div>
 				<b>{name}</b>
 			</div>
-			<Chevron className={'-rotate-90 opacity-0'}/>
+			<IconChevron className={'-rotate-90 opacity-0'}/>
 		</div>
 	);
 }
