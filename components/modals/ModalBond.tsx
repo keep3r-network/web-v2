@@ -17,7 +17,7 @@ import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/tr
 
 import type {ReactElement} from 'react';
 
-type		TModalBond = {
+type TModalBond = {
 	chainID: number,
 	tokenBonded: string,
 	isOpen: boolean,

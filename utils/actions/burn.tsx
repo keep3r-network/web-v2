@@ -1,49 +1,9 @@
 import	{ethers} from	'ethers';
-import	UNI_V3_PAIR_ABI				from	'utils/abi/univ3Pair.abi';
-import {getProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import	UNI_V3_PAIR_ABI	 from 'utils/abi/univ3Pair.abi';
 import {handleTx} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ContractInterface} from 'ethers';
 import type {TTxResponse} from '@yearn-finance/web-lib/utils/web3/transaction';
-
-export async function	simulateBurn(
-	provider: ethers.providers.Web3Provider,
-	chainID: number,
-	pair: string,
-	liquidity: bigint
-): Promise<[bigint, bigint]> {
-	const signer = provider.getSigner();
-	const address = await signer.getAddress();
-
-	try {
-		const contract = new ethers.Contract(
-			pair,
-			UNI_V3_PAIR_ABI as ContractInterface,
-			getProvider(chainID) as ethers.providers.Web3Provider
-		);
-		try {
-			const simulation = await contract.callStatic.burn(
-				liquidity, //liquidity
-				0n, //amount0Min
-				0n, //amount1Min
-				address, //to
-				{from: address}
-			);
-			const amount0Min = Number(ethers.utils.formatUnits(simulation.amount0, 18));
-			const amount1Min = Number(ethers.utils.formatUnits(simulation.amount1, 18));
-			return ([
-				ethers.utils.parseUnits((amount0Min * 0.995).toFixed(18), 18),
-				ethers.utils.parseUnits((amount1Min * 0.995).toFixed(18), 18)
-
-			]);
-		} catch (error) {
-			return ([0n, 0n]);
-		}
-	
-	} catch(error) {
-		return ([0n, 0n]);
-	}
-}
 
 export async function	burn(
 	provider: ethers.providers.Web3Provider,

@@ -5,7 +5,7 @@ import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatched
 
 import type {ReactElement} from 'react';
 
-type 		TInput = {
+type TInput = {
 	value: string,
 	onChange: (s: string) => void
 	onSearch?: (s: string) => void
@@ -13,7 +13,7 @@ type 		TInput = {
 	withMax?: boolean
 	onMaxClick?: () => void
 } & React.ComponentPropsWithoutRef<'input'>
-function	InputBase({
+function InputBase({
 	value,
 	onChange,
 	onSearch,

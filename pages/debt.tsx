@@ -10,10 +10,9 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Debt(): ReactElement {
+function Debt(): ReactElement {
 	const {debt} = useDebt();
 	const [tvlUSD, set_tvlUSD] = useState<number>(0);
-
 	const {data: ibAPIData} = useSWR('https://api.ib.xyz/api/v1/itoken?comptroller=eth', fetcher);
 
 	useEffect((): void => {
@@ -79,11 +78,11 @@ function	Debt(): ReactElement {
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{`Debt, ${debt.name}`}</span>
-														{formatAmount(balance.normalized, 2, 2)}
+														{formatAmount(balance.amount.normalized, 2, 2)}
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{'Debt, $'}</span>
-														{formatAmount(balance.normalizedValue, 2, 2)}
+														{formatAmount(balance.value, 2, 2)}
 													</p>
 												</div>
 											))}

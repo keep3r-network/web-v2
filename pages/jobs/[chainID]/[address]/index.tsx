@@ -11,10 +11,10 @@ import {getEnv} from 'utils/env';
 import axios from 'axios';
 import useSWR from 'swr';
 import {Button} from '@yearn-finance/web-lib/components/Button';
-import Copy from '@yearn-finance/web-lib/icons/IconCopy';
-import LinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
-import SocialGithub from '@yearn-finance/web-lib/icons/IconSocialGithub';
-import {truncateHex} from '@yearn-finance/web-lib/utils/address';
+import {IconCopy} from '@yearn-finance/web-lib/icons/IconCopy';
+import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
+import {IconSocialGithub} from '@yearn-finance/web-lib/icons/IconSocialGithub';
+import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
@@ -47,7 +47,7 @@ function	StatsJob(): ReactElement {
 
 	const Keep3rButton = Button as any;
 	return (
-		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto mb-10 mt-6 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
 				<p>
 					<Link href={'/'}>{'Jobs / '}</Link>
@@ -67,13 +67,13 @@ function	StatsJob(): ReactElement {
 
 						<div className={'flex flex-row items-center space-x-2'}>
 							<b>{truncateHex(stats?.job || '', 5)}</b>
-							<div><Copy onClick={(): void => copyToClipboard(stats?.job || '')} className={'h-4 w-4 cursor-pointer text-black'} /></div>
+							<div><IconCopy onClick={(): void => copyToClipboard(stats?.job || '')} className={'h-4 w-4 cursor-pointer text-black'} /></div>
 							<div>
 								<a
 									href={`https://${selectedExplorer}/address/${stats?.job || ''}`}
 									target={'_blank'}
 									rel={'noopener noreferrer'}>
-									<LinkOut className={'h-4 w-4 cursor-pointer text-black'} />
+									<IconLinkOut className={'h-4 w-4 cursor-pointer text-black'} />
 								</a>
 							</div>
 							<div>
@@ -82,7 +82,7 @@ function	StatsJob(): ReactElement {
 										href={stats?.repository}
 										target={'_blank'}
 										rel={'noopener noreferrer'}>
-										<SocialGithub className={'ml-0.5 h-4 w-4 cursor-pointer text-black'} />
+										<IconSocialGithub className={'ml-0.5 h-4 w-4 cursor-pointer text-black'} />
 									</a>
 								) : null}
 							</div>
@@ -95,7 +95,7 @@ function	StatsJob(): ReactElement {
 						<SectionActions chainID={chainID} />
 					</div>
 					<div>
-						<div className={'flex-center flex h-full justify-center space-x-4 bg-white py-6 px-8'}>
+						<div className={'flex-center flex h-full justify-center space-x-4 bg-white px-8 py-6'}>
 							<div className={'w-1/2'}>
 								<Keep3rButton
 									onClick={(): void => set_isModalMigrateOpen(true)}
@@ -104,7 +104,7 @@ function	StatsJob(): ReactElement {
 								</Keep3rButton>
 							</div>
 							<div className={'w-1/2'}>
-								<Link href={`/jobs/${chainID}/${jobStatus.address}/calls`}>
+								<Link href={`/jobs/${chainID}/${toAddress(jobStatus.address)}/calls`}>
 									<Keep3rButton variant={'reverted'}>{'View calls'}</Keep3rButton>
 								</Link>
 							</div>
@@ -116,7 +116,7 @@ function	StatsJob(): ReactElement {
 			<SectionDocumentation />
 
 			<ModalMigrate
-				currentAddress={jobStatus.address as string}
+				currentAddress={toAddress(jobStatus.address)}
 				chainID={chainID}
 				isOpen={isModalMigrateOpen}
 				onClose={(): void => set_isModalMigrateOpen(false)} />

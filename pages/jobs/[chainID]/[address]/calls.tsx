@@ -30,7 +30,7 @@ function	StatsCall(): ReactElement {
 	const [searchTerm, set_searchTerm] = useState('');
 
 	return (
-		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto mb-10 mt-6 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
 				<p>
 					<Link href={'/'}>{'Jobs / '}</Link>

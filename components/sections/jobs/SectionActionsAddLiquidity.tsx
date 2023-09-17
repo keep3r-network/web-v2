@@ -12,7 +12,8 @@ import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
-import {toBigInt, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
+import {toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
@@ -55,6 +56,14 @@ function	PanelBridgeTokens(): ReactElement {
 	);
 }
 
+const defaultPairPosition: TUserPairsPosition = {
+	balanceOfPair: toNormalizedBN(0),
+	allowanceOfPair: toNormalizedBN(0),
+	balanceOfToken1: toNormalizedBN(0),
+	allowanceOfToken1: toNormalizedBN(0),
+	balanceOfToken2: toNormalizedBN(0),
+	allowanceOfToken2: toNormalizedBN(0)
+};
 function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const {address, provider, isActive} = useWeb3();
 	const {pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
@@ -62,14 +71,14 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const [amountToken1, set_amountToken1] = useState('');
 	const [amountToken2, set_amountToken2] = useState('');
 	const [pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	const [userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
+	const [userPairPosition, set_userPairPosition] = useState<TUserPairsPosition>(defaultPairPosition);
 	const [txStatusApproveToken1, set_txStatusApproveToken1] = useState(defaultTxStatus);
 	const [txStatusApproveToken2, set_txStatusApproveToken2] = useState(defaultTxStatus);
 	const [txStatusMint, set_txStatusMint] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || {});
+		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || defaultPairPosition);
 	}, [pairs, userPairsPosition, chainID]);
 
 	async function	onApproveToken1(token: string, spender: string, amount: bigint): Promise<void> {
@@ -205,13 +214,13 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 	const {jobStatus, getJobStatus} = useJob();
 	const [amountLpToken, set_amountLpToken] = useState('');
 	const [pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-	const [userPairPosition, set_userPairPosition] = useState({} as TUserPairsPosition);
+	const [userPairPosition, set_userPairPosition] = useState<TUserPairsPosition>(defaultPairPosition);
 	const [txStatusAddLiquidity, set_txStatusAddLiquidity] = useState(defaultTxStatus);
 	const [txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
 
 	useEffect((): void => {
 		set_pair(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
-		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || {});
+		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || defaultPairPosition);
 	}, [pairs, userPairsPosition, chainID]);
 
 	async function	onApprove(token: string, spender: string, amount: bigint): Promise<void> {
@@ -243,7 +252,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 		const isAmountOverflow = (
 			amountLpToken !== '' && (
 				!Number(amountLpToken)
-				|| Number(amountLpToken) > Number(userPairPosition?.balanceOfPair.normalized)
+				|| Number(amountLpToken) > Number(userPairPosition.balanceOfPair.normalized)
 			)
 		);
 
@@ -254,7 +263,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						onApprove(
 							pair.addressOfPair,
 							getEnv(chainID).KEEP3R_V2_ADDR,
-							toSafeAmount(`${Number(amountLpToken)}`, userPairPosition?.balanceOfPair.raw)
+							toSafeAmount(`${Number(amountLpToken)}`, userPairPosition.balanceOfPair.raw)
 						);
 					}}
 					isBusy={txStatusApprove.pending}
@@ -268,14 +277,14 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 				onClick={(): void => {
 					onAddLiquidityToJob(
 						pair.addressOfPair,
-						toSafeAmount(`${Number(amountLpToken)}`, userPairPosition?.balanceOfPair.raw)
+						toSafeAmount(`${Number(amountLpToken)}`, userPairPosition.balanceOfPair.raw)
 					);
 				}}
 				isBusy={txStatusAddLiquidity.pending}
 				isDisabled={
 					!isActive
 					|| !Number(amountLpToken)
-					|| Number(amountLpToken) > Number(userPairPosition?.balanceOfPair.normalized)
+					|| Number(amountLpToken) > Number(userPairPosition.balanceOfPair.normalized)
 				}>
 				{txStatusAddLiquidity.error ? 'Transaction failed' : txStatusAddLiquidity.success ? 'Transaction successful' : 'Add liquidity to job'}
 			</Button>
@@ -294,7 +303,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 						<Input.Bigint
 							value={amountLpToken}
 							onSetValue={(s: string): void => set_amountLpToken(s)}
-							maxValue={toBigInt(userPairPosition?.balanceOfPair.raw)}
+							maxValue={toBigInt(userPairPosition.balanceOfPair.raw)}
 							decimals={18} />
 					</div>
 					<div>

@@ -4,19 +4,21 @@ import LENS_PRICE_ABI from 'utils/abi/lens.abi';
 import {getEnv} from 'utils/env';
 import {readContracts} from 'wagmi';
 import {decodeAsBigInt} from '@yearn-finance/web-lib/utils/decoder';
-import {formatToNormalizedValue, toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatToNormalizedValue, toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement} from 'react';
+import type {TNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 
 export type	TDebt = {
 	name: string;
 	totalBorrowBalance: bigint;
 	totalBorrowValue: number;
 	borrowBalance: {[key: string]: {
-		raw: bigint;
-		normalized: number;
-		normalizedValue: number;
+		amount: TNormalizedBN;
+		// raw: bigint;
+		// normalized: number;
+		value: number;
 	}};
 }
 type	TDebtContext = {
@@ -203,14 +205,12 @@ export const DebtContextApp = ({children}: {children: ReactElement}): ReactEleme
 				totalBorrowValue: formatToNormalizedValue(totalBorrowBalance, 18) * normalizedPrice,
 				borrowBalance: {
 					[getEnv(1).IB_AMM_ADDR]: {
-						raw: ibAMMDebt,
-						normalized: formatToNormalizedValue(ibAMMDebt, 18),
-						normalizedValue: formatToNormalizedValue(ibAMMDebt, 18) * normalizedPrice
+						amount: toNormalizedBN(ibAMMDebt),
+						value: formatToNormalizedValue(ibAMMDebt, 18) * normalizedPrice
 					},
 					[getEnv(1).IB_AMM_2_ADDR]: {
-						raw: ibAMM2Debt,
-						normalized: formatToNormalizedValue(ibAMM2Debt, 18),
-						normalizedValue: formatToNormalizedValue(ibAMM2Debt, 18) * normalizedPrice
+						amount: toNormalizedBN(ibAMM2Debt),
+						value: formatToNormalizedValue(ibAMM2Debt, 18) * normalizedPrice
 					}
 				}
 			});

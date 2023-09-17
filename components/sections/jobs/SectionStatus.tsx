@@ -23,13 +23,13 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Current credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.jobLiquidityCredits.normalized, 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.jobLiquidityCredits.normalized, 6, 6)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Pending credits, KP3R'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.totalJobCredits.normalized, 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.totalJobCredits.normalized, 6, 6)}
 						</dd>
 					</div>
 					<div className={'flex flex-row'}>
@@ -53,7 +53,7 @@ function	SectionStatus({chainID}: {chainID: number}): ReactElement {
 					<div className={'flex flex-row'}>
 						<dt className={'w-1/2'}>{'Total, kLP-KP3R/WETH'}</dt>
 						<dd>
-							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.liquidityAmount.normalized, 2, 2)}
+							{!jobStatus.isLoaded ? '-' : formatAmount(jobStatus?.liquidityAmount.normalized, 6, 6)}
 						</dd>
 					</div>
 				</dl>

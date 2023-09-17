@@ -11,7 +11,7 @@ import {Button} from '@yearn-finance/web-lib/components/Button';
 import {IconCopy} from '@yearn-finance/web-lib/icons/IconCopy';
 import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
@@ -19,7 +19,7 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	StatsKeeper(): ReactElement {
+function StatsKeeper(): ReactElement {
 	const router = useRouter();
 	const {data} = useSWR(
 		router?.query?.address && router?.query?.chainID ? `/api/statsForAddress?chainID=${router?.query?.chainID}&address=${router?.query?.address}` : null,
@@ -91,22 +91,30 @@ function	StatsKeeper(): ReactElement {
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'KP3R per call'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}</b></div>
+					<div>
+						<b className={'text-xl'}>
+							{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}
+						</b>
+					</div>
 					<p className={'text-xs'}>{`$ per call ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(data?.stats?.earned || 0) / data?.stats?.workDone || 0, 2, 2)}`}</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Bonded, KP3R'}</p>
-					<div><b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(data?.stats?.bonds || 0n).normalized, 2, 2)}</b></div>
+					<div>
+						<b className={'text-xl'}>
+							{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(toBigInt(data?.stats?.bonds)).normalized, 6, 6)}
+						</b>
+					</div>
 					<p className={'text-xs'}>
-						{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(data?.stats?.bonds || 0n).normalized) * data?.prices?.keep3rv1 || 0, 2, 2)}`}
+						{`Bonded, $: ${!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(toBigInt(data?.stats?.bonds)).normalized) * data?.prices?.keep3rv1 || 0, 6, 6)}`}
 					</p>
 				</div>
 
 				<div className={'flex flex-col space-y-2 bg-white p-6'}>
 					<p>{'Balance, KP3R'}</p>
 					<div>
-						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(data?.stats?.balanceOf || 0n).normalized, 2, 2)}</b>
+						<b className={'text-xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(toNormalizedBN(toBigInt(data?.stats?.balanceOf)).normalized, 6, 6)}</b>
 					</div>
 				</div>
 

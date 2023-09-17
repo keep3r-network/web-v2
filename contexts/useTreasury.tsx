@@ -39,7 +39,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 	const [, set_nonce] = useState(0);
 
 	const getTreasury = useCallback(async (): Promise<void> => {
-		const kp3rEthPrice = await axios.get('https://ydaemon.yearn.fi/1/prices/0x4647B6D835f3B393C7A955df51EEfcf0db961606');
+		const kp3rEthPriceResp = await axios.get('https://ydaemon.yearn.fi/1/prices/0x4647B6D835f3B393C7A955df51EEfcf0db961606');
+		const kp3rEthPrice = kp3rEthPriceResp.data;
 		const {THE_KEEP3R_GOVERNANCE} = getEnv(safeChainID);
 		const resultsJobsCall = await readContracts({
 			contracts: [
@@ -261,7 +262,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		// kp3rEth //
 		const kp3rEthStacked = toNormalizedBN(decodeAsBigInt(resultsJobsCall[rIndex++]));
 		const kp3rEthCrvEarned = toNormalizedBN(decodeAsBigInt(resultsJobsCall[rIndex++]));
-		const kp3rEthPriceFormated = toNormalizedBN(decodeAsBigInt(kp3rEthPrice.data), 6);
+		const kp3rEthPriceFormated = toNormalizedBN(kp3rEthPrice, 6);
 
 		_treasury.push({
 			name: 'kp3rEth',

@@ -7,19 +7,18 @@ import {getEnv} from 'utils/env';
 import axios from 'axios';
 import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
 import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TDisputeLogs = {
+type TDisputeLogs = {
 	time: number,
 	keeperOrJob: string,
 	action: string,
 	disputer: string,
 	txHash: string,
 }
-function	LogsDispute({chainID}: {chainID: number}): ReactElement {
+function LogsDispute({chainID}: {chainID: number}): ReactElement {
 	const [isInit, set_isInit] = useState(false);
 	const [logs, set_logs] = useState<TDisputeLogs[]>([]);
 
@@ -36,7 +35,14 @@ function	LogsDispute({chainID}: {chainID: number}): ReactElement {
 
 	const data = useMemo((): unknown[] => (
 		logs.map((log): unknown => ({
-			date: formatDate(Number(log.time) * 1000, true),
+			date: Intl.DateTimeFormat('en-US', {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+				hour: 'numeric',
+				minute: 'numeric',
+				second: 'numeric'
+			}).format(Number(log.time) * 1000),
 			keeperOrJob: log.keeperOrJob,
 			action: log.action,
 			disputer: log.disputer,

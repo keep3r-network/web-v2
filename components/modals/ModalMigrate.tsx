@@ -3,32 +3,33 @@ import {useRouter} from 'next/router';
 import Input from 'components/Input';
 import {useJob} from 'contexts/useJob';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {Contract} from 'ethcall';
-import {ethers} from 'ethers';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {acceptJobMigration} from 'utils/actions/acceptJobMigration';
 import {migrateJob} from 'utils/actions/migrateJob';
 import {getEnv} from 'utils/env';
+import {zeroAddress} from 'viem';
+import {readContracts} from 'wagmi';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
-import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
+import {decodeAsAddress, decodeAsBoolean} from '@yearn-finance/web-lib/utils/decoder';
 import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
+import type {TAddress} from '@yearn-finance/web-lib/types';
 
-type	TJobToStatus = {hasDispute: boolean, owner: string}
-type	TModalMigrate = {
-	currentAddress: string,
+type TJobToStatus = {hasDispute: boolean, owner: TAddress}
+type TModalMigrate = {
+	currentAddress: TAddress,
 	chainID: number,
 	isOpen: boolean,
 	onClose: () => void,
 }
 
-const defaultJobToStatus = {hasDispute: false, owner: ethers.constants.AddressZero};
-function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate): ReactElement {
+const defaultJobToStatus = {hasDispute: false, owner: zeroAddress};
+function ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate): ReactElement {
 	const router = useRouter();
 	const {provider, address, isActive} = useWeb3();
 	const {jobStatus, getJobStatus} = useJob();
@@ -51,20 +52,14 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 		goDown();
 	}, [goDown]);
 
-	async function getMigrationDestination(migrationAddress: string): Promise<void> {
-		const _provider = provider || getProvider(chainID);
-		const ethcallProvider = await newEthCallProvider(_provider);
-		const keep3rV2 = new Contract(
-			toAddress(getEnv(chainID).KEEP3R_V2_ADDR),
-			KEEP3RV2_ABI
-		);
-		const calls = [
-			keep3rV2.disputes(migrationAddress),
-			keep3rV2.jobOwner(migrationAddress)
-		];
-		const results = await ethcallProvider.tryAll(calls) as unknown[]; 
-		const [hasDispute, owner] = results;
-		set_jobToStatus({hasDispute: hasDispute as boolean, owner: owner as string});
+	async function getMigrationDestination(migrationAddress: TAddress): Promise<void> {
+		const results = await readContracts({
+			contracts: [
+				{address: toAddress(getEnv(chainID).KEEP3R_V2_ADDR), abi: KEEP3RV2_ABI, functionName: 'disputes', args: [migrationAddress]},
+				{address: toAddress(getEnv(chainID).KEEP3R_V2_ADDR), abi: KEEP3RV2_ABI, functionName: 'jobOwner', args: [migrationAddress]}
+			]
+		});
+		set_jobToStatus({hasDispute: decodeAsBoolean(results[0]), owner: decodeAsAddress(results[1])});
 	}
 	
 	useEffect((): void => {
@@ -72,7 +67,7 @@ function	ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 			set_newAddress(jobStatus.pendingJobMigrations);
 			getMigrationDestination(jobStatus.pendingJobMigrations);
 		}
-	}, [jobStatus.pendingJobMigrations]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [jobStatus.pendingJobMigrations]);
 
 	async function	onMigrateJob(): Promise<void> {
 		if (!isActive || txStatusMigrate.pending) {

@@ -13,7 +13,7 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Disputes(): ReactElement {
+function Disputes(): ReactElement {
 	const {chainID} = useChainID();
 	const {data: stats} = useSWR(`/api/dispute?chainID=${chainID}`, fetcher, {shouldRetryOnError: false});
 

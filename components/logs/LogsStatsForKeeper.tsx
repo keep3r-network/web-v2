@@ -18,7 +18,7 @@ import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatched
 import type {ReactElement, ReactNode} from 'react';
 import type {TRegistry} from 'utils/registry';
 
-type		TLogs = {
+type TLogs = {
 	time: number,
 	txHash: string,
 	job: string,
@@ -28,7 +28,7 @@ type		TLogs = {
 	gwei: string,
 	normalizedKp3rPrice: number
 }
-type		TWorkLogs = {
+type TWorkLogs = {
 	keeperAddress: string,
 	searchTerm: string,
 	chainID: number
