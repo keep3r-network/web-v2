@@ -2,7 +2,7 @@ import	React	from	'react';
 
 import type {ReactElement} from 'react';
 
-function	SectionUnderstandSetup(): ReactElement {
+function SectionUnderstandSetup(): ReactElement {
 	return (
 		<section aria-label={'UNDERSTAND SETUP'}>
 			<div className={'grid w-full grid-cols-1 gap-8 md:grid-cols-2'}>
@@ -32,7 +32,7 @@ function	SectionUnderstandSetup(): ReactElement {
 				</div>
 				<div>
 					<h2 className={'text-xl font-bold'}>{'BECOME KEEPER'}</h2>
-					<div className={'mt-4 mb-8 space-y-6'}>  
+					<div className={'mb-8 mt-4 space-y-6'}>  
 						<p>
 							{'To join as a keeper, you simply need to call '}
 							<code className={'inline text-grey-2'}>{'bond(address,uint)'}</code>
@@ -62,7 +62,7 @@ function	SectionUnderstandSetup(): ReactElement {
 					</div>
 
 					<h2 className={'text-xl font-bold'}>{'FIND JOB'}</h2>
-					<div className={'mt-4 mb-8 space-y-6'}>  
+					<div className={'mb-8 mt-4 space-y-6'}>  
 						<p>
 							{'Keep3r Network provides keepers with a list of available jobs. A job is a term used to refer to a smart contract which is awaiting for an external entity to perform an action. Keepers can choose which actions to perform. It might be dictated by job owner restrictions or keeper preferences.'}
 						</p>

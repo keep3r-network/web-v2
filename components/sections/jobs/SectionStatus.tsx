@@ -10,7 +10,7 @@ import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 
-function	SectionStatus({chainID}: {chainID: number}): ReactElement {
+function SectionStatus({chainID}: {chainID: number}): ReactElement {
 	const {jobStatus} = useJob();
 	const {prices} = usePrices();
 

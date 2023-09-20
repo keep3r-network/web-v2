@@ -11,7 +11,7 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Stats(): ReactElement {
+function Stats(): ReactElement {
 	const router = useRouter();
 	const {data} = useSWR(router?.query?.chainID ? `/api/stats?chainID=${router?.query?.chainID}` : null, fetcher, {shouldRetryOnError: false});
 	const [searchTerm, set_searchTerm] = useState('');

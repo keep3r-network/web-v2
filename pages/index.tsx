@@ -6,7 +6,7 @@ import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 
 import type {ReactElement} from 'react';
 
-function	Index(): ReactElement {
+function Index(): ReactElement {
 	const {chainID} = useChainID();
 
 	return (

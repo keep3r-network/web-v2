@@ -21,7 +21,7 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	StatsJob(): ReactElement {
+function StatsJob(): ReactElement {
 	const router = useRouter();
 	const {jobStatus} = useJob();
 	const {data: stats} = useSWR(

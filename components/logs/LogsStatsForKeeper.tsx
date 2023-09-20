@@ -10,7 +10,7 @@ import axios from 'axios';
 import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
-import {formatToNormalizedValue} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatToNormalizedValue, toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
 import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
@@ -34,7 +34,7 @@ type TWorkLogs = {
 	chainID: number
 }
 
-function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): ReactElement {
+function LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): ReactElement {
 	const [selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
 	const [isInit, set_isInit] = useState(false);
 	const [logs, set_logs] = useState<TLogs[]>([]);
@@ -70,10 +70,10 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 			.map((log): unknown => ({
 				date: formatDate(Number(log.time) * 1000, true),
 				jobName: chainRegistry[toAddress(log.job)]?.name || 'Unverified Job',
-				earnedKp3r: formatToNormalizedValue(log.earned, 18),
-				earnedUsd: formatToNormalizedValue(log.earned, 18),
-				fees: formatToNormalizedValue(log.fees, 18),
-				gweiPerCall: formatToNormalizedValue(log.gwei, 9),
+				earnedKp3r: formatToNormalizedValue(toBigInt(log.earned), 18),
+				earnedUsd: formatToNormalizedValue(toBigInt(log.earned), 18),
+				fees: formatToNormalizedValue(toBigInt(log.fees), 18),
+				gweiPerCall: formatToNormalizedValue(toBigInt(log.gwei), 9),
 				linkOut: log.job
 			}))
 	), [logs, searchTerm, chainRegistry]);
@@ -146,7 +146,7 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
 			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
@@ -157,7 +157,7 @@ function	LogsStatsForKeeper({keeperAddress, searchTerm, chainID}: TWorkLogs): Re
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
 			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}

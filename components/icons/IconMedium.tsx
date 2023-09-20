@@ -2,7 +2,7 @@ import	React		from	'react';
 
 import type {ReactElement} from 'react';
 
-function	IconMedium(props: React.SVGProps<SVGSVGElement>): ReactElement {
+function IconMedium(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	return (
 		<svg
 			{...props}

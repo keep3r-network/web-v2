@@ -81,7 +81,7 @@ function InputBigInt({
 	canBeZero = false,
 	...props
 }: TInputBigInt): ReactElement {
-	function	onChange(s: string): void {
+	function onChange(s: string): void {
 		performBatchedUpdates((): void => {
 			onSetValue(s);
 			if (onValueChange) {

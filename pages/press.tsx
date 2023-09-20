@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 import type {ReactElement} from 'react';
 
-function	IconGem(props: React.SVGProps<SVGSVGElement>): ReactElement {
+function IconGem(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	return (
 		<svg
 			{...props}
@@ -17,7 +17,7 @@ function	IconGem(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	);
 }
 
-function	LogoFont(): ReactElement {
+function LogoFont(): ReactElement {
 	return (
 		<svg
 			width={'159'}
@@ -31,7 +31,7 @@ function	LogoFont(): ReactElement {
 	);
 }
 
-function	Index(): ReactElement {
+function Index(): ReactElement {
 	return (
 		<main className={'col-span-12 mx-auto my-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<section aria-label={'Press Kit'} className={'pl-8'}>

@@ -87,7 +87,7 @@ function LogsDispute({chainID}: {chainID: number}): ReactElement {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
 			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
@@ -98,7 +98,7 @@ function LogsDispute({chainID}: {chainID: number}): ReactElement {
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
 			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}

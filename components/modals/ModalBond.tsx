@@ -2,20 +2,20 @@ import React, {useState} from 'react';
 import Input from 'components/Input';
 import TokenDropdown from 'components/TokenDropdown';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {activate} from 'utils/actions/activate';
-import {approveERC20} from 'utils/actions/approveToken';
-import {bond} from 'utils/actions/bond';
+import {activate, approveERC20, bond} from 'utils/actions';
 import {getEnv} from 'utils/env';
+import {max} from 'utils/helpers';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
-import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toAddress} from '@yearn-finance/web-lib/utils/address';
+import {parseUnits, toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
+import type {TNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 
 type TModalBond = {
 	chainID: number,
@@ -23,71 +23,65 @@ type TModalBond = {
 	isOpen: boolean,
 	onClose: () => void
 }
-function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactElement {
+function ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactElement {
 	const {provider, isActive} = useWeb3();
 	const {keeperStatus, getKeeperStatus} = useKeep3r();
-	const [amount, set_amount] = useState('');
+	const [amount, set_amount] = useState<TNormalizedBN>(toNormalizedBN(0));
 	const [txStatusBond, set_txStatusBond] = useState(defaultTxStatus);
 	const [txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
 	const [txStatusActivate, set_txStatusActivate] = useState(defaultTxStatus);
 
-	async function	onBond(): Promise<void> {
+	async function onBond(): Promise<void> {
 		if (!isActive || txStatusBond.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const transaction = (
-			new Transaction(provider, bond, set_txStatusBond).populate(
-				chainID,
-				tokenBonded,
-				toSafeAmount(amount, keeperStatus.balanceOf)
-			).onSuccess(async (): Promise<void> => {
-				await getKeeperStatus();
-			})
-		);
 
-		const isSuccessful = await transaction.perform();
-		if (isSuccessful) {
-			set_amount('');
+		const result = await bond({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			tokenBondedAddress: toAddress(tokenBonded),
+			amount: max(amount.raw, keeperStatus.balanceOf.raw),
+			statusHandler: set_txStatusBond
+		});
+		if (result.isSuccessful) {
+			await getKeeperStatus();
+			set_amount(toNormalizedBN(0));
 		}
 	}
 
-	async function	onApprove(): Promise<void> {
+	async function onApprove(): Promise<void> {
 		if (!isActive || txStatusApprove.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const transaction = (
-			new Transaction(provider, approveERC20, set_txStatusApprove).populate(
-				tokenBonded,
-				getEnv(chainID).KEEP3R_V2_ADDR,
-				toSafeAmount(amount, keeperStatus.balanceOf)
-			).onSuccess(async (): Promise<void> => {
-				await getKeeperStatus();
-			})
-		);
-
-		await transaction.perform();
+		const result = await approveERC20({
+			connector: provider,
+			contractAddress: toAddress(tokenBonded),
+			spenderAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			amount: max(amount.raw, keeperStatus.balanceOf.raw),
+			statusHandler: set_txStatusApprove
+		});
+		if (result.isSuccessful) {
+			await getKeeperStatus();
+		}
 	}
 	
-	async function	onActivate(): Promise<void> {
+	async function onActivate(): Promise<void> {
 		if (!isActive || txStatusActivate.pending || keeperStatus.hasDispute) {
 			return;
 		}
-		const transaction = (
-			new Transaction(provider, activate, set_txStatusActivate).populate(
-				chainID,
-				tokenBonded
-			).onSuccess(async (): Promise<void> => {
-				await getKeeperStatus();
-			})
-		);
-
-		const isSuccessful = await transaction.perform();
-		if (isSuccessful) {
-			set_amount('');
+		const result = await activate({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			bondedTokenAddress: toAddress(tokenBonded),
+			statusHandler: set_txStatusActivate
+		});
+		if (result.isSuccessful) {
+			await getKeeperStatus();
+			set_amount(toNormalizedBN(0));
 		}
 	}
 
-	function		bondButton(): ReactElement {
+	function 	bondButton(): ReactElement {
 		const allowance = keeperStatus.allowance.normalized;
 		if (Number(allowance) < Number(amount)) {
 			return (
@@ -166,8 +160,11 @@ function	ModalBond({isOpen, onClose, tokenBonded, chainID}: TModalBond): ReactEl
 						<b>{'Amount'}</b>
 						<div>
 							<Input.Bigint
-								value={amount}
-								onSetValue={(s: string): void => set_amount(s)}
+								value={String(amount.normalized)}
+								onSetValue={(s: string): void => {
+									const asRaw = parseUnits(s);
+									set_amount(toNormalizedBN(asRaw));
+								}}
 								maxValue={toBigInt(keeperStatus?.balanceOf.raw)}
 								decimals={18}
 								canBeZero

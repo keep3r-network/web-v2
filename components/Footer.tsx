@@ -8,7 +8,7 @@ import IconTelegram from './icons/IconTelegram';
 
 import type {ReactElement} from 'react';
 
-function	Footer(): ReactElement {
+function Footer(): ReactElement {
 	return (
 		<footer className={'mt-auto w-full bg-grey-3 py-7'}>
 			<div className={'mx-auto hidden w-full max-w-6xl flex-row items-center md:flex'}>

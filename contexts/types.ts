@@ -81,13 +81,13 @@ export type	TKeep3rContext = {
 }
 
 export type	TKeeperPair = {
-	addressOfUni: string,
-	addressOfPair: string,
+	addressOfUni: TAddress,
+	addressOfPair: TAddress,
+	addressOfToken1: TAddress,
+	addressOfToken2: TAddress,
 	nameOfPair: string,
 	nameOfToken1: string,
-	addressOfToken1: string,
 	nameOfToken2: string,
-	addressOfToken2: string
 	priceOfToken1: number,
 	priceOfToken2: number,
 	hasPrice: boolean,
@@ -109,7 +109,7 @@ export type	TUserPairsPosition = {
 export type	TPairsContext = {
 	userPairsPosition: TDict<TUserPairsPosition>
 	pairs: TDict<TKeeperPair>,
-	getPairs: (_chainID: number | undefined) => Promise<void>,
+	getPairs: (_chainID: number) => Promise<void>,
 	getPairsBalance: (_chainID: number | undefined, _address: TAddress) => Promise<void>
 }
 

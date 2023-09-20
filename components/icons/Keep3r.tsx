@@ -2,7 +2,7 @@ import	React		from	'react';
 
 import type {ReactElement} from 'react';
 
-function	LogoKeep3r(props: React.SVGProps<SVGSVGElement>): ReactElement {
+function LogoKeep3r(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	return (
 		<svg
 			{...props}

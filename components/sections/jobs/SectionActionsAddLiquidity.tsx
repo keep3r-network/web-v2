@@ -4,24 +4,25 @@ import Input from 'components/Input';
 import TokenPairDropdown from 'components/TokenPairDropdown';
 import {useJob} from 'contexts/useJob';
 import {usePairs} from 'contexts/usePairs';
-import {addLiquidityToJob} from 'utils/actions/addLiquidityToJob';
-import {approveERC20} from 'utils/actions/approveToken';
-import {mint} from 'utils/actions/mint';
+import {addLiquidityToJob, approveERC20, mint} from 'utils/actions';
 import {getEnv} from 'utils/env';
+import {max} from 'utils/helpers';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 import {toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import {toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {parseUnits, toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {TUserPairsPosition} from 'contexts/types';
 import type {ReactElement} from 'react';
+import type {TAddress} from '@yearn-finance/web-lib/types';
+import type {TNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 
 
-function	PanelBridgeTokens(): ReactElement {
+function PanelBridgeTokens(): ReactElement {
 	const {chainID} = useChainID();
 	const chainName = useMemo((): string => {
 		if (chainID === 5) {
@@ -64,12 +65,12 @@ const defaultPairPosition: TUserPairsPosition = {
 	balanceOfToken2: toNormalizedBN(0),
 	allowanceOfToken2: toNormalizedBN(0)
 };
-function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
+function PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	const {address, provider, isActive} = useWeb3();
 	const {pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
 	const {safeChainID} = useChainID();
-	const [amountToken1, set_amountToken1] = useState('');
-	const [amountToken2, set_amountToken2] = useState('');
+	const [amountToken1, set_amountToken1] = useState<TNormalizedBN>(toNormalizedBN(0));
+	const [amountToken2, set_amountToken2] = useState<TNormalizedBN>(toNormalizedBN(0));
 	const [pair, set_pair] = useState(pairs[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]);
 	const [userPairPosition, set_userPairPosition] = useState<TUserPairsPosition>(defaultPairPosition);
 	const [txStatusApproveToken1, set_txStatusApproveToken1] = useState(defaultTxStatus);
@@ -81,47 +82,62 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || defaultPairPosition);
 	}, [pairs, userPairsPosition, chainID]);
 
-	async function	onApproveToken1(token: string, spender: string, amount: bigint): Promise<void> {
+	async function onApproveToken1(token: TAddress, spender: TAddress, amount: bigint): Promise<void> {
 		if (!isActive || txStatusApproveToken1.pending) {
 			return;
 		}
-		new Transaction(provider, approveERC20, set_txStatusApproveToken1)
-			.populate(token, spender, amount)
-			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getPairs(safeChainID), getPairsBalance(safeChainID, toAddress(address))]);
-			})
-			.perform();
+		const result = await approveERC20({
+			connector: provider,
+			contractAddress: token,
+			spenderAddress: spender,
+			amount: amount,
+			statusHandler: set_txStatusApproveToken1
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getPairs(safeChainID), getPairsBalance(safeChainID, toAddress(address))]);
+		}
 	}
 
-	async function	onApproveToken2(token: string, spender: string, amount: bigint): Promise<void> {
+	async function onApproveToken2(token: TAddress, spender: TAddress, amount: bigint): Promise<void> {
 		if (!isActive || txStatusApproveToken2.pending) {
 			return;
 		}
-		new Transaction(provider, approveERC20, set_txStatusApproveToken2)
-			.populate(token, spender, amount)
-			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getPairs(safeChainID), getPairsBalance(safeChainID, toAddress(address))]);
-			})
-			.perform();
+		const result = await approveERC20({
+			connector: provider,
+			contractAddress: token,
+			spenderAddress: spender,
+			amount: amount,
+			statusHandler: set_txStatusApproveToken2
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getPairs(safeChainID), getPairsBalance(safeChainID, toAddress(address))]);
+		}
 	}
 
-	async function	onMint(pairAddress: string, amount1: bigint, amount2: bigint): Promise<void> {
+	async function onMint(pairAddress: string, amount1: bigint, amount2: bigint): Promise<void> {
 		if (!isActive || txStatusMint.pending) {
 			return;
 		}
-		new Transaction(provider, mint, set_txStatusMint)
-			.populate(pairAddress, amount1, amount2)
-			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getPairs(safeChainID), getPairsBalance(safeChainID, toAddress(address))]);
-				performBatchedUpdates((): void => {
-					set_amountToken1('');
-					set_amountToken2('');
-				});
-			})
-			.perform();
+		const result = await mint({
+			connector: provider,
+			contractAddress: toAddress(pairAddress),
+			amountToken1: amount1,
+			amountToken2: amount2,
+			statusHandler: set_txStatusMint
+		});
+		if (result.isSuccessful) {
+			await Promise.all([
+				getPairs(safeChainID),
+				getPairsBalance(safeChainID, toAddress(address))
+			]);
+			performBatchedUpdates((): void => {
+				set_amountToken1(toNormalizedBN(0));
+				set_amountToken2(toNormalizedBN(0));
+			});
+		}
 	}
 
-	function	renderApproveOrMintButton(): ReactElement {
+	function renderApproveOrMintButton(): ReactElement {
 		const allowance1 = userPairPosition?.allowanceOfToken1;
 		const allowance2 = userPairPosition?.allowanceOfToken2;
 		const isAmountOverflow = (
@@ -137,7 +153,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 						onApproveToken1(
 							pair.addressOfToken1,
 							pair.addressOfPair,
-							toSafeAmount(amountToken1, userPairPosition?.balanceOfToken1 || 0)
+							max(amountToken1.raw, userPairPosition?.balanceOfToken1.raw)
 						);
 					}}
 					isBusy={txStatusApproveToken1.pending}
@@ -152,7 +168,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 						onApproveToken2(
 							pair.addressOfToken2,
 							pair.addressOfPair,
-							toSafeAmount(amountToken2, userPairPosition?.balanceOfToken2 || 0)
+							max(amountToken2.raw, userPairPosition?.balanceOfToken2.raw)
 						);
 					}}
 					isBusy={txStatusApproveToken2.pending}
@@ -166,8 +182,8 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 				onClick={(): void => {
 					onMint(
 						pair.addressOfPair,
-						toSafeAmount(amountToken1, userPairPosition?.balanceOfToken1 || 0),
-						toSafeAmount(amountToken2, userPairPosition?.balanceOfToken2 || 0)
+						max(amountToken1.raw, userPairPosition?.balanceOfToken1.raw),
+						max(amountToken2.raw, userPairPosition?.balanceOfToken2.raw)
 					);
 				}}
 				isBusy={txStatusMint.pending}
@@ -186,16 +202,40 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 					<div className={'mb-4 grid grid-cols-1 gap-4 md:grid-cols-2'} key={`numbers_${safeChainID}`}>
 						<Input.Bigint
 							label={'KP3R'}
-							value={amountToken1}
-							onSetValue={(s: string): void => set_amountToken1(s)}
-							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken2(s === '' ? '' : (Number(s) * pair.priceOfToken2).toString())}
+							value={String(amountToken1.normalized)}
+							onSetValue={(s: string): void => {
+								const asRaw = parseUnits(s);
+								set_amountToken1(toNormalizedBN(asRaw));
+							}}
+							onValueChange={(s: string): void => {
+								if (!pair.hasPrice) {
+									return;
+								}
+								if (s === '') {
+									return set_amountToken2(toNormalizedBN(0));
+								}
+								const value = Number(s) * pair.priceOfToken2;
+								set_amountToken2(toNormalizedBN(parseUnits(value)));
+							}}
 							maxValue={toBigInt(userPairPosition?.balanceOfToken1.raw)}
 							decimals={18} />
 						<Input.Bigint
 							label={'WETH'}
-							value={amountToken2}
-							onSetValue={(s: string): void => set_amountToken2(s)}
-							onValueChange={(s: string): void => !pair.hasPrice ? undefined : set_amountToken1(s === '' ? '' : (Number(s) * pair.priceOfToken1).toString())}
+							value={String(amountToken2.normalized)}
+							onSetValue={(s: string): void => {
+								const asRaw = parseUnits(s);
+								set_amountToken2(toNormalizedBN(asRaw));
+							}}
+							onValueChange={(s: string): void => {
+								if (!pair.hasPrice) {
+									return;
+								}
+								if (s === '') {
+									return set_amountToken1(toNormalizedBN(0));
+								}
+								const value = Number(s) * pair.priceOfToken1;
+								set_amountToken1(toNormalizedBN(parseUnits(value)));
+							}}
 							maxValue={toBigInt(userPairPosition?.balanceOfToken2.raw)}
 							decimals={18} />
 					</div>
@@ -208,7 +248,7 @@ function	PanelMintTokens({chainID}: {chainID: number}): ReactElement {
 	);
 }
 
-function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement {
+function SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement {
 	const {address, provider, isActive} = useWeb3();
 	const {pairs, getPairs, getPairsBalance, userPairsPosition} = usePairs();
 	const {jobStatus, getJobStatus} = useJob();
@@ -223,31 +263,40 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 		set_userPairPosition(userPairsPosition?.[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)] || defaultPairPosition);
 	}, [pairs, userPairsPosition, chainID]);
 
-	async function	onApprove(token: string, spender: string, amount: bigint): Promise<void> {
+	async function onApprove(token: TAddress, spender: TAddress, amount: bigint): Promise<void> {
 		if (!isActive || txStatusApprove.pending) {
 			return;
 		}
-		new Transaction(provider, approveERC20, set_txStatusApprove)
-			.populate(token, spender, amount)
-			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
-			})
-			.perform();
+		const result = await approveERC20({
+			connector: provider,
+			contractAddress: token,
+			spenderAddress: spender,
+			amount: amount,
+			statusHandler: set_txStatusApprove
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
+		}
 	}
 
-	async function	onAddLiquidityToJob(pairAddress: string, amount: bigint): Promise<void> {
+	async function onAddLiquidityToJob(pairAddress: TAddress, amount: bigint): Promise<void> {
 		if (!isActive || txStatusAddLiquidity.pending) {
 			return;
 		}
-		new Transaction(provider, addLiquidityToJob, set_txStatusAddLiquidity)
-			.populate(chainID, jobStatus.address, pairAddress, amount)
-			.onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
-			})
-			.perform();
+		const result = await addLiquidityToJob({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			jobAddress: jobStatus.address,
+			liquidityTokenAddress: pairAddress,
+			liquidityAmount: amount,
+			statusHandler: set_txStatusAddLiquidity
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getJobStatus(), getPairs(chainID), getPairsBalance(chainID, toAddress(address))]);
+		}
 	}
 
-	function	renderApproveOrAddLiquidityButton(): ReactElement {
+	function renderApproveOrAddLiquidityButton(): ReactElement {
 		const allowancePair = userPairPosition?.allowanceOfPair.normalized;
 		const isAmountOverflow = (
 			amountLpToken !== '' && (
@@ -276,7 +325,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 			<Button
 				onClick={(): void => {
 					onAddLiquidityToJob(
-						pair.addressOfPair,
+						toAddress(pair.addressOfPair),
 						toSafeAmount(`${Number(amountLpToken)}`, userPairPosition.balanceOfPair.raw)
 					);
 				}}
@@ -315,7 +364,7 @@ function	SectionActionsAddLiquidity({chainID}: {chainID: number}): ReactElement 
 	);
 }
 
-function	Wrapper({chainID}: {chainID: number}): ReactElement {
+function Wrapper({chainID}: {chainID: number}): ReactElement {
 	const {address} = useWeb3();
 	if ([1, 1337, 5].includes(chainID)) {
 		return (

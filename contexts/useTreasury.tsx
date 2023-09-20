@@ -6,6 +6,7 @@ import LENS_PRICE_ABI from 'utils/abi/lens.abi';
 import LOCKED_CVX_ABI from 'utils/abi/lockedCVX.abi';
 import YEARN_VAULT_ABI from 'utils/abi/yearnVault.abi';
 import {getEnv} from 'utils/env';
+import {zeroAddress} from 'viem';
 import {readContracts} from 'wagmi';
 import axios from 'axios';
 import {prepareWriteContract} from '@wagmi/core';
@@ -134,7 +135,8 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			address: '0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc',
 			abi: CURVE_FEE_DISTRIBUTOR_ABI,
 			functionName: 'claim',
-			args: [THE_KEEP3R_GOVERNANCE]
+			args: [THE_KEEP3R_GOVERNANCE],
+			walletClient: toAddress(zeroAddress) as any
 		});
 
 		let	rIndex = 0;

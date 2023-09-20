@@ -1,4 +1,4 @@
-import React, {createContext, useCallback, useContext, useState} from 'react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 import {request} from 'graphql-request';
 import KEEP3RV1_ABI from 'utils/abi/keep3rv1.abi';
 import UNI_V3_PAIR_ABI from 'utils/abi/univ3Pair.abi';
@@ -18,7 +18,7 @@ import type {ReactElement} from 'react';
 import type {TAddress, TDict, TNDict} from '@yearn-finance/web-lib/types';
 import type {TKeeperPair, TPairsContext, TUserPairsPosition} from './types';
 
-function	getPairsForChain(chainID: number): TDict<TKeeperPair> {
+function getPairsForChain(chainID: number): TDict<TKeeperPair> {
 	return ({
 		[toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR)]: {
 			addressOfUni: toAddress(getEnv(chainID).UNI_KP3R_WETH_ADDR),
@@ -54,7 +54,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 	**	pair is activated, the KEEP3R - WETH pair. We need to get a bunch of
 	**	data to correctly display and enable the actions for the user.
 	***************************************************************************/
-	const getPairs = useCallback(async (_chainID: number = chainID): Promise<void> => {
+	const getPairs = useCallback(async (_chainID: number): Promise<void> => {
 		const _chainPairs = getPairsForChain(_chainID);
 
 		for (const pair of Object.values(_chainPairs)) {
@@ -89,6 +89,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 						tokensOwed1: tokensOwed1
 					}
 				};
+				console.warn(_pair);
 				set_pairs((o: TNDict<TDict<TKeeperPair>>): TNDict<TDict<TKeeperPair>> => ({
 					...o,
 					[_chainID]: {
@@ -99,8 +100,8 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 				set_nonce((n: number): number => n + 1);
 			});
 		}
-	}, [chainID]);
-	useUpdateEffect((): void => {
+	}, []);
+	useEffect((): void => {
 		getPairs(chainID);
 	}, [getPairs, chainID]);
 
@@ -154,7 +155,7 @@ export const PairsContextApp = ({children}: {children: ReactElement}): ReactElem
 					...o,
 					[_chainID]: {
 						...o[_chainID],
-						[pair.addressOfPair]: _pair
+						[toAddress(pair.addressOfPair)]: _pair
 					}
 				}));
 				set_nonce((n: number): number => n + 1);

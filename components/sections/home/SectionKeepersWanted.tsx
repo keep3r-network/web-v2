@@ -12,7 +12,7 @@ import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
-function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
+function SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 	const {keeperStatus} = useKeep3r();
 	const selectedToken = useMemo((): string => toAddress(getEnv(chainID).KP3R_TOKEN_ADDR), [chainID]);
 	const [isModalBondOpen, set_isModalBondOpen] = useState(false);

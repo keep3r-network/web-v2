@@ -15,7 +15,7 @@ import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatched
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TWorkLogs = {
+type TWorkLogs = {
 	keeper: string,
 	time: number,
 	earned: string,
@@ -23,7 +23,7 @@ type		TWorkLogs = {
 	gwei: string,
 	txHash: string
 }
-function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
+function LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 	jobAddress: string,
 	searchTerm: string,
 	chainID: number
@@ -117,7 +117,7 @@ function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
 			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
@@ -128,7 +128,7 @@ function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
 			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}

@@ -10,7 +10,7 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	StatsCall(): ReactElement {
+function StatsCall(): ReactElement {
 	const router = useRouter();
 	const {data: stats} = useSWR(
 		router?.query?.address && router.query.chainID ? `/api/jobsCalls?&address=${router?.query?.address}&chainID=${router.query.chainID}` : null,

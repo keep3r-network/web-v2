@@ -6,7 +6,7 @@ import {Tab} from '@headlessui/react';
 
 import type {ReactElement} from 'react';
 
-function	SectionActions({chainID}: {chainID: number}): ReactElement {
+function SectionActions({chainID}: {chainID: number}): ReactElement {
 	return (
 		<div>
 			<Tab.Group>

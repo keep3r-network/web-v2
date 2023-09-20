@@ -13,7 +13,7 @@ import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatched
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TWorkLogs = {
+type TWorkLogs = {
 	keeper: string,
 	earnedUnit: string,
 	earned: string,
@@ -21,9 +21,9 @@ type		TWorkLogs = {
 	gwei: string,
 	workDone: number
 }
-type		TLogs = {searchTerm: string, chainID: number}
+type TLogs = {searchTerm: string, chainID: number}
 
-function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
+function LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 	const [isInit, set_isInit] = useState(false);
 	const [logs, set_logs] = useState<TWorkLogs[]>([]);
 
@@ -120,7 +120,7 @@ function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
 			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
@@ -131,7 +131,7 @@ function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
 			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}

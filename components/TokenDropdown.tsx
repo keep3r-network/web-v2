@@ -21,7 +21,7 @@ type	TTokenDropdown = {
 	chainID: number,
 	withKeeper?: boolean
 }
-function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
+function TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
 	const {safeChainID} = useChainID();
 	const keeperToken = useMemo((): TDropdownToken => ({
 		name: 'kLP-KP3R/WETH',
@@ -119,8 +119,8 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 }
   
 
-type		TTokenDropdownFake = {name: string}
-function	TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
+type TTokenDropdownFake = {name: string}
+function TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
 	return (
 		<div className={'flex flex-row items-center justify-between bg-grey-3 p-2'}>
 			<div className={'flex flex-row items-center space-x-2'}>

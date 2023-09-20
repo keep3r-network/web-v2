@@ -14,7 +14,7 @@ import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatched
 import type {TJobData} from 'contexts/types';
 import type {ReactElement} from 'react';
 
-function	deepFind(job: TJobData, term: string): boolean {
+function deepFind(job: TJobData, term: string): boolean {
 	if (term.length === 0) {
 		return true;
 	}
@@ -24,7 +24,7 @@ function	deepFind(job: TJobData, term: string): boolean {
 	);
 }
 
-function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
+function SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 	const {jobs, hasLoadedJobs} = useKeep3r();
 	const [jobsWithOrder, set_jobsWithOrder] = useState<TJobData[]>([]);
 	const [sortBy, set_sortBy] = useState<'totalCredits'|'-totalCredits'>('-totalCredits');

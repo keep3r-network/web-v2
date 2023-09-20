@@ -5,10 +5,10 @@ import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 
 import type {ReactElement} from 'react';
 
-type		TTokenPairDropdown = {
+type TTokenPairDropdown = {
 	name: string,
 }
-function	TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
+function TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
 	return (
 		<div className={'flex flex-row items-center justify-between bg-grey-3 p-2'}>
 			<div className={'flex flex-row items-center space-x-2'}>

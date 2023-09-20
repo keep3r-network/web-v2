@@ -2,7 +2,7 @@ import	React		from	'react';
 
 import type {ReactElement} from 'react';
 
-function	IconDiscourse(props: React.SVGProps<SVGSVGElement>): ReactElement {
+function IconDiscourse(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	return (
 		<svg
 			{...props}

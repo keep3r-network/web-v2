@@ -7,7 +7,7 @@ import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
-function	Treasury(): ReactElement {
+function Treasury(): ReactElement {
 	const {treasury} = useTreasury();
 	const [tvlUSD, set_tvlUSD] = useState<number>(0);
 

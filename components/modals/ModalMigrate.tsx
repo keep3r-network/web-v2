@@ -4,8 +4,7 @@ import Input from 'components/Input';
 import {useJob} from 'contexts/useJob';
 import {useKeep3r} from 'contexts/useKeep3r';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import {acceptJobMigration} from 'utils/actions/acceptJobMigration';
-import {migrateJob} from 'utils/actions/migrateJob';
+import {acceptJobMigration, migrateJob} from 'utils/actions';
 import {getEnv} from 'utils/env';
 import {zeroAddress} from 'viem';
 import {readContracts} from 'wagmi';
@@ -15,7 +14,7 @@ import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
 import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
 import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
 import {decodeAsAddress, decodeAsBoolean} from '@yearn-finance/web-lib/utils/decoder';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 import type {TAddress} from '@yearn-finance/web-lib/types';
@@ -69,40 +68,36 @@ function ModalMigrate({currentAddress, chainID, isOpen, onClose}: TModalMigrate)
 		}
 	}, [jobStatus.pendingJobMigrations]);
 
-	async function	onMigrateJob(): Promise<void> {
+	async function onMigrateJob(): Promise<void> {
 		if (!isActive || txStatusMigrate.pending) {
 			return;
 		}
-		const transaction = (
-			new Transaction(provider, migrateJob, set_txStatusMigrate).populate(
-				chainID,
-				currentAddress,
-				newAddress
-			).onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getKeeperStatus()]);
-				set_time(60);
-			})
-		);
-
-		await transaction.perform();
+		const result = await migrateJob({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			oldJobAddress: toAddress(currentAddress),
+			newJobAddress: toAddress(newAddress),
+			statusHandler: set_txStatusMigrate
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getJobStatus(), getKeeperStatus()]);
+			set_time(60);
+		}
 	}
 
-	async function	onAcceptMigration(): Promise<void> {
+	async function onAcceptMigration(): Promise<void> {
 		if (!isActive || txStatusAccept.pending) {
 			return;
 		}
-		const transaction = (
-			new Transaction(provider, acceptJobMigration, set_txStatusAccept).populate(
-				chainID,
-				currentAddress,
-				newAddress
-			).onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobStatus(), getJobs(), getKeeperStatus()]);
-			})
-		);
-
-		const isSuccessful = await transaction.perform();
-		if (isSuccessful) {
+		const result = await acceptJobMigration({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			oldJobAddress: toAddress(currentAddress),
+			newJobAddress: toAddress(newAddress),
+			statusHandler: set_txStatusAccept
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getJobStatus(), getJobs(), getKeeperStatus()]);
 			set_newAddress('');
 			onClose();
 			router.push(`/jobs/${newAddress}`);
