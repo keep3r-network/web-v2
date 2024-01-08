@@ -33,7 +33,7 @@ function	Footer(): ReactElement {
 				</div>
 				<div className={'cursor-pointer px-2 text-black transition-colors hover:text-black-2'}>
 					<a
-						href={'https://medium.com/iearn'}
+						href={'https://medium.com/keep3r-network'}
 						target={'_blank'}
 						rel={'noreferrer'}>
 						<span className={'sr-only'}>{'Check our Medium'}</span>
