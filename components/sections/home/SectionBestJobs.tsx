@@ -6,15 +6,15 @@ import Input from 'components/Input';
 import {ModalRegisterJobs} from 'components/modals/ModalRegisterJobs';
 import {useKeep3r} from 'contexts/useKeep3r';
 import {Button} from '@yearn-finance/web-lib/components/Button';
-import ArrowDown from '@yearn-finance/web-lib/icons/IconArrowDown';
+import {IconArrowDown} from '@yearn-finance/web-lib/icons/IconArrowDown';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {formatBigNumberAsAmount} from '@yearn-finance/web-lib/utils/format.bigNumber';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
-import type {TJobData} from 'contexts/useKeep3r.d';
+import type {TJobData} from 'contexts/types';
 import type {ReactElement} from 'react';
 
-function	deepFind(job: TJobData, term: string): boolean {
+function deepFind(job: TJobData, term: string): boolean {
 	if (term.length === 0) {
 		return true;
 	}
@@ -24,20 +24,20 @@ function	deepFind(job: TJobData, term: string): boolean {
 	);
 }
 
-function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
-	const	{jobs, hasLoadedJobs} = useKeep3r();
-	const	[jobsWithOrder, set_jobsWithOrder] = useState<TJobData[]>([]);
-	const	[sortBy, set_sortBy] = useState<'totalCredits'|'-totalCredits'>('-totalCredits');
-	const	[searchTerm, set_searchTerm] = useState('');
-	const	[, set_nonce] = useState(0);
-	const	[isModalRegisterJobOpen, set_isModalRegisterJobOpen] = useState(false);
+function SectionBestJobs({chainID}: {chainID: number}): ReactElement {
+	const {jobs, hasLoadedJobs} = useKeep3r();
+	const [jobsWithOrder, set_jobsWithOrder] = useState<TJobData[]>([]);
+	const [sortBy, set_sortBy] = useState<'totalCredits'|'-totalCredits'>('-totalCredits');
+	const [searchTerm, set_searchTerm] = useState('');
+	const [, set_nonce] = useState(0);
+	const [isModalRegisterJobOpen, set_isModalRegisterJobOpen] = useState(false);
 
 	useEffect((): void => {
-		const	_jobsWithOrder = jobs.sort((a: TJobData, b: TJobData): number => {
+		const _jobsWithOrder = jobs.sort((a: TJobData, b: TJobData): number => {
 			if (sortBy === '-totalCredits') {
-				return b.totalCreditsNormalized - a.totalCreditsNormalized;
+				return Number(b.totalCredits.normalized) - Number(a.totalCredits.normalized);
 			} 
-			return a.totalCreditsNormalized - b.totalCreditsNormalized;
+			return Number(a.totalCredits.normalized) - Number(b.totalCredits.normalized);
 			
 		});
 		performBatchedUpdates((): void => {
@@ -49,7 +49,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 	return (
 		<section aria-label={'BEST JOBS IN THE NETWORK'}>
 			<h2 className={'text-xl font-bold'}>{'BEST JOBS IN THE NETWORK'}</h2>
-			<div className={'mt-4 mb-6 flex flex-col gap-4 md:flex-row'}>
+			<div className={'mb-6 mt-4 flex flex-col gap-4 md:flex-row'}>
 				<Input
 					className={'min-w-[336px]'}
 					value={searchTerm}
@@ -71,7 +71,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 					onClick={(): void => set_sortBy(sortBy === 'totalCredits' ? '-totalCredits' : 'totalCredits')}
 					className={'col-span-2 flex cursor-pointer flex-row space-x-2 md:col-span-1'}>
 					<p>{'Total credits'}</p>
-					<ArrowDown className={`h-6 w-6 transition-transform ${sortBy === 'totalCredits' ? 'rotate-180' : 'rotate-0'}`}/>
+					<IconArrowDown className={`h-6 w-6 transition-transform ${sortBy === 'totalCredits' ? 'rotate-180' : 'rotate-0'}`}/>
 				</div>
 			</div>
 			<div className={'col-span-2 flex min-h-[112px] flex-col md:col-span-1'}>
@@ -82,7 +82,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 				) : null}
 				{jobsWithOrder.map((job, index): ReactElement => (
 					<Link href={`/jobs/${chainID}/${job.address}`} key={index}>
-						<div className={'grid cursor-pointer grid-cols-3 gap-4 bg-white py-6 px-4 transition-colors hover:bg-grey-4 md:gap-2'}>
+						<div className={'grid cursor-pointer grid-cols-3 gap-4 bg-white px-4 py-6 transition-colors hover:bg-grey-4 md:gap-2'}>
 							<div className={'col-span-2 space-y-2'}>
 								<div className={'flex flex-row items-center'}>
 									<b className={'overflow-hidden text-ellipsis pr-2 text-xl md:pr-0'}>
@@ -97,7 +97,7 @@ function	SectionBestJobs({chainID}: {chainID: number}): ReactElement {
 							</div>
 							<div className={'space-y-2'}>
 								<b className={'text-xl'}>
-									{formatBigNumberAsAmount(job.totalCredits, 18, 2)}
+									{formatBigNumberAsAmount(job.totalCredits.raw, 18, 2)}
 								</b>
 								<p className={'text-grey-1'}>{'KP3R'}</p>
 							</div>

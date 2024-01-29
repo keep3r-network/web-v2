@@ -7,20 +7,21 @@ import {useKeep3r} from 'contexts/useKeep3r';
 import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
-import {formatBN, formatToNormalizedAmount} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toBigInt} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
-function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
-	const	{keeperStatus} = useKeep3r();
-	const	selectedToken = useMemo((): string => toAddress(getEnv(chainID).KP3R_TOKEN_ADDR), [chainID]);
-	const	[isModalBondOpen, set_isModalBondOpen] = useState(false);
-	const	[isModalUnBondOpen, set_isModalUnBondOpen] = useState(false);
+function SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
+	const {keeperStatus} = useKeep3r();
+	const selectedToken = useMemo((): string => toAddress(getEnv(chainID).KP3R_TOKEN_ADDR), [chainID]);
+	const [isModalBondOpen, set_isModalBondOpen] = useState(false);
+	const [isModalUnBondOpen, set_isModalUnBondOpen] = useState(false);
 
 	return (
 		<section aria-label={'KEEPERS WANTED'}>
 			<h2 className={'text-xl font-bold'}>{'KEEPERS WANTED'}</h2>
-			<div className={'mt-4 mb-6'}>
+			<div className={'mb-6 mt-4'}>
 				<p>{'Join '}<a className={'underline'} href={'#'}>{'keep3r.network'}</a>{' as a keeper, help running decentralized infrastructures and get paid for this. '}</p>
 			</div>
 
@@ -36,7 +37,7 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${formatBN(keeperStatus?.balanceOf).isZero() ? '0.000000' : formatToNormalizedAmount(keeperStatus?.balanceOf, 18)} KP3R`}
+									{`${toBigInt(keeperStatus?.balanceOf.raw) === 0n ? '0.000000' : formatAmount(keeperStatus?.balanceOf.normalized)} KP3R`}
 								</p>
 							</div>
 						</dd>
@@ -50,7 +51,7 @@ function	SectionKeepersWanted({chainID}: {chainID: number}): ReactElement {
 							</div>
 							<div className={'flex justify-end'}>
 								<p className={'bg-grey-5 pl-1 text-right'}>
-									{`${formatBN(keeperStatus?.bonds).isZero() ? '0.000000' : formatToNormalizedAmount(keeperStatus.bonds, 18)} KP3R`}
+									{`${toBigInt(keeperStatus?.bonds.raw) === 0n ? '0.000000' : formatAmount(keeperStatus.bonds.normalized)} KP3R`}
 								</p>
 							</div>
 						</dd>

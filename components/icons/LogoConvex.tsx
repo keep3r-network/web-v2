@@ -2,7 +2,7 @@ import	React		from	'react';
 
 import type {ReactElement} from 'react';
 
-function	LogoConvex(props: React.SVGProps<SVGSVGElement>): ReactElement {
+function LogoConvex(props: React.SVGProps<SVGSVGElement>): ReactElement {
 	return (
 		<svg
 			{...props}

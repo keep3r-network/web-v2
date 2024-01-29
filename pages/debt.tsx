@@ -8,23 +8,22 @@ import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
-const	fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
+const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Debt(): ReactElement {
-	const	{debt} = useDebt();
-	const	[tvlUSD, set_tvlUSD] = useState<number>(0);
-
-	const	{data: ibAPIData} = useSWR('https://api.ib.xyz/api/v1/itoken?comptroller=eth', fetcher);
+function Debt(): ReactElement {
+	const {debt} = useDebt();
+	const [tvlUSD, set_tvlUSD] = useState<number>(0);
+	const {data: ibAPIData} = useSWR('https://api.ib.xyz/api/v1/itoken?comptroller=eth', fetcher);
 
 	useEffect((): void => {
-		const	totalUSD = debt.reduce((acc, curr): number => acc + curr.totalBorrowValue, 0);
+		const totalUSD = debt.reduce((acc, curr): number => acc + curr.totalBorrowValue, 0);
 		set_tvlUSD(totalUSD);
 	}, [debt]);
 
 	return (
 		<>
 			<section aria-label={'general statistics'} className={'mb-6 bg-grey-3'}>
-				<div className={'flex items-center justify-center py-6 px-4 md:px-0'}>
+				<div className={'flex items-center justify-center px-4 py-6 md:px-0'}>
 					<div className={'space-y-2 text-center'}>
 						<p>{'Debt'}</p>
 						<div>
@@ -41,9 +40,9 @@ function	Debt(): ReactElement {
 						debt
 							.sort((a, b): number => b.totalBorrowValue - a.totalBorrowValue)
 							.map((debt): ReactElement => {
-								const	data = ibAPIData?.find((ib: any): boolean => ib.underlying_symbol.toLowerCase() === debt.name.toLowerCase());
+								const data = ibAPIData?.find((ib: any): boolean => ib.underlying_symbol.toLowerCase() === debt.name.toLowerCase());
 								return (
-									<div key={debt.name} className={'bg-white p-6 md:pt-6 md:pl-6 md:pr-10 md:pb-8'}>
+									<div key={debt.name} className={'bg-white p-6 md:pb-8 md:pl-6 md:pr-10 md:pt-6'}>
 										<p>{debt.name}</p>
 										<div className={'mt-2 flex flex-row items-center space-x-10 md:space-x-10'}>
 											<div className={'flex flex-col justify-center space-y-1'}>
@@ -79,11 +78,11 @@ function	Debt(): ReactElement {
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{`Debt, ${debt.name}`}</span>
-														{formatAmount(balance.normalized, 2, 2)}
+														{formatAmount(balance.amount.normalized, 2, 2)}
 													</p>
 													<p className={'flex flex-row justify-between text-left md:block md:text-right'}>
 														<span className={'block text-xs text-neutral-400 md:hidden'}>{'Debt, $'}</span>
-														{formatAmount(balance.normalizedValue, 2, 2)}
+														{formatAmount(balance.value, 2, 2)}
 													</p>
 												</div>
 											))}

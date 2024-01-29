@@ -10,15 +10,15 @@ import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	StatsCall(): ReactElement {
-	const	router = useRouter();
-	const	{data: stats} = useSWR(
+function StatsCall(): ReactElement {
+	const router = useRouter();
+	const {data: stats} = useSWR(
 		router?.query?.address && router.query.chainID ? `/api/jobsCalls?&address=${router?.query?.address}&chainID=${router.query.chainID}` : null,
 		fetcher,
 		{shouldRetryOnError: false}
 	);
 
-	const	chainID = useMemo((): number => {
+	const chainID = useMemo((): number => {
 		let	currentChainID = parseInt(router?.query?.chainID as string, 10);
 		if (currentChainID === undefined || currentChainID === null || isNaN(Number(currentChainID))) {
 			currentChainID = 1;
@@ -27,10 +27,10 @@ function	StatsCall(): ReactElement {
 	}, [router?.query?.chainID]);
 
 
-	const	[searchTerm, set_searchTerm] = useState('');
+	const [searchTerm, set_searchTerm] = useState('');
 
 	return (
-		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto mb-10 mt-6 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-6 flex flex-row items-center space-x-2'}>
 				<p>
 					<Link href={'/'}>{'Jobs / '}</Link>

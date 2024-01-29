@@ -1,14 +1,14 @@
 import React from 'react';
 import IconKeep3r from 'components/icons/IconKeep3r';
 import IconWEth from 'components/icons/IconWEth';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 
 import type {ReactElement} from 'react';
 
-type		TTokenPairDropdown = {
+type TTokenPairDropdown = {
 	name: string,
 }
-function	TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
+function TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
 	return (
 		<div className={'flex flex-row items-center justify-between bg-grey-3 p-2'}>
 			<div className={'flex flex-row items-center space-x-2'}>
@@ -18,7 +18,7 @@ function	TokenPairDropdown({name}: TTokenPairDropdown): ReactElement {
 				</div>
 				<b>{name}</b>
 			</div>
-			<Chevron className={'-rotate-90 opacity-0'}/>
+			<IconChevron className={'-rotate-90 opacity-0'}/>
 		</div>
 	);
 }

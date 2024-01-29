@@ -1,15 +1,14 @@
-import {Contract} from 'ethcall';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
+import {readContract} from '@wagmi/core';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
-import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
 
 import type {NextApiRequest, NextApiResponse} from 'next';
-import type {TDisputeData} from 'utils/types.d';
+import type {TDisputeData} from 'utils/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<NextApiResponse | any> {
-	const	{chainID} = req.query;
+	const {chainID} = req.query;
 
 	//Initial values
 	let	slashersList: string[] = [];
@@ -23,15 +22,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 	}
 
 	//Actual action
-	const	ethcallProvider = await newEthCallProvider(getProvider(1));
-	const	keep3rV2 = new Contract(
-		getEnv(currentChainID).KEEP3R_V2_ADDR,
-		KEEP3RV2_ABI
-	);
-	const	[slashers, disputers, results] = await Promise.allSettled([
+	const [slashers, disputers, results] = await Promise.allSettled([
 		axios.get(`${getEnv(currentChainID).BACKEND_URI}/slashers`),
 		axios.get(`${getEnv(currentChainID).BACKEND_URI}/disputers`),
-		ethcallProvider.tryAll([keep3rV2.governance()])
+		readContract({
+			address: getEnv(currentChainID).KEEP3R_V2_ADDR,
+			abi: KEEP3RV2_ABI,
+			functionName: 'governance'
+		})
 	]);
 
 	//Safechecks
@@ -42,11 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 		disputersList = disputers.value.data.map((s: string): string => toAddress(s));
 	}
 	if (results.status === 'fulfilled') {
-		governance = toAddress(results.value[0] as string);
+		governance = toAddress(results.value);
 	}
 
 	//Assignation
-	const	disputeStats: TDisputeData = {
+	const disputeStats: TDisputeData = {
 		slashers: slashersList,
 		disputers: disputersList,
 		governance: governance

@@ -4,15 +4,15 @@ import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 import {useLocalStorage} from '@yearn-finance/web-lib/hooks/useLocalStorage';
 
 import type {ReactElement} from 'react';
-import type * as usePricesTypes from './usePrices.d';
+import type {TPriceElement, TPricesContext} from './types';
 
-const	PricesContext = createContext<usePricesTypes.TPricesContext>({prices: {}});
+const PricesContext = createContext<TPricesContext>({prices: {}});
 export const PricesContextApp = ({children}: {children: ReactElement}): React.ReactElement => {
-	const	{chainID} = useChainID();
-	const	[nonce, set_nonce] = useState(0);
-	const	[prices, set_prices] = useLocalStorage('prices', {}) as [
-		usePricesTypes.TPriceElement,
-		(prices: usePricesTypes.TPriceElement) => void
+	const {chainID} = useChainID();
+	const [, set_nonce] = useState(0);
+	const [prices, set_prices] = useLocalStorage('prices', {}) as [
+		TPriceElement,
+		(prices: TPriceElement) => void
 	];
 
 	/**************************************************************************
@@ -21,7 +21,7 @@ export const PricesContextApp = ({children}: {children: ReactElement}): React.Re
 	useEffect((): void => {
 		axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${process.env.CG_IDS}&vs_currencies=usd,eth`).then(({data}): void => {
 			set_prices(data);
-			set_nonce(nonce + 1);
+			set_nonce((n): number => n + 1);
 		});
 	}, [chainID]);
 
@@ -32,5 +32,5 @@ export const PricesContextApp = ({children}: {children: ReactElement}): React.Re
 	);
 };
 
-export const usePrices = (): usePricesTypes.TPricesContext => useContext(PricesContext);
+export const usePrices = (): TPricesContext => useContext(PricesContext);
 export default usePrices;

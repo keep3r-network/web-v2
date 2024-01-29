@@ -2,12 +2,12 @@ import React from 'react';
 
 import type {ReactElement} from 'react';
 
-function	SectionDocumentation(): ReactElement {
+function SectionDocumentation(): ReactElement {
 	return (
 		<div className={'grid grid-cols-2 gap-10'}>
 			<section aria-label={'ADD LIQUIDITY'}>
 				<b className={'text-xl'}>{'ADD LIQUIDITY'}</b>
-				<div aria-label={'Mint tokens (Optional)'} className={'mt-4 mb-10 space-y-4'}>
+				<div aria-label={'Mint tokens (Optional)'} className={'mb-10 mt-4 space-y-4'}>
 					<b className={'text-intermediate'}>{'Mint tokens (Optional)'}</b>
 					<p>{'Provide liquidity to Uniswap v3 full-range position to mint kLP tokens. kLP tokens represent your position in the pool and can be redeemed for underlying assets.'}</p>
 					<p>
@@ -51,7 +51,7 @@ function	SectionDocumentation(): ReactElement {
 
 			<section aria-label={'WITHDRAW LIQUIDITY'}>
 				<b className={'text-xl'}>{'WITHDRAW LIQUIDITY'}</b>
-				<div aria-label={'Unbond and Withdraw'} className={'mt-4 mb-[42px] space-y-4'}>
+				<div aria-label={'Unbond and Withdraw'} className={'mb-[42px] mt-4 space-y-4'}>
 					<b className={'text-intermediate'}>{'Unbond and Withdraw'}</b>
 					<p>{'If your job isn\'t necessary anymore, you are able to unbond your kLPs from it and withdraw the underlying tokens after the unbonding period has passed (default 14 days).'}</p>
 					<p className={'pb-6'}>
@@ -64,7 +64,7 @@ function	SectionDocumentation(): ReactElement {
 
 				<div aria-label={'MANAGE DIRECTLY'} className={'mb-10 space-y-4'}>
 					<b className={'text-xl'}>{'MANAGE DIRECTLY'}</b>
-					<div aria-label={'Add tokens directly'} className={'mt-4 mb-[42px] space-y-4'}>
+					<div aria-label={'Add tokens directly'} className={'mb-[42px] mt-4 space-y-4'}>
 						<b className={'text-intermediate'}>{'Add tokens directly'}</b>
 						<p>{'Pay keepers directly by sending tokens. This method is direct expense – consider providing liquidity cause you will get your liquidity back once you are done paying keepers.'}</p>
 						<p className={'pb-6'}>

@@ -6,14 +6,14 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TWorkLogs = {
+type TWorkLogs = {
 	keeper: string,
 	earnedUnit: string,
 	earned: string,
@@ -21,11 +21,11 @@ type		TWorkLogs = {
 	gwei: string,
 	workDone: number
 }
-type		TLogs = {searchTerm: string, chainID: number}
+type TLogs = {searchTerm: string, chainID: number}
 
-function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
-	const	[isInit, set_isInit] = useState(false);
-	const	[logs, set_logs] = useState<TWorkLogs[]>([]);
+function LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
+	const [isInit, set_isInit] = useState(false);
+	const [logs, set_logs] = useState<TWorkLogs[]>([]);
 
 	useEffect((): void => {
 		axios.get(`${getEnv(chainID, false).BACKEND_URI}/works/keepers`)
@@ -120,23 +120,23 @@ function	LogsStatsPerKeeper({searchTerm, chainID}: TLogs): ReactElement {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
-			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
-			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);

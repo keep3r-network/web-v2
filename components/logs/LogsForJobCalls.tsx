@@ -5,17 +5,17 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
-import IconLinkOut from '@yearn-finance/web-lib/icons/IconLinkOut';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconLinkOut} from '@yearn-finance/web-lib/icons/IconLinkOut';
 import {toAddress, truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {formatToNormalizedAmount} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TWorkLogs = {
+type TWorkLogs = {
 	keeper: string,
 	time: number,
 	earned: string,
@@ -23,14 +23,14 @@ type		TWorkLogs = {
 	gwei: string,
 	txHash: string
 }
-function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
+function LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 	jobAddress: string,
 	searchTerm: string,
 	chainID: number
 }): ReactElement {
-	const	[selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
-	const	[isInit, set_isInit] = useState(false);
-	const	[logs, set_logs] = useState<TWorkLogs[]>([]);
+	const [selectedExplorer, set_selectedExplorer] = useState(getEnv(chainID).EXPLORER);
+	const [isInit, set_isInit] = useState(false);
+	const [logs, set_logs] = useState<TWorkLogs[]>([]);
 
 	useEffect((): void => {
 		axios.get(`${getEnv(chainID).BACKEND_URI}/job/${toAddress(jobAddress)}`)
@@ -54,9 +54,9 @@ function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 			).map((log): unknown => ({
 				date: formatDate(Number(log.time) * 1000, true),
 				keeper: truncateHex(log.keeper, 5),
-				spentKp3r: formatToNormalizedAmount(log?.earned || '0', 18),
-				fees: formatToNormalizedAmount(log?.fees || '0', 18),
-				gweiPerCall: formatToNormalizedAmount(log?.gwei || '0', 9),
+				spentKp3r: formatAmount(toNormalizedBN(log?.earned, 18).normalized, 2, 2),
+				fees: formatAmount(toNormalizedBN(log?.fees, 18).normalized, 2, 2),
+				gweiPerCall: formatAmount(toNormalizedBN(log?.gwei, 9).normalized, 2, 2),
 				linkOut: log?.txHash || ''
 			}))
 	), [logs, searchTerm]);
@@ -117,23 +117,23 @@ function	LogsForJobCalls({jobAddress, searchTerm, chainID}: {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
-			return (<Chevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 cursor-pointer'}
 				onClick={previousPage} />
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
-			return (<Chevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
+			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}
 		return (
-			<Chevron
+			<IconChevron
 				className={'h-4 w-4 rotate-180 cursor-pointer'}
 				onClick={nextPage} />
 		);

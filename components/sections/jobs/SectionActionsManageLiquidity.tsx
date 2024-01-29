@@ -2,57 +2,54 @@ import React, {useEffect, useState} from 'react';
 import Input from 'components/Input';
 import {useJob} from 'contexts/useJob';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {Contract} from 'ethcall';
-import {ethers} from 'ethers';
-import ERC20_ABI from 'utils/abi/keep3rv1.abi';
 import KEEP3RV2_ABI from 'utils/abi/keep3rv2.abi';
-import {addTokenCreditsToJob} from 'utils/actions/addTokenCreditsToJob';
-import {approveERC20} from 'utils/actions/approveToken';
-import {withdrawTokenCreditsFromJob} from 'utils/actions/withdrawTokenCreditsFromJob';
+import {addTokenCreditsToJob, approveERC20, withdrawTokenCreditsFromJob} from 'utils/actions';
 import {getEnv} from 'utils/env';
+import {max} from 'utils/helpers';
+import {erc20ABI, readContracts} from '@wagmi/core';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
-import {formatUnits, toSafeAmount} from '@yearn-finance/web-lib/utils/format';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
-import {getProvider, newEthCallProvider} from '@yearn-finance/web-lib/utils/web3/providers';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {decodeAsBigInt, decodeAsNumber, decodeAsString} from '@yearn-finance/web-lib/utils/decoder';
+import {parseUnits, toBigInt, toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
+import type {TAddress} from '@yearn-finance/web-lib/types';
+import type {TNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 
-function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive, address} = useWeb3();
-	const	{getJobs, getKeeperStatus} = useKeep3r();
-	const	{jobStatus, getJobStatus} = useJob();
-	const	[txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
-	const	[txStatusAddCredits, set_txStatusAddCredits] = useState(defaultTxStatus);
-	const	[tokenToAdd, set_tokenToAdd] = useState('');
-	const	[amountTokenToAdd, set_amountTokenToAdd] = useState('');
-	const	[tokenToAddData, set_tokenToAddData] = useState({
-		balanceOf: ethers.constants.Zero,
-		allowance: ethers.constants.Zero,
+function SectionAddToken({chainID}: {chainID: number}): ReactElement {
+	const {provider, isActive, address} = useWeb3();
+	const {getJobs, getKeeperStatus} = useKeep3r();
+	const {jobStatus, getJobStatus} = useJob();
+	const [txStatusApprove, set_txStatusApprove] = useState(defaultTxStatus);
+	const [txStatusAddCredits, set_txStatusAddCredits] = useState(defaultTxStatus);
+	const [tokenToAdd, set_tokenToAdd] = useState('');
+	const [amountTokenToAdd, set_amountTokenToAdd] = useState<TNormalizedBN>(toNormalizedBN(0));
+	const [tokenToAddData, set_tokenToAddData] = useState({
+		balanceOf: toNormalizedBN(0),
+		allowance: toNormalizedBN(0),
 		decimals: 18,
 		symbol: ''
 	});
 
-	async function	getTokenToAdd(_tokenToAdd: string): Promise<void> {
-		const	_provider = provider || getProvider(1);
-		const	ethcallProvider = await newEthCallProvider(_provider);
-		const	tokenToAddContract = new Contract(_tokenToAdd as string, ERC20_ABI);
-		const	results = await ethcallProvider.tryAll([
-			tokenToAddContract.balanceOf(address),
-			tokenToAddContract.allowance(address, getEnv(chainID).KEEP3R_V2_ADDR),
-			tokenToAddContract.decimals(),
-			tokenToAddContract.symbol()
-		]) as unknown[];
-
+	async function getTokenToAdd(_tokenToAdd: string): Promise<void> {
+		const results = await readContracts({
+			contracts: [
+				{address: toAddress(_tokenToAdd), abi: erc20ABI, functionName: 'balanceOf', args: [toAddress(address)]},
+				{address: toAddress(_tokenToAdd), abi: erc20ABI, functionName: 'allowance', args: [toAddress(address), getEnv(chainID).KEEP3R_V2_ADDR]},
+				{address: toAddress(_tokenToAdd), abi: erc20ABI, functionName: 'decimals'},
+				{address: toAddress(_tokenToAdd), abi: erc20ABI, functionName: 'symbol'}
+			]
+		});
 		performBatchedUpdates((): void => {
-			const	[balanceOf, allowance, decimals, symbol] = results;
+			const decimals = decodeAsNumber(results[2]);
 			set_tokenToAddData({
-				balanceOf: balanceOf as ethers.BigNumber,
-				allowance: allowance as ethers.BigNumber,
-				decimals: decimals as number,
-				symbol: symbol as string
+				balanceOf: toNormalizedBN(decodeAsBigInt(results[0]), decimals),
+				allowance: toNormalizedBN(decodeAsBigInt(results[1]), decimals),
+				decimals: decodeAsNumber(results[2]),
+				symbol: decodeAsString(results[3])
 			});
 		});
 	}
@@ -63,52 +60,54 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 				getTokenToAdd(tokenToAdd);
 			} else {
 				performBatchedUpdates((): void => {
-					set_amountTokenToAdd('');
+					set_amountTokenToAdd(toNormalizedBN(0));
 					set_tokenToAddData({
-						balanceOf: ethers.constants.Zero,
-						allowance: ethers.constants.Zero,
+						balanceOf: toNormalizedBN(0),
+						allowance: toNormalizedBN(0),
 						decimals: 18,
 						symbol: ''
 					});
 				});
 			}
 		}
-	}, [tokenToAdd, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [tokenToAdd, provider, chainID]);
 
-	async function	onApprove(): Promise<void> {
+	async function onApprove(): Promise<void> {
 		if (!isActive || txStatusApprove.pending) {
 			return;
 		}
-		new Transaction(provider, approveERC20, set_txStatusApprove)
-			.populate(
-				tokenToAdd,
-				getEnv(chainID).KEEP3R_V2_ADDR,
-				toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
-			).onSuccess(async (): Promise<void> => {
-				await getTokenToAdd(tokenToAdd);
-			}).perform();
+		const result = await approveERC20({
+			connector: provider,
+			contractAddress: toAddress(tokenToAdd),
+			spenderAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			amount: max(amountTokenToAdd.raw, tokenToAddData?.balanceOf.raw),
+			statusHandler: set_txStatusApprove
+		});
+		if (result.isSuccessful) {
+			await getTokenToAdd(tokenToAdd);
+		}
 	}
 
-	async function	onAddTokenCreditsToJob(): Promise<void> {
+	async function onAddTokenCreditsToJob(): Promise<void> {
 		if (!isActive || txStatusAddCredits.pending) {
 			return;
 		}
-		new Transaction(provider, addTokenCreditsToJob, set_txStatusAddCredits)
-			.populate(
-				chainID,
-				jobStatus.address,
-				tokenToAdd,
-				toSafeAmount(amountTokenToAdd, tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18)
-			).onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToAdd(tokenToAdd)]);
-				set_amountTokenToAdd('');
-			}).perform();
-		
+		const result = await addTokenCreditsToJob({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			jobAddress: jobStatus.address,
+			tokenAddress: toAddress(tokenToAdd),
+			tokenAmount: max(amountTokenToAdd.raw, tokenToAddData.balanceOf.raw),
+			statusHandler: set_txStatusAddCredits
+		});
+		if (result.isSuccessful) {
+			await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToAdd(tokenToAdd)]);
+			set_amountTokenToAdd(toNormalizedBN(0));
+		}
 	}
 
-	function	addButton(): ReactElement {
-		const	allowance = ethers.utils.formatUnits(tokenToAddData?.allowance || 0, tokenToAddData?.decimals || 18);
-		if (Number(allowance) < Number(amountTokenToAdd)) {
+	function addButton(): ReactElement {
+		if (toBigInt(tokenToAddData.allowance.raw) < toBigInt(amountTokenToAdd.raw)) {
 			return (
 				<Button
 					onClick={onApprove}
@@ -116,8 +115,8 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 					isDisabled={
 						!isActive
 						|| isZeroAddress(tokenToAdd)
-						|| amountTokenToAdd === '' || Number(amountTokenToAdd) === 0 
-						|| Number(amountTokenToAdd) > Number(formatUnits(tokenToAddData?.balanceOf || ethers.constants.Zero, tokenToAddData?.decimals || 18))
+						|| toBigInt(amountTokenToAdd.raw) === 0n
+						|| toBigInt(amountTokenToAdd.raw) > toBigInt(tokenToAddData.balanceOf.raw)
 					}>
 					{txStatusApprove.error ? 'Transaction failed' : txStatusApprove.success ? 'Transaction successful' : 'Approve'}
 				</Button>
@@ -130,9 +129,8 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 				isBusy={txStatusAddCredits.pending}
 				isDisabled={
 					!isActive
-					|| (tokenToAddData.balanceOf || ethers.constants.Zero).eq(0)
-					|| Number(amountTokenToAdd) === 0
-					|| !Number(amountTokenToAdd)
+					|| toBigInt(tokenToAddData.balanceOf.raw) === 0n
+					|| toBigInt(amountTokenToAdd.raw) === 0n
 				}>
 				{txStatusAddCredits.error ? 'Transaction failed' : txStatusAddCredits.success ? 'Transaction successful' : 'Add'}
 			</Button>
@@ -142,7 +140,7 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	return (
 		<section aria-label={'Add tokens directly'}>
 			<b className={'text-lg'}>{'Add tokens directly'}</b>
-			<div aria-label={'Add tokens directly'} className={'mt-4 mb-10 space-y-6'}>
+			<div aria-label={'Add tokens directly'} className={'mb-10 mt-4 space-y-6'}>
 				<div>
 					<div className={'my-4 grid grid-cols-1 gap-4 md:grid-cols-2'}>
 						<label
@@ -156,11 +154,14 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 								placeholder={'0x...'} />
 						</label>
 
-						<Input.BigNumber
+						<Input.Bigint
 							label={''}
-							value={amountTokenToAdd}
-							onSetValue={(s: string): void => set_amountTokenToAdd(s)}
-							maxValue={tokenToAddData?.balanceOf || ethers.constants.Zero}
+							value={String(amountTokenToAdd.normalized)}
+							onSetValue={(s: string): void => {
+								const asRaw = parseUnits(s, tokenToAddData?.decimals || 18);
+								set_amountTokenToAdd(toNormalizedBN(asRaw, tokenToAddData?.decimals || 18));
+							}}
+							maxValue={toBigInt(tokenToAddData.balanceOf.raw)}
 							decimals={tokenToAddData?.decimals || 18} />
 					</div>
 					<div>
@@ -172,16 +173,16 @@ function	SectionAddToken({chainID}: {chainID: number}): ReactElement {
 	);
 }
 
-function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive, address} = useWeb3();
-	const	{getJobs, getKeeperStatus} = useKeep3r();
-	const	{jobStatus, getJobStatus} = useJob();
-	const	[txStatusWithdrawCredits, set_txStatusWithdrawCredits] = useState(defaultTxStatus);
-	const	[tokenToWithdraw, set_tokenToWithdraw] = useState('');
-	const	[amountTokenToWithdraw, set_amountTokenToWithdraw] = useState('');
-	const	[receiver, set_receiver] = useState('');
-	const	[tokenToWithdrawData, set_tokenToWithdrawData] = useState({
-		balanceOf: ethers.constants.Zero,
+function SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactElement {
+	const {provider, isActive, address} = useWeb3();
+	const {getJobs, getKeeperStatus} = useKeep3r();
+	const {jobStatus, getJobStatus} = useJob();
+	const [txStatusWithdrawCredits, set_txStatusWithdrawCredits] = useState(defaultTxStatus);
+	const [tokenToWithdraw, set_tokenToWithdraw] = useState('');
+	const [amountTokenToWithdraw, set_amountTokenToWithdraw] = useState<TNormalizedBN>(toNormalizedBN(0));
+	const [receiver, set_receiver] = useState('');
+	const [tokenToWithdrawData, set_tokenToWithdrawData] = useState({
+		balanceOf: toNormalizedBN(0),
 		decimals: 18,
 		symbol: ''
 	});
@@ -190,22 +191,20 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 		set_receiver(address || '');
 	}, [address]);
 
-	async function	getTokenToWithdraw(_tokenToWithdraw: string): Promise<void> {
-		const	_provider = provider || getProvider(1);
-		const	ethcallProvider = await newEthCallProvider(_provider);
-		const	contract = new Contract(getEnv(chainID).KEEP3R_V2_ADDR, KEEP3RV2_ABI);
-		const	tokenToWithdrawContract = new Contract(_tokenToWithdraw, ERC20_ABI);
-		const	results = await ethcallProvider.tryAll([
-			contract.jobTokenCredits(jobStatus.address, _tokenToWithdraw),
-			tokenToWithdrawContract.decimals(),
-			tokenToWithdrawContract.symbol()
-		]) as unknown[];
+	async function getTokenToWithdraw(_tokenToWithdraw: TAddress): Promise<void> {
+		const results = await readContracts({
+			contracts: [
+				{address: getEnv(chainID).KEEP3R_V2_ADDR, abi: KEEP3RV2_ABI, functionName: 'jobTokenCredits', args: [jobStatus.address, _tokenToWithdraw]},
+				{address: _tokenToWithdraw, abi: erc20ABI, functionName: 'balanceOf', args: [toAddress(address)]},
+				{address: _tokenToWithdraw, abi: erc20ABI, functionName: 'decimals'}
+			]
+		});
 		performBatchedUpdates((): void => {
-			const	[balanceOf, decimals, symbol] = results;
+			const decimals = decodeAsNumber(results[2]);
 			set_tokenToWithdrawData({
-				balanceOf: balanceOf as ethers.BigNumber,
-				decimals: decimals as number,
-				symbol: symbol as string
+				balanceOf: toNormalizedBN(decodeAsBigInt(results[0]), decimals),
+				decimals: decodeAsNumber(results[1]),
+				symbol: decodeAsString(results[2])
 			});
 		});
 	}
@@ -213,48 +212,53 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 	useEffect((): void => {
 		if (provider) {
 			if (!isZeroAddress(tokenToWithdraw)) {
-				getTokenToWithdraw(tokenToWithdraw);
+				getTokenToWithdraw(toAddress(tokenToWithdraw));
 			} else {
 				performBatchedUpdates((): void => {
-					set_amountTokenToWithdraw('');
+					set_amountTokenToWithdraw(toNormalizedBN(0));
 					set_tokenToWithdrawData({
-						balanceOf: ethers.constants.Zero,
+						balanceOf: toNormalizedBN(0),
 						decimals: 18,
 						symbol: ''
 					});
 				});
 			}
 		}
-	}, [tokenToWithdraw, provider, chainID]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [tokenToWithdraw, provider, chainID]);
 
-	async function	onWithdrawTokenCreditsFromJob(): Promise<void> {
+	async function onWithdrawTokenCreditsFromJob(): Promise<void> {
 		if (!isActive || txStatusWithdrawCredits.pending) {
 			return;
 		}
-		new Transaction(provider, withdrawTokenCreditsFromJob, set_txStatusWithdrawCredits)
-			.populate(
-				chainID,
-				jobStatus.address,
-				tokenToWithdraw,
-				toSafeAmount(amountTokenToWithdraw, tokenToWithdrawData?.balanceOf || 0, tokenToWithdrawData?.decimals || 18),
-				receiver
-			).onSuccess(async (): Promise<void> => {
-				await Promise.all([getJobs(), getJobStatus(), getKeeperStatus(), getTokenToWithdraw(tokenToWithdraw)]);
-				set_amountTokenToWithdraw('');
-			}).perform();
-		
+		const result = await withdrawTokenCreditsFromJob({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			jobAddress: toAddress(jobStatus.address),
+			tokenAddress: toAddress(tokenToWithdraw),
+			receiver: toAddress(receiver),
+			amount: max(amountTokenToWithdraw.raw, toBigInt(tokenToWithdrawData?.balanceOf.raw)),
+			statusHandler: set_txStatusWithdrawCredits
+		});
+		if (result.isSuccessful) {
+			await Promise.all([
+				getJobs(),
+				getJobStatus(),
+				getKeeperStatus(),
+				getTokenToWithdraw(toAddress(tokenToWithdraw))
+			]);
+			set_amountTokenToWithdraw(toNormalizedBN(0));
+		}		
 	}
 
-	function	withdrawButton(): ReactElement {
+	function withdrawButton(): ReactElement {
 		return (
 			<Button
 				onClick={onWithdrawTokenCreditsFromJob}
 				isBusy={txStatusWithdrawCredits.pending}
 				isDisabled={
 					!isActive
-					|| tokenToWithdrawData.balanceOf.eq(0)
-					|| Number(amountTokenToWithdraw) === 0
-					|| !Number(amountTokenToWithdraw)
+					|| toBigInt(tokenToWithdrawData.balanceOf.raw) === 0n
+					|| toBigInt(amountTokenToWithdraw.raw) === 0n
 				}>
 				{txStatusWithdrawCredits.error ? 'Transaction failed' : txStatusWithdrawCredits.success ? 'Transaction successful' : 'Withdraw'}
 			</Button>
@@ -277,11 +281,14 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 								aria-label={'token'}
 								placeholder={'0x...'} />
 						</label>
-						<Input.BigNumber
+						<Input.Bigint
 							label={''}
-							value={amountTokenToWithdraw}
-							onSetValue={(s: string): void => set_amountTokenToWithdraw(s)}
-							maxValue={tokenToWithdrawData?.balanceOf || ethers.constants.Zero}
+							value={String(amountTokenToWithdraw.normalized)}
+							onSetValue={(s: string): void => {
+								const asRaw = parseUnits(s, tokenToWithdrawData?.decimals || 18);
+								set_amountTokenToWithdraw(toNormalizedBN(asRaw, tokenToWithdrawData?.decimals || 18));
+							}}
+							maxValue={toBigInt(tokenToWithdrawData?.balanceOf.raw)}
 							decimals={tokenToWithdrawData?.decimals || 18} />
 					</div>
 
@@ -307,7 +314,7 @@ function	SectionActionsManageLiquidity({chainID}: {chainID: number}): ReactEleme
 	);
 }
 
-function	PanelManageLiquidity({chainID}: {chainID: number}): ReactElement {
+function PanelManageLiquidity({chainID}: {chainID: number}): ReactElement {
 	return (
 		<div className={'flex flex-col p-6'}>
 			<SectionAddToken chainID={chainID} />

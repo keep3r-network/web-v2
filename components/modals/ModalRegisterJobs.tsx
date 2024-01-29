@@ -1,42 +1,41 @@
 import React, {useState} from 'react';
 import Input from 'components/Input';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {registerJob} from 'utils/actions/registerJob';
+import {registerJob} from 'utils/actions';
+import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {Modal} from '@yearn-finance/web-lib/components/Modal';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import Cross from '@yearn-finance/web-lib/icons/IconCross';
-import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {IconCross} from '@yearn-finance/web-lib/icons/IconCross';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
-type		TModalRegisterJobs = {
+type TModalRegisterJobs = {
 	chainID: number,
 	isOpen: boolean,
 	onClose: () => void,
 }
-function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{getJobs} = useKeep3r();
-	const	[address, set_address] = useState('');
-	const	[txStatus, set_txStatus] = useState(defaultTxStatus);
+function ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): ReactElement {
+	const {provider, isActive} = useWeb3();
+	const {getJobs} = useKeep3r();
+	const [jobAddress, set_jobAddress] = useState('');
+	const [txStatus, set_txStatus] = useState(defaultTxStatus);
 
-	async function	onRegisterJob(): Promise<void> {
-		if (!isActive || txStatus.pending || isZeroAddress(address)) {
+	async function onRegisterJob(): Promise<void> {
+		if (!isActive || txStatus.pending || isZeroAddress(jobAddress)) {
 			return;
 		}
-		const	transaction = (
-			new Transaction(provider, registerJob, set_txStatus)
-				.populate(chainID, address)
-				.onSuccess(async (): Promise<void> => {
-					await getJobs();
-				})
-		);
-
-		const	isSuccessful = await transaction.perform();
-		if (isSuccessful) {
-			set_address('');
+		const result = await registerJob({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			jobAddress: toAddress(jobAddress),
+			statusHandler: set_txStatus
+		});
+		if (result.isSuccessful) {
+			await getJobs();
+			set_jobAddress('');
 			onClose();
 		}
 	}
@@ -48,7 +47,7 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 			<div className={'space-y-4 p-6'}>
 				<div className={'mb-4 flex items-center justify-between'}>
 					<h2 className={'text-xl font-bold'}>{'Register job'}</h2>
-					<Cross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
+					<IconCross className={'h-6 w-6 cursor-pointer text-black'} onClick={onClose} />
 				</div>
 				
 				<div className={'pb-6'}>
@@ -77,12 +76,12 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 
 				<label
 					className={'space-y-2'}
-					aria-invalid={address !== '' && isZeroAddress(address)}>
+					aria-invalid={jobAddress !== '' && isZeroAddress(jobAddress)}>
 					<b>{'Job contract address'}</b>
 					<Input
-						value={address}
-						onChange={(s: unknown): void => set_address(s as string)}
-						onSearch={(s: unknown): void => set_address(s as string)}
+						value={jobAddress}
+						onChange={(s: unknown): void => set_jobAddress(s as string)}
+						onSearch={(s: unknown): void => set_jobAddress(s as string)}
 						aria-label={'address'}
 						placeholder={'0x...'} />
 				</label>
@@ -91,7 +90,7 @@ function	ModalRegisterJobs({chainID, isOpen, onClose}: TModalRegisterJobs): Reac
 					<Button
 						onClick={onRegisterJob}
 						isBusy={txStatus.pending}
-						isDisabled={!isActive || isZeroAddress(address)}>
+						isDisabled={!isActive || isZeroAddress(jobAddress)}>
 						{txStatus.error ? 'Job registration failed' : txStatus.success ? 'Job registered successfully' : 'Register job'}
 					</Button>
 				</div>

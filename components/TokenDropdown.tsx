@@ -6,7 +6,7 @@ import LogoLido from 'components/icons/LogoLido';
 import {getEnv} from 'utils/env';
 import {Listbox, Transition} from '@headlessui/react';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
-import Chevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {toAddress} from '@yearn-finance/web-lib/utils/address';
 
 import type {ReactElement} from 'react';
@@ -21,15 +21,15 @@ type	TTokenDropdown = {
 	chainID: number,
 	withKeeper?: boolean
 }
-function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
-	const	{safeChainID} = useChainID();
-	const	keeperToken = useMemo((): TDropdownToken => ({
+function TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown): ReactElement {
+	const {safeChainID} = useChainID();
+	const keeperToken = useMemo((): TDropdownToken => ({
 		name: 'kLP-KP3R/WETH',
 		address: toAddress(getEnv(chainID).KLP_KP3R_WETH_ADDR),
 		icon: <IconKeep3r className={'h-8 w-8'}/>
 	}), [chainID]);
 	
-	const 	tokenList = useMemo((): TDropdownToken[] => {
+	const tokenList = useMemo((): TDropdownToken[] => {
 		if (safeChainID === 1) {
 			return ([
 				{
@@ -55,7 +55,7 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 		} else {
 			onSelect(tokenList[0].address);
 		}
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+	}, []);
 
 	return (
 		<Listbox
@@ -81,7 +81,7 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 							<b className={'text-base'}>{selected.name}</b>
 						</div>
 						<span className={'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'}>
-							<Chevron className={`text-black transition-transform ${open ? '-rotate-90' : '-rotate-180'}`}/>
+							<IconChevron className={`text-black transition-transform ${open ? '-rotate-90' : '-rotate-180'}`}/>
 						</span>
 					</Listbox.Button>
 					<Transition
@@ -119,8 +119,8 @@ function	TokenDropdownBase({onSelect, withKeeper, chainID = 1}: TTokenDropdown):
 }
   
 
-type		TTokenDropdownFake = {name: string}
-function	TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
+type TTokenDropdownFake = {name: string}
+function TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
 	return (
 		<div className={'flex flex-row items-center justify-between bg-grey-3 p-2'}>
 			<div className={'flex flex-row items-center space-x-2'}>
@@ -129,7 +129,7 @@ function	TokenDropdownFake({name}: TTokenDropdownFake): ReactElement {
 				</div>
 				<b className={'text-base'}>{name}</b>
 			</div>
-			<Chevron className={'-rotate-90 opacity-0'}/>
+			<IconChevron className={'-rotate-90 opacity-0'}/>
 		</div>
 	);
 }

@@ -6,11 +6,11 @@ import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
 
 import type {ReactElement} from 'react';
 
-function	Index(): ReactElement {
-	const	{chainID} = useChainID();
+function Index(): ReactElement {
+	const {chainID} = useChainID();
 
 	return (
-		<main className={'col-span-12 my-10 mx-auto flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto my-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'grid grid-cols-1 gap-12 md:grid-cols-2'}>
 				<section aria-label={'KEEPERS STATUS'}>
 					<SectionKeepersWanted chainID={chainID} />

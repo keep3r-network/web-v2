@@ -6,19 +6,19 @@ import SectionSlash from 'components/sections/disputes/SectionSlash';
 import axios from 'axios';
 import useSWR from 'swr';
 import {useChainID} from '@yearn-finance/web-lib/hooks/useChainID';
-import Copy from '@yearn-finance/web-lib/icons/IconCopy';
+import {IconCopy} from '@yearn-finance/web-lib/icons/IconCopy';
 import {copyToClipboard} from '@yearn-finance/web-lib/utils/helpers';
 
 import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Disputes(): ReactElement {
-	const	{chainID} = useChainID();
-	const	{data: stats} = useSWR(`/api/dispute?chainID=${chainID}`, fetcher, {shouldRetryOnError: false});
+function Disputes(): ReactElement {
+	const {chainID} = useChainID();
+	const {data: stats} = useSWR(`/api/dispute?chainID=${chainID}`, fetcher, {shouldRetryOnError: false});
 
 	return (
-		<main className={'col-span-12 mx-auto mt-6 mb-10 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
+		<main className={'col-span-12 mx-auto mb-10 mt-6 flex min-h-[100vh] w-full max-w-6xl flex-col px-4'}>
 			<div className={'mb-14 grid grid-cols-1 gap-8 md:grid-cols-2'}>
 				<div className={'flex flex-col space-y-12 pt-6'}>
 					<SectionDispute chainID={chainID} />
@@ -33,7 +33,7 @@ function	Disputes(): ReactElement {
 							{(stats?.disputers || []).map((s: string, i: number): ReactElement => (
 								<div key={s} className={`flex flex-row space-x-2 ${i === 0 ? 'mt-6' : ''}`}>
 									<code>{s}</code>
-									<Copy
+									<IconCopy
 										onClick={(): void => copyToClipboard(s)}
 										className={'h-6 w-6 cursor-pointer text-black'} />
 								</div>
@@ -48,7 +48,7 @@ function	Disputes(): ReactElement {
 							{(stats?.slashers || []).map((s: string, i: number): ReactElement => (
 								<div key={s} className={`flex flex-row space-x-2 ${i === 0 ? 'mt-6' : ''}`}>
 									<code>{s}</code>
-									<Copy
+									<IconCopy
 										onClick={(): void => copyToClipboard(s)}
 										className={'h-6 w-6 cursor-pointer text-black'} />
 								</div>
@@ -67,7 +67,7 @@ function	Disputes(): ReactElement {
 						</ul>
 						<div className={'mt-6 flex flex-row space-x-2'}>
 							<code className={'overflow-hidden text-ellipsis'}>{stats?.governance || '-'}</code>
-							<Copy
+							<IconCopy
 								onClick={(): void => copyToClipboard(stats?.governance || '-')}
 								className={'h-6 w-6 cursor-pointer text-black'} />
 						</div>

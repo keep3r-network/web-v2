@@ -5,23 +5,22 @@ import IconChevronFilled from 'components/icons/IconChevronFilled';
 import IconLoader from 'components/icons/IconLoader';
 import {getEnv} from 'utils/env';
 import axios from 'axios';
-import IconChevron from '@yearn-finance/web-lib/icons/IconChevron';
+import {IconChevron} from '@yearn-finance/web-lib/icons/IconChevron';
 import {truncateHex} from '@yearn-finance/web-lib/utils/address';
-import {formatDate} from '@yearn-finance/web-lib/utils/format.time';
-import performBatchedUpdates from '@yearn-finance/web-lib/utils/performBatchedUpdates';
+import {performBatchedUpdates} from '@yearn-finance/web-lib/utils/performBatchedUpdates';
 
 import type {ReactElement, ReactNode} from 'react';
 
-type		TDisputeLogs = {
+type TDisputeLogs = {
 	time: number,
 	keeperOrJob: string,
 	action: string,
 	disputer: string,
 	txHash: string,
 }
-function	LogsDispute({chainID}: {chainID: number}): ReactElement {
-	const	[isInit, set_isInit] = useState(false);
-	const	[logs, set_logs] = useState<TDisputeLogs[]>([]);
+function LogsDispute({chainID}: {chainID: number}): ReactElement {
+	const [isInit, set_isInit] = useState(false);
+	const [logs, set_logs] = useState<TDisputeLogs[]>([]);
 
 	useEffect((): void => {
 		axios.get(`${getEnv(chainID).BACKEND_URI}/disputes`)
@@ -36,7 +35,14 @@ function	LogsDispute({chainID}: {chainID: number}): ReactElement {
 
 	const data = useMemo((): unknown[] => (
 		logs.map((log): unknown => ({
-			date: formatDate(Number(log.time) * 1000, true),
+			date: Intl.DateTimeFormat('en-US', {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric',
+				hour: 'numeric',
+				minute: 'numeric',
+				second: 'numeric'
+			}).format(Number(log.time) * 1000),
 			keeperOrJob: log.keeperOrJob,
 			action: log.action,
 			disputer: log.disputer,
@@ -81,7 +87,7 @@ function	LogsDispute({chainID}: {chainID: number}): ReactElement {
 		state: {pageIndex}
 	} = useTable({columns, data, initialState: {pageSize: 50}}, useSortBy, usePagination);
 	
-	function	renderPreviousChevron(): ReactElement {
+	function renderPreviousChevron(): ReactElement {
 		if (!canPreviousPage) {
 			return (<IconChevron className={'h-4 w-4 cursor-not-allowed opacity-50'} />);
 		}
@@ -92,7 +98,7 @@ function	LogsDispute({chainID}: {chainID: number}): ReactElement {
 		);
 	}
 
-	function	renderNextChevron(): ReactElement {
+	function renderNextChevron(): ReactElement {
 		if (!canNextPage) {
 			return (<IconChevron className={'h-4 w-4 rotate-180 cursor-not-allowed opacity-50'} />);
 		}

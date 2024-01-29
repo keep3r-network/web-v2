@@ -4,19 +4,19 @@ import Input from 'components/Input';
 import LogsStatsPerKeeper from 'components/logs/LogsStatsPerKeeper';
 import axios from 'axios';
 import useSWR from 'swr';
-import {formatUnits} from '@yearn-finance/web-lib/utils/format.bigNumber';
+import {toNormalizedBN} from '@yearn-finance/web-lib/utils/format.bigNumber';
 import {formatAmount} from '@yearn-finance/web-lib/utils/format.number';
 
 import type {ReactElement} from 'react';
 
 const fetcher = async (url: string): Promise<any> => axios.get(url).then((res): any => res.data);
 
-function	Stats(): ReactElement {
-	const	router = useRouter();
-	const	{data} = useSWR(router?.query?.chainID ? `/api/stats?chainID=${router?.query?.chainID}` : null, fetcher, {shouldRetryOnError: false});
-	const	[searchTerm, set_searchTerm] = useState('');
+function Stats(): ReactElement {
+	const router = useRouter();
+	const {data} = useSWR(router?.query?.chainID ? `/api/stats?chainID=${router?.query?.chainID}` : null, fetcher, {shouldRetryOnError: false});
+	const [searchTerm, set_searchTerm] = useState('');
 
-	const	chainID = useMemo((): number => {
+	const chainID = useMemo((): number => {
 		let	currentChainID = parseInt(router?.query?.chainID as string, 10);
 		if (currentChainID === undefined || currentChainID === null || isNaN(Number(currentChainID))) {
 			currentChainID = 1;
@@ -27,36 +27,44 @@ function	Stats(): ReactElement {
 	return (
 		<>
 			<section aria-label={'general statistics'} className={'mb-4 bg-grey-3'}>
-				<div className={'mx-auto grid w-full max-w-6xl grid-cols-2 gap-6 py-6 px-4 md:grid-cols-5 md:gap-4'}>
+				<div className={'mx-auto grid w-full max-w-6xl grid-cols-2 gap-6 px-4 py-6 md:grid-cols-5 md:gap-4'}>
 					<div className={'space-y-2'}>
 						<p>{'Function calls'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.workDone || 0, 0, 0)}</b>
+							<b className={'text-2xl'}>
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.workDone || 0, 0, 0)}
+							</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Rewarded, KP3R'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.rewardedKp3r || 0, 18)), 2, 2)}</b>
+							<b className={'text-2xl'}>
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(data?.stats?.rewardedKp3r || 0, 18).normalized), 2, 2)}
+							</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Keepers'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.keepers || 0, 0, 0)}</b>
+							<b className={'text-2xl'}>
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(data?.stats?.keepers || 0, 0, 0)}
+							</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Bonded, KP3R'}</p>
 						<div>
-							<b className={'text-2xl'}>{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.bondedKp3r || 0, 18)), 2, 2)}</b>
+							<b className={'text-2xl'}>
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(data?.stats?.bondedKp3r || 0, 18).normalized), 2, 2)}
+							</b>
 						</div>
 					</div>
 					<div className={'space-y-2'}>
 						<p>{'Bonded, $'}</p>
 						<div>
 							<b className={'text-2xl'}>
-								{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(formatUnits(data?.stats?.bondedKp3r || 0, 18)) * Number(data?.prices?.keep3rv1 || 0), 2, 2)}
+								{!data?.stats?.isSuccessful ? '-' : formatAmount(Number(toNormalizedBN(data?.stats?.bondedKp3r || 0, 18).normalized) * Number(data?.prices?.keep3rv1 || 0), 2, 2)}
 							</b>
 						</div>
 					</div>

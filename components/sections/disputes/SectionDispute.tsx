@@ -1,47 +1,54 @@
 import React, {useState} from 'react';
 import Input from 'components/Input';
 import {useKeep3r} from 'contexts/useKeep3r';
-import {dispute} from 'utils/actions/dispute';
-import {resolve} from 'utils/actions/resolve';
+import {dispute, resolve} from 'utils/actions';
+import {getEnv} from 'utils/env';
 import {Button} from '@yearn-finance/web-lib/components/Button';
 import {useWeb3} from '@yearn-finance/web-lib/contexts/useWeb3';
-import {isZeroAddress} from '@yearn-finance/web-lib/utils/address';
-import {defaultTxStatus, Transaction} from '@yearn-finance/web-lib/utils/web3/transaction';
+import {isZeroAddress, toAddress} from '@yearn-finance/web-lib/utils/address';
+import {defaultTxStatus} from '@yearn-finance/web-lib/utils/web3/transaction';
 
 import type {ReactElement} from 'react';
 
-function	SectionDispute({chainID}: {chainID: number}): ReactElement {
-	const	{provider, isActive} = useWeb3();
-	const	{keeperStatus, getKeeperStatus} = useKeep3r();
-	const	[disputeAddress, set_disputeAddress] = useState('');
-	const	[resolveAddress, set_resolveAddress] = useState('');
-	const	[txStatusDispute, set_txStatusDispute] = useState(defaultTxStatus);
-	const	[txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
+function SectionDispute({chainID}: {chainID: number}): ReactElement {
+	const {provider, isActive} = useWeb3();
+	const {keeperStatus, getKeeperStatus} = useKeep3r();
+	const [disputeAddress, set_disputeAddress] = useState('');
+	const [resolveAddress, set_resolveAddress] = useState('');
+	const [txStatusDispute, set_txStatusDispute] = useState(defaultTxStatus);
+	const [txStatusResolve, set_txStatusResolve] = useState(defaultTxStatus);
 
-	async function	onDispute(): Promise<void> {
+	async function onDispute(): Promise<void> {
 		if (!isActive || txStatusDispute.pending) {
 			return;
 		}
-		new Transaction(provider, dispute, set_txStatusDispute)
-			.populate(chainID, disputeAddress)
-			.onSuccess(async (): Promise<void> => {
-				await getKeeperStatus();
-				set_disputeAddress('');
-			})
-			.perform();
+		const result = await dispute({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			disputedAddress: toAddress(disputeAddress),
+			statusHandler: set_txStatusDispute
+		});
+		if (result.isSuccessful) {
+			await getKeeperStatus();
+			set_disputeAddress('');
+		}
 	}
 
-	async function	onResolve(): Promise<void> {
+	async function onResolve(): Promise<void> {
 		if (!isActive || txStatusResolve.pending) {
 			return;
 		}
-		new Transaction(provider, resolve, set_txStatusResolve)
-			.populate(chainID, resolveAddress)
-			.onSuccess(async (): Promise<void> => {
-				await getKeeperStatus();
-				set_resolveAddress('');
-			})
-			.perform();
+
+		const result = await resolve({
+			connector: provider,
+			contractAddress: getEnv(chainID).KEEP3R_V2_ADDR,
+			resolvedAddress: toAddress(resolveAddress),
+			statusHandler: set_txStatusResolve
+		});
+		if (result.isSuccessful) {
+			await getKeeperStatus();
+			set_resolveAddress('');
+		}
 	}
 
 	return (
@@ -50,7 +57,7 @@ function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 			<p>{'If your job isn\'t necessary anymore, you are able to unbond your kLPs from it and withdraw the underlying tokens after the unbonding period has passed (default 14 days).'}</p>
 			<div className={'mt-6'}>
 				<b className={'text-black-1'}>{'Dispute keeper or job'}</b>
-				<div className={'mt-2 mb-8 grid grid-cols-5 gap-4'}>
+				<div className={'mb-8 mt-2 grid grid-cols-5 gap-4'}>
 					<label
 						aria-invalid={disputeAddress !== '' && isZeroAddress(disputeAddress)}
 						className={'col-span-3'}>
@@ -72,7 +79,7 @@ function	SectionDispute({chainID}: {chainID: number}): ReactElement {
 				</div>
 
 				<b className={'text-black-1'}>{'Resolve a dispute'}</b>
-				<div className={'mt-2 mb-8 grid grid-cols-5 gap-4'}>
+				<div className={'mb-8 mt-2 grid grid-cols-5 gap-4'}>
 					<label
 						aria-invalid={resolveAddress !== '' && isZeroAddress(resolveAddress)}
 						className={'col-span-3'}>
