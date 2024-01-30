@@ -32,75 +32,77 @@ type	TTreasuryContext = {
 	treasury: TTreasury[],
 }
 
-const	TreasuryContext = createContext<TTreasuryContext>({treasury: []});
+const TreasuryContext = createContext<TTreasuryContext>({treasury: []});
 export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactElement => {
-	const	{safeChainID} = useChainID();
-	const	[treasury, set_treasury] = useState<TTreasury[]>([]);
-	const	[, set_nonce] = useState(0);
+	const {safeChainID} = useChainID();
+	const [treasury, set_treasury] = useState<TTreasury[]>([]);
+	const [, set_nonce] = useState(0);
 
 	const getTreasury = useCallback(async (): Promise<void> => {
-		const	currentProvider = getProvider(1);
-		const	[ethcallProvider, kp3rEthPrice] = await Promise.all([
+		const currentProvider = getProvider(1);
+		const [ethcallProvider, kp3rEthPrice] = await Promise.all([
 			newEthCallProvider(currentProvider),
-			axios.get('https://ydaemon-dev.yearn.finance/1/prices/0x4647B6D835f3B393C7A955df51EEfcf0db961606')
+			axios.get('https://ydaemon.yearn.fi/1/prices/0x4647B6D835f3B393C7A955df51EEfcf0db961606')
 		]);
-		const	lensPriceContract = new Contract('0x83d95e0D5f402511dB06817Aff3f9eA88224B030', LENS_PRICE_ABI);
-		const	ibaudUsdcContract = new Contract('0xbAFC4FAeB733C18411886A04679F11877D8629b1', CONVEX_REWARDS_ABI);
-		const	ibchfUsdcContract = new Contract('0x9BEc26bDd9702F4e0e4de853dd65Ec75F90b1F2e', CONVEX_REWARDS_ABI);
-		const	ibeurUsdcContract = new Contract('0xAab7202D93B5633eB7FB3b80873C817B240F6F44', CONVEX_REWARDS_ABI);
-		const	ibgbpUsdcContract = new Contract('0x8C87E32000ADD1a7D7D69a1AE180C415AF769361', CONVEX_REWARDS_ABI);
-		const	ibjpyUsdcContract = new Contract('0x58563C872c791196d0eA17c4E53e77fa1d381D4c', CONVEX_REWARDS_ABI);
-		const	ibkrwUsdcContract = new Contract('0x1900249c7a90D27b246032792004FF0E092Ac2cE', CONVEX_REWARDS_ABI);
+		const lensPriceContract = new Contract('0x83d95e0D5f402511dB06817Aff3f9eA88224B030', LENS_PRICE_ABI);
+		const ibaudUsdcContract = new Contract('0xbAFC4FAeB733C18411886A04679F11877D8629b1', CONVEX_REWARDS_ABI);
+		const ibchfUsdcContract = new Contract('0x9BEc26bDd9702F4e0e4de853dd65Ec75F90b1F2e', CONVEX_REWARDS_ABI);
+		const ibeurUsdcContract = new Contract('0xAab7202D93B5633eB7FB3b80873C817B240F6F44', CONVEX_REWARDS_ABI);
+		const ibgbpUsdcContract = new Contract('0x8C87E32000ADD1a7D7D69a1AE180C415AF769361', CONVEX_REWARDS_ABI);
+		const ibjpyUsdcContract = new Contract('0x58563C872c791196d0eA17c4E53e77fa1d381D4c', CONVEX_REWARDS_ABI);
+		const ibkrwUsdcContract = new Contract('0x1900249c7a90D27b246032792004FF0E092Ac2cE', CONVEX_REWARDS_ABI);
 
-		const	vlCVXContract = new Contract('0x72a19342e8F1838460eBFCCEf09F6585e32db86E', LOCKED_CVX_ABI);
+		const vlCVXContract = new Contract('0x72a19342e8F1838460eBFCCEf09F6585e32db86E', LOCKED_CVX_ABI);
 
-		const	ibeurAgeurContract = new Contract('0x769499A7B4093b2AA35E3F3C00B1ab5dc8EF7146', CONVEX_REWARDS_ABI); // ibeur-ageur
-		const	ibeurAgeurExtraRewards1Contract = new Contract('0x92dFd397b6d0B878126F5a5f6F446ae9Fc8A8356', CONVEX_REWARDS_ABI); // ANGLE
-		const	ibeurAgeurExtraRewards2Contract = new Contract('0x19Ba12D57aD7B126dE898706AA6dBF7d6DC85FF8', CONVEX_REWARDS_ABI); // KP3R
+		const ibeurAgeurContract = new Contract('0x769499A7B4093b2AA35E3F3C00B1ab5dc8EF7146', CONVEX_REWARDS_ABI); // ibeur-ageur
+		const ibeurAgeurExtraRewards1Contract = new Contract('0x92dFd397b6d0B878126F5a5f6F446ae9Fc8A8356', CONVEX_REWARDS_ABI); // ANGLE
+		const ibeurAgeurExtraRewards2Contract = new Contract('0x19Ba12D57aD7B126dE898706AA6dBF7d6DC85FF8', CONVEX_REWARDS_ABI); // KP3R
 
-		const	ibaudSaudContract = new Contract('0xb1Fae59F23CaCe4949Ae734E63E42168aDb0CcB3', CONVEX_REWARDS_ABI); // ibAUD+sAUD
-		const	ibaudSaudExtraRewards1Contract = new Contract('0x91ad51F0897552ce77f76B44e9a86B4Ad2B28c25', CONVEX_REWARDS_ABI); // KP3R
-		const	ibaudSaudExtraRewards2Contract = new Contract('0x040A6Ae6314e190974ee4839f3c2FBf849EF54Eb', CONVEX_REWARDS_ABI); // CVX
+		const ibaudSaudContract = new Contract('0xb1Fae59F23CaCe4949Ae734E63E42168aDb0CcB3', CONVEX_REWARDS_ABI); // ibAUD+sAUD
+		const ibaudSaudExtraRewards1Contract = new Contract('0x91ad51F0897552ce77f76B44e9a86B4Ad2B28c25', CONVEX_REWARDS_ABI); // KP3R
+		const ibaudSaudExtraRewards2Contract = new Contract('0x040A6Ae6314e190974ee4839f3c2FBf849EF54Eb', CONVEX_REWARDS_ABI); // CVX
 
-		const	ibchfSchfContract = new Contract('0xa5A5905efc55B05059eE247d5CaC6DD6791Cfc33', CONVEX_REWARDS_ABI); // ibCHF+sCHF
-		const	ibchfSchfExtraRewards1Contract = new Contract('0x9D9EBCc8E7B4eF061C0F7Bab532d1710b874f789', CONVEX_REWARDS_ABI); // KP3R
-		const	ibchfSchfExtraRewards2Contract = new Contract('0x1c86460640457466E2eC86916B4a91ED86CE0D1E', CONVEX_REWARDS_ABI); // CVX
+		const ibchfSchfContract = new Contract('0xa5A5905efc55B05059eE247d5CaC6DD6791Cfc33', CONVEX_REWARDS_ABI); // ibCHF+sCHF
+		const ibchfSchfExtraRewards1Contract = new Contract('0x9D9EBCc8E7B4eF061C0F7Bab532d1710b874f789', CONVEX_REWARDS_ABI); // KP3R
+		const ibchfSchfExtraRewards2Contract = new Contract('0x1c86460640457466E2eC86916B4a91ED86CE0D1E', CONVEX_REWARDS_ABI); // CVX
 
-		const	ibeurSeurContract = new Contract('0xCd0559ADb6fAa2fc83aB21Cf4497c3b9b45bB29f', CONVEX_REWARDS_ABI); // ibEUR+sEUR
-		const	ibeurSeurExtraRewards1Contract = new Contract('0x21034ccc4f8D07d0cF8998Fdd4c45e426540dEc1', CONVEX_REWARDS_ABI); // KP3R
-		const	ibeurSeurExtraRewards2Contract = new Contract('0xbA5eF047ce02cc0096DB3Bc8ED84aAD14291f8a0', CONVEX_REWARDS_ABI); // CVX
+		const ibeurSeurContract = new Contract('0xCd0559ADb6fAa2fc83aB21Cf4497c3b9b45bB29f', CONVEX_REWARDS_ABI); // ibEUR+sEUR
+		const ibeurSeurExtraRewards1Contract = new Contract('0x21034ccc4f8D07d0cF8998Fdd4c45e426540dEc1', CONVEX_REWARDS_ABI); // KP3R
+		const ibeurSeurExtraRewards2Contract = new Contract('0xbA5eF047ce02cc0096DB3Bc8ED84aAD14291f8a0', CONVEX_REWARDS_ABI); // CVX
 
-		const	ibgbpSgbpContract = new Contract('0x51a16DA36c79E28dD3C8c0c19214D8aF413984Aa', CONVEX_REWARDS_ABI); // ibGBP+sGBP
-		const	ibgbpSgbpExtraRewards1Contract = new Contract('0xE689DB5D753abc411ACB8a3fEf226C08ACDAE13f', CONVEX_REWARDS_ABI); // KP3R
-		const	ibgbpSgbpExtraRewards2Contract = new Contract('0x00A4f5d12E3FAA909c53CDcC90968F735633e988', CONVEX_REWARDS_ABI); // CVX
+		const ibgbpSgbpContract = new Contract('0x51a16DA36c79E28dD3C8c0c19214D8aF413984Aa', CONVEX_REWARDS_ABI); // ibGBP+sGBP
+		const ibgbpSgbpExtraRewards1Contract = new Contract('0xE689DB5D753abc411ACB8a3fEf226C08ACDAE13f', CONVEX_REWARDS_ABI); // KP3R
+		const ibgbpSgbpExtraRewards2Contract = new Contract('0x00A4f5d12E3FAA909c53CDcC90968F735633e988', CONVEX_REWARDS_ABI); // CVX
 
-		const	ibjpySjpyContract = new Contract('0xbA8fE590498ed24D330Bb925E69913b1Ac35a81E', CONVEX_REWARDS_ABI); // ibJPY+sJPY
-		const	ibjpySjpyExtraRewards1Contract = new Contract('0x771bc5c888d1B318D0c5b177e4F996d3D5fd3d18', CONVEX_REWARDS_ABI); // KP3R
-		const	ibjpySjpyExtraRewards2Contract = new Contract('0x8a3F52c2Eb02De2d8356a8286c96909352c62B10', CONVEX_REWARDS_ABI); // CVX
+		const ibjpySjpyContract = new Contract('0xbA8fE590498ed24D330Bb925E69913b1Ac35a81E', CONVEX_REWARDS_ABI); // ibJPY+sJPY
+		const ibjpySjpyExtraRewards1Contract = new Contract('0x771bc5c888d1B318D0c5b177e4F996d3D5fd3d18', CONVEX_REWARDS_ABI); // KP3R
+		const ibjpySjpyExtraRewards2Contract = new Contract('0x8a3F52c2Eb02De2d8356a8286c96909352c62B10', CONVEX_REWARDS_ABI); // CVX
 
-		const	ibkrwSkrwContract = new Contract('0x8F18C0AF0d7d511E8Bdc6B3c64926B04EDfE4892', CONVEX_REWARDS_ABI); // ibKRW+sKRW
-		const	ibkrwSkrwExtraRewards1Contract = new Contract('0xE3A64E08EEbf38b19a3d9fec51d8cD5A8898Dd5e', CONVEX_REWARDS_ABI); // KP3R
-		const	ibkrwSkrwExtraRewards2Contract = new Contract('0x93649cd43635bC5F7Ad8fA2fa27CB9aE765Ec58A', CONVEX_REWARDS_ABI); // CVX
+		const ibkrwSkrwContract = new Contract('0x8F18C0AF0d7d511E8Bdc6B3c64926B04EDfE4892', CONVEX_REWARDS_ABI); // ibKRW+sKRW
+		const ibkrwSkrwExtraRewards1Contract = new Contract('0xE3A64E08EEbf38b19a3d9fec51d8cD5A8898Dd5e', CONVEX_REWARDS_ABI); // KP3R
+		const ibkrwSkrwExtraRewards2Contract = new Contract('0x93649cd43635bC5F7Ad8fA2fa27CB9aE765Ec58A', CONVEX_REWARDS_ABI); // CVX
 
-		const	cvxcrvCrvContract = new Contract('0x3Fe65692bfCD0e6CF84cB1E7d24108E434A7587e', CONVEX_REWARDS_ABI); // cvxCRV+CRV
-		const	cvxcrvCrvExtraRewards1Contract = new Contract('0x7091dbb7fcbA54569eF1387Ac89Eb2a5C9F6d2EA', CONVEX_REWARDS_ABI); // 3CRV
+		const cvxcrvCrvContract = new Contract('0x3Fe65692bfCD0e6CF84cB1E7d24108E434A7587e', CONVEX_REWARDS_ABI); // cvxCRV+CRV
+		const cvxcrvCrvExtraRewards1Contract = new Contract('0x7091dbb7fcbA54569eF1387Ac89Eb2a5C9F6d2EA', CONVEX_REWARDS_ABI); // 3CRV
 
-		const	kp3rEthContract = new Contract('0x0c2da920E577960f39991030CfBdd4cF0a0CfEBD', CONVEX_REWARDS_ABI);
-		const	mim3CrvContract = new Contract('0xFd5AbF66b003881b88567EB9Ed9c651F14Dc4771', CONVEX_REWARDS_ABI);
-		const	yvEthContract = new Contract('0xa258C4606Ca8206D8aA700cE2143D7db854D168c', YEARN_VAULT_ABI);
-		const	cvxContract = new Contract('0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B', CVX_ABI);
-		const	crvSusdContract = new Contract('0x22eE18aca7F3Ee920D01F25dA85840D12d98E8Ca', CONVEX_REWARDS_ABI);
-		const	crvSusdExtraRewardsContract = new Contract('0x81fCe3E10D12Da6c7266a1A169c4C96813435263', CONVEX_REWARDS_ABI); //SNX
-		const	veCRVContract = new Contract('0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2', CVX_ABI);
+		const kp3rEthContract = new Contract('0x0c2da920E577960f39991030CfBdd4cF0a0CfEBD', CONVEX_REWARDS_ABI);
+		const mim3CrvContract = new Contract('0xFd5AbF66b003881b88567EB9Ed9c651F14Dc4771', CONVEX_REWARDS_ABI);
+		const yvEthContract = new Contract('0xa258C4606Ca8206D8aA700cE2143D7db854D168c', YEARN_VAULT_ABI);
+		const cvxContract = new Contract('0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B', CVX_ABI);
+		const crvSusdContract = new Contract('0x22eE18aca7F3Ee920D01F25dA85840D12d98E8Ca', CONVEX_REWARDS_ABI);
+		const crvSusdExtraRewardsContract = new Contract('0x81fCe3E10D12Da6c7266a1A169c4C96813435263', CONVEX_REWARDS_ABI); //SNX
+		const veCRVContract = new Contract('0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2', CVX_ABI);
 
-		const	veCRVContractRegular = new ethers.Contract(
+		const veCRVContractRegular = new ethers.Contract(
 			'0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc',
 			['function claim(address) public returns (uint256)'],
 			currentProvider as ethers.providers.Web3Provider
 		);
 
-		const	{THE_KEEP3R_GOVERNANCE} = getEnv(safeChainID);
-		const	jobsCalls = [
+		const wethContract = new Contract('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', CONVEX_REWARDS_ABI);
+
+		const {THE_KEEP3R_GOVERNANCE} = getEnv(safeChainID);
+		const jobsCalls = [
 			cvxContract.totalSupply(),
 			cvxContract.reductionPerCliff(),
 			cvxContract.totalCliffs(),
@@ -110,6 +112,7 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			lensPriceContract.getPriceUsdcRecommended('0xd533a949740bb3306d119cc777fa900ba034cd52'), //CRV
 			lensPriceContract.getPriceUsdcRecommended('0x1cEB5cB57C4D4E2b2433641b95Dd330A33185A44'), //KP3R
 			lensPriceContract.getPriceUsdcRecommended('0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490'), //3CRV
+			lensPriceContract.getPriceUsdcRecommended('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'), //weth
 
 			ibaudUsdcContract.balanceOf(THE_KEEP3R_GOVERNANCE),
 			ibaudUsdcContract.earned(THE_KEEP3R_GOVERNANCE),
@@ -202,15 +205,17 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			lensPriceContract.getPriceUsdcRecommended('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'),
 			veCRVContract.balanceOf(THE_KEEP3R_GOVERNANCE),
 			vlCVXContract.balanceOf(THE_KEEP3R_GOVERNANCE),
-			vlCVXContract.claimableRewards(THE_KEEP3R_GOVERNANCE)
+			vlCVXContract.claimableRewards(THE_KEEP3R_GOVERNANCE),
+			ethcallProvider.getEthBalance(THE_KEEP3R_GOVERNANCE),
+			wethContract.balanceOf(THE_KEEP3R_GOVERNANCE)
 		];
-		const	promise = await Promise.allSettled([
+		const promise = await Promise.allSettled([
 			ethcallProvider.tryAll(jobsCalls),
 			veCRVContractRegular.callStatic.claim(THE_KEEP3R_GOVERNANCE)
 		]);
 
-		let		resultsJobsCall: unknown[] = [];
-		let		claimable = ethers.constants.Zero;
+		let resultsJobsCall: unknown[] = [];
+		let claimable = ethers.constants.Zero;
 		if (promise[0].status === 'fulfilled') {
 			resultsJobsCall = promise[0].value;
 		}
@@ -218,24 +223,26 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 			claimable = promise[1].value;
 		}
 
+
 		let	rIndex = 0;
-		const	_treasury: TTreasury[] = [];
+		const _treasury: TTreasury[] = [];
 		// cvxStuffs //
-		const	cvxTotalSupply = resultsJobsCall[rIndex++] as BigNumber;
-		const	cvxReductionPerCliff = resultsJobsCall[rIndex++] as BigNumber;
-		const	cvxTotalCliffs = resultsJobsCall[rIndex++] as BigNumber;
-		const	reduction = cvxTotalCliffs.sub(cvxTotalSupply.div(cvxReductionPerCliff));
-		const	cvxPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	cvxCrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	cvxFXSPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	crvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	kp3rPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	threeCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const cvxTotalSupply = resultsJobsCall[rIndex++] as BigNumber;
+		const cvxReductionPerCliff = resultsJobsCall[rIndex++] as BigNumber;
+		const cvxTotalCliffs = resultsJobsCall[rIndex++] as BigNumber;
+		const reduction = cvxTotalCliffs.sub(cvxTotalSupply.div(cvxReductionPerCliff));
+		const cvxPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const cvxCrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const cvxFXSPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const crvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const kp3rPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const threeCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const wethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 
 		// ibAUD //
-		const	ibAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibAUD + USDC',
 			protocol: 'Convex',
@@ -251,9 +258,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibCHF //
-		const	ibCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibCHF + USDC',
 			protocol: 'Convex',
@@ -269,9 +276,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibEUR //
-		const	ibEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibEUREarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibEUREarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibEUR + USDC',
 			protocol: 'Convex',
@@ -287,9 +294,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibGBP //
-		const	ibGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibGBP + USDC',
 			protocol: 'Convex',
@@ -305,9 +312,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibJPY //
-		const	ibJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibJPY + USDC',
 			protocol: 'Convex',
@@ -323,9 +330,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibKRW //
-		const	ibKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibKRW + USDC',
 			protocol: 'Convex',
@@ -341,9 +348,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// kp3rEth //
-		const	kp3rEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	kp3rEthCrvEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	kp3rEthPriceFormated = formatUnits(formatBN(kp3rEthPrice.data) as BigNumber, 6);
+		const kp3rEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const kp3rEthCrvEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const kp3rEthPriceFormated = formatUnits(formatBN(kp3rEthPrice.data) as BigNumber, 6);
 
 		_treasury.push({
 			name: 'kp3rEth',
@@ -360,9 +367,9 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// mim3Crv //
-		const	mim3CrvStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	mim3CrvEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	mim3CrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const mim3CrvStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const mim3CrvEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const mim3CrvPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'mim3Crv',
 			protocol: 'Convex',
@@ -378,11 +385,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// crvSUSD //
-		const	crvSUSDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	crvSUSDEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	crvSUSDExtra0Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	crvSUSDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	crvSUSDExtra0Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //SNX
+		const crvSUSDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const crvSUSDEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const crvSUSDExtra0Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const crvSUSDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const crvSUSDExtra0Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //SNX
 		_treasury.push({
 			name: 'crvSUSD',
 			protocol: 'Convex',
@@ -400,12 +407,12 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibeur-ageur //
-		const	ibEURAgEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibEURAgEUREarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURAgEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURAgEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURAgEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	ibEURAgEURExtra1Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //ANGLE
+		const ibEURAgEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibEURAgEUREarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURAgEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURAgEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURAgEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibEURAgEURExtra1Price = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6); //ANGLE
 		_treasury.push({
 			name: 'ibEUR + AgEUR',
 			protocol: 'Convex',
@@ -425,11 +432,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibAUD+sAUD
-		const	ibAUDsAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibAUDsAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDsAUDExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDsAUDExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibAUDsAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibAUDsAUDStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibAUDsAUDEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibAUDsAUDExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibAUDsAUDExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibAUDsAUDPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibAUD + sAUD',
 			protocol: 'Convex',
@@ -449,11 +456,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibCHF+sCHF
-		const	ibCHFsCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibCHFsCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFsCHFExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFsCHFExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibCHFsCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibCHFsCHFStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibCHFsCHFEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibCHFsCHFExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibCHFsCHFExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibCHFsCHFPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibCHF + sCHF',
 			protocol: 'Convex',
@@ -473,11 +480,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibEUR+sEUR
-		const	ibEURsEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibEURsEUREarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURsEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURsEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibEURsEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibEURsEURStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibEURsEUREarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURsEURExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURsEURExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibEURsEURPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibEUR + sEUR',
 			protocol: 'Convex',
@@ -497,11 +504,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibGBP+sGBP
-		const	ibGBPsGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibGBPsGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPsGBPExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPsGBPExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibGBPsGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibGBPsGBPStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibGBPsGBPEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibGBPsGBPExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibGBPsGBPExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibGBPsGBPPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibGBP + sGBP',
 			protocol: 'Convex',
@@ -521,11 +528,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibJPY+sJPY
-		const	ibJPYsJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibJPYsJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYsJPYExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYsJPYExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibJPYsJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibJPYsJPYStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibJPYsJPYEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibJPYsJPYExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibJPYsJPYExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibJPYsJPYPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibJPY + sJPY',
 			protocol: 'Convex',
@@ -545,11 +552,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// ibKRW+sKRW
-		const	ibKRWsKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	ibKRWsKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWsKRWExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWsKRWExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	ibKRWsKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const ibKRWsKRWStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const ibKRWsKRWEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibKRWsKRWExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibKRWsKRWExtra2Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const ibKRWsKRWPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'ibKRW + sKRW',
 			protocol: 'Convex',
@@ -569,10 +576,10 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// cvxCRV+CRV
-		const	cvxCRVCRVStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	cvxCRVCRVEarned = resultsJobsCall[rIndex++] as BigNumber;
-		const	cvxCRVCRVExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
-		const	cvxCRVCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const cvxCRVCRVStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const cvxCRVCRVEarned = resultsJobsCall[rIndex++] as BigNumber;
+		const cvxCRVCRVExtra1Earned = resultsJobsCall[rIndex++] as BigNumber;
+		const cvxCRVCRVPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'cvxCRV + CRV',
 			protocol: 'Convex',
@@ -590,10 +597,10 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		// yvEth //
-		const	yvEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		rIndex++; // const	pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		rIndex++; // const	ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
-		const	yvEthPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const yvEthStacked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		rIndex++; // const pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		rIndex++; // const ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const yvEthPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'yvEth',
 			protocol: 'Yearn',
@@ -608,10 +615,10 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		//Locked CRV
-		const	crvLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	crvLockedExtraEarned = claimable;
-		// const	pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		// const	ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
+		const crvLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const crvLockedExtraEarned = claimable;
+		// const pricePerShare = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		// const ethPrice = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 6);
 		_treasury.push({
 			name: 'Locked CRV',
 			protocol: 'Curve',
@@ -627,11 +634,11 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 		});
 
 		//Locked CVX
-		const	cvxLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
-		const	cvxLockedExtraEarned = claimable;
-		const	cvxClaimableRewards = resultsJobsCall[rIndex++] as {token: TAddress, amount: BigNumber}[];
-		const	isToken1CvxCrv = toAddress(cvxClaimableRewards?.[0].token) === toAddress('0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7');
-		const	isToken2CvxFXs = toAddress(cvxClaimableRewards?.[1].token) === toAddress('0xFEEf77d3f69374f66429C91d732A244f074bdf74');
+		const cvxLocked = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const cvxLockedExtraEarned = claimable;
+		const cvxClaimableRewards = resultsJobsCall[rIndex++] as {token: TAddress, amount: BigNumber}[];
+		const isToken1CvxCrv = toAddress(cvxClaimableRewards?.[0].token) === toAddress('0x62B9c7356A2Dc64a1969e19C23e4f579F9810Aa7');
+		const isToken2CvxFXs = toAddress(cvxClaimableRewards?.[1].token) === toAddress('0xFEEf77d3f69374f66429C91d732A244f074bdf74');
 		_treasury.push({
 			name: 'Locked CVX',
 			protocol: 'Convex',
@@ -645,6 +652,20 @@ export const TreasuryContextApp = ({children}: {children: ReactElement}): ReactE
 				(isToken2CvxFXs ? Number(formatUnits(cvxClaimableRewards[1].amount, 18)) * Number(cvxFXSPrice) : 0)
 			)
 		});
+
+		const ethBalance = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		const wethBalance = formatUnits(resultsJobsCall[rIndex++] as BigNumber, 18);
+		console.log(THE_KEEP3R_GOVERNANCE, ethBalance, wethBalance);
+		_treasury.push({
+			name: 'Ether',
+			protocol: 'ETH',
+			rewards: '',
+			tokenStaked: Number(ethBalance) + Number(wethBalance),
+			tokenStakedUSD: (Number(ethBalance) + Number(wethBalance)) * Number(wethPrice),
+			unclaimedRewards: 0,
+			unclaimedRewardsUSD: 0
+		});
+
 
 		performBatchedUpdates((): void => {
 			set_treasury(_treasury);
