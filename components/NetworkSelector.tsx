@@ -10,12 +10,12 @@ type TOptions = {label: string, value: number};
 
 const	options: TOptions[] = [
 	{label: 'Ethereum Mainnet', value: 1},
-	{label: 'Optimistic Ethereum', value: 10},
+	{label: 'OP Mainnet', value: 10},
 	{label: 'Polygon', value: 137},
-	// {label: 'Fantom Opera', value: 250},
-	{label: 'Goerli Testnet', value: 5},
-	{label: 'Optimistic Goerli', value: 420},
+	{label: 'Sepolia', value: 11155111},
+	{label: 'OP Sepolia', value: 11155420},
 	{label: 'Forknet', value: 1337}
+	// {label: 'Fantom Opera', value: 250},
 ];
 
 function	NetworkSelector(): ReactElement {
